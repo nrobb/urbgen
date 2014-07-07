@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="js/UrbGen.js"></script>
+  </head>
+  <body>
+    <canvas id="canvas" width="1300" height="700">
+    </canvas>
+    <script>
+      //////////////////////////////////////////////////////////////////////////
+      // DRAWS THE CITY BLOCKS
+      //////////////////////////////////////////////////////////////////////////
+      var drawBlocks = function() {
+        for (var i = 0; i < blocks.length; i++) {
+          for (var j = 0; j < blocks[i].edges.length; j++) {
+            var startIndex = blocks[i].edges[j].start;
+            var endIndex = blocks[i].edges[j].end;
+            context.beginPath();
+            context.moveTo(vertices[startIndex].x, vertices[startIndex].y);
+            context.lineTo(vertices[endIndex].x, vertices[endIndex].y);
+            //context.lineWidth = blocks[i].edges[j].width;
+            context.stroke()
+            context.closePath();
+          }
+        }
+      }
+      //////////////////////////////////////////////////////////////////////////
+      // DRAWS THE ROADS
+      //////////////////////////////////////////////////////////////////////////
+      var drawRoads = function() {
+        for (var i = 0; i < roadSegs.length; i++) {
+          var startIndex = roadSegs[i].start;
+          var endIndex = roadSegs[i].end;
+          context.beginPath();
+          context.moveTo(vertices[startIndex].x, vertices[startIndex].y);
+          context.lineTo(vertices[endIndex].x, vertices[endIndex].y);
+          context.lineWidth = roadSegs[i].width;
+          context.stroke()
+          context.closePath();
+        }
+      }
+      //////////////////////////////////////////////////////////////////////////
+      // START
+      //////////////////////////////////////////////////////////////////////////
+      var canvas = document.getElementById("canvas");
+      var context = canvas.getContext("2d");
+      context.lineWidth = 1;
+      context.strokeStyle = "#000000";
+      init(canvas.width, canvas.height);
+      drawRoads();
+      divide(blocks[0], 0);
+      for (var i = 0; i < 3; i++) {
+        //blocks.forEach(divide, 0);
+      }
+      
+      drawRoads();
+    </script>
+  </body>
+</html>
