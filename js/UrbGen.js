@@ -46,6 +46,16 @@ var linearInterpolate = function(edge, r) {
   var z = (1 - r) * edge.start.z + r * edge.end.z;
   return new AbsPoint(new Vec3(x, y, z));
 };
+// Finds a point on an edge using cosine interpolation THIS DOESN'T WORK! //////
+var cosineInterpolate = function(edge, r) {
+  var ft = r * 3.1415927;
+  var f = (1 - Math.cos(ft)) * 0.5;
+  var length = 10;
+  var x = (edge.start.x - length) * (1 - f) + (edge.end.x + length) * f;
+  var y = edge.start.y * (1 - f) + edge.end.y * f;
+  var z = edge.start.z * (1 - f) + edge.end.z * f;
+  return new AbsPoint(new Vec3(x, y, z));
+};
 // Finds the length of an edge
 var getLength = function(edge) {
   return Math.sqrt(Math.pow(edge.end.x - edge.start.x, 2)
