@@ -23,7 +23,8 @@ var AbsEdge = function(vec3Start, vec3End) {
   this.start = new AbsPoint(vec3Start);
   this.end = new AbsPoint(vec3End);
   this.getPoint = function(r) {
-    return linearInterpolate(this, r);
+    //return linearInterpolate(this, r);
+    return cosineInterpolate(this, r);
   };
 };
 // Defines a relative edge, specified by a master edge, and start and end values
@@ -32,7 +33,7 @@ var RelEdge = function(master, value0_1Start, value0_1End) {
   this.end = master.getPoint(value0_1End);
   this.master = master;
   this.getPoint = function(r) {
-    return master.getPoint(this.start + r / 10);
+    return master.getPoint(this.start + r * (this.end - this.start));
   };
 };
 // Defines a Quadrilateral, specified by four edges
@@ -46,14 +47,12 @@ var linearInterpolate = function(edge, r) {
   var z = (1 - r) * edge.start.z + r * edge.end.z;
   return new AbsPoint(new Vec3(x, y, z));
 };
-// Finds a point on an edge using cosine interpolation THIS DOESN'T WORK! //////
+// Finds a point on an edge using cosine interpolation for y value
 var cosineInterpolate = function(edge, r) {
-  var ft = r * 3.1415927;
-  var f = (1 - Math.cos(ft)) * 0.5;
-  var length = 10;
-  var x = (edge.start.x - length) * (1 - f) + (edge.end.x + length) * f;
-  var y = edge.start.y * (1 - f) + edge.end.y * f;
-  var z = edge.start.z * (1 - f) + edge.end.z * f;
+  r2 = (-1 * Math.cos(Math.PI * r) / 2) + 0.5;
+  var x = (1 - r) * edge.start.x + r * edge.end.x;
+  var y = (1 - r2) * edge.start.y + r2 * edge.end.y;
+  var z = (1 - r) * edge.start.z + r * edge.end.z;
   return new AbsPoint(new Vec3(x, y, z));
 };
 // Finds the length of an edge
