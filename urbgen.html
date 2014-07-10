@@ -45,12 +45,12 @@
       var drawEdge = function(edge) {
         context.beginPath();
         start = edge.start;
-        mid = edge.getPoint(0.25);
-        mid2 = edge.getPoint(0.75);
         end = edge.end;
         context.moveTo(start.x, start.y);
-        context.lineTo(mid.x, mid.y);
-        context.lineTo(mid2.x, mid2.y);
+        for (var i = 0; i <= 1; i += 0.01) {
+          var p = edge.getPoint(i);
+          context.lineTo(p.x, p.y);
+        }
         context.lineTo(end.x, end.y);
         context.stroke();
         context.closePath();
@@ -63,8 +63,8 @@
       context.lineWidth = 1;
       context.strokeStyle = "#000000";
       var quad = new Quad(new AbsEdge(new Vec3(0, 0, 0), new Vec3(500, 10, 0)),
-                          new AbsEdge(new Vec3(500, 10, 0), new Vec3(600, 500, 0)),
-                          new AbsEdge(new Vec3(600, 500, 0), new Vec3(10, 500, 0)),
+                          new AbsEdge(new Vec3(500, 10, 0), new Vec3(400, 500, 0)),
+                          new AbsEdge(new Vec3(400, 500, 0), new Vec3(10, 500, 0)),
                           new AbsEdge(new Vec3(10, 500, 0), new Vec3(0, 0, 0)));
       var quad2 = new Quad(new RelEdge(quad.edges[0], 0, 0.2),  // edge 0
                           new AbsEdge(new Vec3(quad.edges[0].getPoint(0.2).x,
