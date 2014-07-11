@@ -1,30 +1,24 @@
 // Defines an abolute point, specified by a vec3
-var AbsPoint = function(vec) {
-  this.vec = vec;
-  this.x = vec.x;
-  this.y = vec.y;
-  this.z = vec.z;
-};
-// Defines a relative point, specified by a line and a value 0 - 1
-var RelPoint = function(edge, r) {
-  this.vec = edge.getPoint(r).vec;
-  this.x = vec.x;
-  this.y = vec.y;
-  this.z = vec.z;
-};
-// Defines a Vector
-var Vec3 = function(x, y, z) {
+var AbsPoint = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
 };
+// Defines a relative point, specified by a line and a value 0 - 1
+var RelPoint = function(edge, r) {
+  var point = edge.getPoint(r);
+  this.x = point.x;
+  this.y = point.y;
+  this.z = point.z;
+};
 // Defines an absolute edge, specified by a start and end vec3
-var AbsEdge = function(vec3Start, vec3End) {
-  this.start = new AbsPoint(vec3Start);
-  this.end = new AbsPoint(vec3End);
+var AbsEdge = function(start, end) {
+  this.edges = [];
+  this.start = start;
+  this.end = end;
   this.getPoint = function(r) {
-    //return linearInterpolate(this, r);
-    return cosineInterpolate(this, r);
+    return linearInterpolate(this, r);
+    //return cosineInterpolate(this, r);
   };
 };
 // Defines a relative edge, specified by a master edge, and start and end values
@@ -36,16 +30,46 @@ var RelEdge = function(master, value0_1Start, value0_1End) {
     return master.getPoint(this.start + r * (this.end - this.start));
   };
 };
+// Deines a composite edge, specified by a list of other edges
+var CompEdge = function(edges) {
+  this.edges = edges;
+  this.start = this.edges[0].start;
+  this.end = this.edges[this.edges.length - 1].end;
+  this.edgeSize = 1 / edges.length;
+  this.getPoint = function(r) {
+    var edge = Math.floor(r / this.edgeSize);
+    if (edge === edges.length) {
+      return edges[edges.length - 1].end;
+    } else {
+      var r2 = (r - this.edgeSize * edge) / this.edgeSize;
+      return edges[edge].getPoint(r2);
+    }
+  };
+};
 // Defines a Quadrilateral, specified by four edges
 var Quad = function(edge1, edge2, edge3, edge4) {
   this.edges = [edge1, edge2, edge3, edge4];
+};
+// Divides an edge into a composite edge, composed of n edges
+var makeCompositeEdge = function(edge, n) {
+  var edges = [];
+  var edgeSize = 1 / n;
+  var start = edge.start;
+  var end = edge.getPoint(edgeSize);
+  edges.push(new AbsEdge(start, end));
+  for (var i = 1; i < n; i ++) {
+    start = edges[i - 1].end;
+    end = edge.getPoint((i + 1) * edgeSize);
+    edges.push(new AbsEdge(start, end));
+  }
+  return new CompEdge(edges);
 };
 // Finds a point on an edge using linear interpolation
 var linearInterpolate = function(edge, r) {
   var x = (1 - r) * edge.start.x + r * edge.end.x;
   var y = (1 - r) * edge.start.y + r * edge.end.y;
   var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new AbsPoint(new Vec3(x, y, z));
+  return new AbsPoint(x, y, z);
 };
 // Finds a point on an edge using cosine interpolation for y value
 var cosineInterpolate = function(edge, r) {
@@ -53,7 +77,7 @@ var cosineInterpolate = function(edge, r) {
   var x = (1 - r) * edge.start.x + r * edge.end.x;
   var y = (1 - r2) * edge.start.y + r2 * edge.end.y;
   var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new AbsPoint(new Vec3(x, y, z));
+  return new AbsPoint(x, y, z);
 };
 // Finds the length of an edge
 var getLength = function(edge) {

@@ -47,7 +47,7 @@
         start = edge.start;
         end = edge.end;
         context.moveTo(start.x, start.y);
-        for (var i = 0; i <= 1; i += 0.01) {
+        for (var i = 0; i <= 1; i++) {
           var p = edge.getPoint(i);
           context.lineTo(p.x, p.y);
         }
@@ -56,29 +56,25 @@
         context.closePath();
       }
       //////////////////////////////////////////////////////////////////////////
-      // START
+      // TESTING
       //////////////////////////////////////////////////////////////////////////
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
       context.lineWidth = 1;
       context.strokeStyle = "#000000";
-      var quad = new Quad(new AbsEdge(new Vec3(0, 0, 0), new Vec3(500, 10, 0)),
-                          new AbsEdge(new Vec3(500, 10, 0), new Vec3(400, 500, 0)),
-                          new AbsEdge(new Vec3(400, 500, 0), new Vec3(10, 500, 0)),
-                          new AbsEdge(new Vec3(10, 500, 0), new Vec3(0, 0, 0)));
-      var quad2 = new Quad(new RelEdge(quad.edges[0], 0, 0.2),  // edge 0
-                          new AbsEdge(new Vec3(quad.edges[0].getPoint(0.2).x,
-                          quad.edges[0].getPoint(0.2).y, 0),
-                          new Vec3(quad.edges[2].getPoint(0.6).x,
-                          quad.edges[2].getPoint(0.6).y, 0)),
-                          new RelEdge(quad.edges[2], 0.6, 1),   // edge 2
-                          quad.edges[3]);                       // edge 3
-      for (var i = 0; i < quad.edges.length; i++) {
-        drawEdge(quad.edges[i]);
-      }
-      for (var i = 0; i < quad2.edges.length; i++) {
-        drawEdge(quad2.edges[i]);
-      }
+      // make an absolute edge
+      var edge1 = new AbsEdge(new AbsPoint(0, 0, 0), new AbsPoint(500, 100, 0));
+      // make a composite edge with the same start and end
+      var edge2 = makeCompositeEdge(edge1, 2);
+      // change one of the composite edge's points
+      edge2.edges[0].end.x = 15;
+      //drawEdge(edge1);
+      drawEdge(edge2.edges[0]);
+      drawEdge(edge2.edges[1]);
+      // get a point on an edge
+      var point = edge2.getPoint(0.67);
+      var edge3 = new AbsEdge(new RelPoint(edge2, 0.67), new AbsPoint(500, 500, 0));
+      drawEdge(edge3);
     </script>
   </body>
 </html>
