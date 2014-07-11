@@ -1,15 +1,8 @@
-// Defines an abolute point, specified by a vec3
-var AbsPoint = function(x, y, z) {
+// Defines a point, specified by a vec3
+var Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-};
-// Defines a relative point, specified by a line and a value 0 - 1
-var RelPoint = function(edge, r) {
-  var point = edge.getPoint(r);
-  this.x = point.x;
-  this.y = point.y;
-  this.z = point.z;
 };
 // Defines an absolute edge, specified by a start and end vec3
 var AbsEdge = function(start, end) {
@@ -17,8 +10,8 @@ var AbsEdge = function(start, end) {
   this.start = start;
   this.end = end;
   this.getPoint = function(r) {
-    return linearInterpolate(this, r);
-    //return cosineInterpolate(this, r);
+    //return linearInterpolate(this, r);
+    return cosineInterpolate(this, r);
   };
 };
 // Defines a relative edge, specified by a master edge, and start and end values
@@ -69,7 +62,7 @@ var linearInterpolate = function(edge, r) {
   var x = (1 - r) * edge.start.x + r * edge.end.x;
   var y = (1 - r) * edge.start.y + r * edge.end.y;
   var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new AbsPoint(x, y, z);
+  return new Point(x, y, z);
 };
 // Finds a point on an edge using cosine interpolation for y value
 var cosineInterpolate = function(edge, r) {
@@ -77,7 +70,7 @@ var cosineInterpolate = function(edge, r) {
   var x = (1 - r) * edge.start.x + r * edge.end.x;
   var y = (1 - r2) * edge.start.y + r2 * edge.end.y;
   var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new AbsPoint(x, y, z);
+  return new Point(x, y, z);
 };
 // Finds the length of an edge
 var getLength = function(edge) {
@@ -147,5 +140,12 @@ var getPointOnLine = function(roadSegment, r) {
 	console.debug("(" + p0.x + ", " + p0.y + ") and
 	(" + p1.x + ", " + p1.y + ") : " + "(" + point.x + ", " + point.y + ")");
 	return point;
+};
+// Defines a relative point, specified by a line and a value 0 - 1
+var RelPoint = function(edge, r) {
+  var point = edge.getPoint(r);
+  this.x = point.x;
+  this.y = point.y;
+  this.z = point.z;
 };
 */
