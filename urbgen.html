@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -59,10 +60,27 @@
       // DRAWS A QUAD
       //////////////////////////////////////////////////////////////////////////
       var drawQuad = function(quad) {
-        if (quad.quads.length === 0) {
-          quad.edges.forEach(drawEdge);
-        } else {
-          quad.quads.forEach(drawQuad);
+        quad.edges.forEach(drawEdge);
+      }
+       //////////////////////////////////////////////////////////////////////////
+      // DIVIDES A QUAD RECURSIVELY
+      //////////////////////////////////////////////////////////////////////////
+      var divideRecur = function(quads) {
+        var finished = true;
+        for (var i = 0; i < quads.length; i++) {
+          if (quads[i].area() > 2500) {
+            finished = false;
+          }
+          if (finished) {
+            return quads;
+          } else {
+            var newQuads = [];
+            for (var i = 0; i < quads.length; i++) {
+              var dividedQuads = divideQuad(quads[i]);
+              newQuads.push(dividedQuads[0], dividedQuads[1]);
+            }
+            return divideRecur(newQuads);
+          }
         }
       }
       //////////////////////////////////////////////////////////////////////////
@@ -70,7 +88,7 @@
       //////////////////////////////////////////////////////////////////////////
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
-      context.lineWidth = 5;
+      context.lineWidth = 2;
       context.strokeStyle = "#000000";
       /*
       // make an absolute edge
@@ -93,11 +111,12 @@
         drawEdge(edge3.edges[i]);
       }
       */
-      var edge0 = new AbsEdge(new Point(0,0,0), new Point(500,0,0));
-      var edge1 = new AbsEdge(new Point(500,0,0), new Point(500,500,0));
-      var edge2 = new AbsEdge(new Point(0,0,0), new Point(0,500,0));
-      var edge3 = new AbsEdge(new Point(0,500,0), new Point(500,500,0));
+      var edge0 = new AbsEdge(new Point(0,0,0), new Point(1300,0,0));
+      var edge1 = new AbsEdge(new Point(1300,0,0), new Point(1300,700,0));
+      var edge2 = new AbsEdge(new Point(0,0,0), new Point(0,700,0));
+      var edge3 = new AbsEdge(new Point(0,700,0), new Point(1300,700,0));
       var quad = new Quad(edge0, edge1, edge2, edge3);
+      /*
       divideQuad(quad);
       quad.quads.forEach(divideQuad);
       quad.quads[0].quads.forEach(divideQuad);
@@ -107,6 +126,10 @@
       quad.quads[1].quads[0].quads.forEach(divideQuad);
       quad.quads[1].quads[1].quads.forEach(divideQuad);
       drawQuad(quad);
+      */
+      var quads = [];
+      quads.push(quad);
+      divideRecur(quads);
     </script>
   </body>
 </html>
