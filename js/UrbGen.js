@@ -58,15 +58,15 @@ var Quad = function(edge1, edge2, edge3, edge4) {
 // Divides a Quadrilateral in two, adding the two new quads to the original
 var divideQuad = function(quad) {
   if (Math.random() > 0.5) {
-    return getNewVerticalQuads(quad);
+    return getNewVerticalQuads(quad, getLimitedRandom());
   } else {
-    return getNewHorizontalQuads(quad);
+    return getNewHorizontalQuads(quad, getLimitedRandom());
   }
 };
 // Create two new vertical quads
-var getNewVerticalQuads = function(quad) {
-  var startPoint = getLimitedRandom();
-  var endPoint = getLimitedRandom();
+var getNewVerticalQuads = function(quad, r) {
+  var startPoint = r;
+  var endPoint = r;
   var start = quad.edges[0].getPoint(startPoint);
   var end = quad.edges[3].getPoint(endPoint);
   var newEdge = new AbsEdge(start, end);
@@ -87,9 +87,9 @@ var getNewVerticalQuads = function(quad) {
   return newQuads;
 };
 // Create two new horizontal quads
-var getNewHorizontalQuads = function(quad) {
-  var startPoint = getLimitedRandom();
-  var endPoint = getLimitedRandom();
+var getNewHorizontalQuads = function(quad, r) {
+  var startPoint = r;
+  var endPoint = r;
   var start = quad.edges[2].getPoint(startPoint);
   var end = quad.edges[1].getPoint(endPoint);
   var newEdge = new AbsEdge(start, end);
@@ -110,7 +110,7 @@ var getNewHorizontalQuads = function(quad) {
 };
 // Returns a random number in the range 0.3 - 0.7
 var getLimitedRandom = function() {
-  return (Math.random() * 2 + 4) / 10;
+  return 0.5;//(Math.random() * 2 + 4) / 10;
 };
 // Divides an edge into a composite edge, composed of n edges
 var makeCompositeEdge = function(edge, n) {
