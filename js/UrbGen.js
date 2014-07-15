@@ -1,8 +1,14 @@
+// Edges with length less than MIN_LENGTH are marked as atomic
+var MIN_LENGTH = 50;
 // Defines a point, specified by x, y, and z coords
 var Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
+};
+// Defines an edge
+var Edge = function() {
+  
 };
 // Defines an absolute edge, specified by a start and end point
 var AbsEdge = function(start, end) {
@@ -16,6 +22,7 @@ var AbsEdge = function(start, end) {
   this.length = function() {
     return Math.sqrt(Math.pow((this.end.x - this.start.x), 2) + Math.pow((this.end.y - this.start.y), 2));
   };
+  this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
 // Defines a relative edge, specified by a master edge, and start and end values
 var RelEdge = function(master, value0_1Start, value0_1End) {
@@ -30,6 +37,7 @@ var RelEdge = function(master, value0_1Start, value0_1End) {
   this.length = function() {
     return Math.sqrt(Math.pow((this.end.x - this.start.x), 2) + Math.pow((this.end.y - this.start.y), 2));
   };
+  this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
 // Deines a composite edge, specified by a list of other edges
 var CompEdge = function(edges) {
@@ -50,7 +58,11 @@ var CompEdge = function(edges) {
 // Defines a Quadrilateral, specified by four edges
 var Quad = function(edge1, edge2, edge3, edge4) {
   this.edges = [edge1, edge2, edge3, edge4];
-  this.quads = [];
+  if (edge1.atomic || edge2.atomic || edge3.atomic || edge4.atomic) {
+    this.atomic = true;
+  } else {
+    this.atomic = false;
+  }
   this.area = function() { // THIS IS APPROX, DOES NOT RETURN ACTUAL AREA
     return this.edges[0].length() * this.edges[1].length();
   };
@@ -68,41 +80,36 @@ var getNewVerticalQuads = function(quad, r) {
   var startPoint = r;
   var endPoint = r;
   var start = quad.edges[0].getPoint(startPoint);
-  var end = quad.edges[3].getPoint(endPoint);
+  var end = quad.edges[2].getPoint(endPoint);
   var newEdge = new AbsEdge(start, end);
   var quad1 = new Quad(new RelEdge(quad.edges[0], 0, startPoint),
-                      newEdge,
-                      quad.edges[2],
-                      new RelEdge(quad.edges[3], 0, endPoint));
-  var quad2 = new Quad(new RelEdge(quad.edges[0], startPoint, 1),
                       quad.edges[1],
+                      new RelEdge(quad.edges[2], 0, endPoint),
+                      newEdge);
+  var quad2 = new Quad(new RelEdge(quad.edges[0], startPoint, 1),
                       newEdge,
-                      new RelEdge(quad.edges[3], endPoint, 1));
-  //quad.quads.push(quad1);
-  //quad.quads.push(quad2);
+                      new RelEdge(quad.edges[2], endPoint, 1),
+                      quad.edges[3]);
   var newQuads = [];
   newQuads.push(quad1);
   newQuads.push(quad2);
-  newQuads.forEach(drawQuad);
   return newQuads;
 };
 // Create two new horizontal quads
 var getNewHorizontalQuads = function(quad, r) {
   var startPoint = r;
   var endPoint = r;
-  var start = quad.edges[2].getPoint(startPoint);
-  var end = quad.edges[1].getPoint(endPoint);
+  var start = quad.edges[1].getPoint(startPoint);
+  var end = quad.edges[3].getPoint(endPoint);
   var newEdge = new AbsEdge(start, end);
   var quad1 = new Quad(quad.edges[0],
-                      new RelEdge(quad.edges[1], 0, endPoint),
-                      new RelEdge(quad.edges[2], 0, startPoint),
-                      newEdge);
+                      new RelEdge(quad.edges[1], 0, startPoint),
+                      newEdge,
+                      new RelEdge(quad.edges[3], 0, endPoint));
   var quad2 = new Quad(newEdge,
-                      new RelEdge(quad.edges[1], endPoint, 1),
-                      new RelEdge(quad.edges[2], startPoint, 1),
-                      quad.edges[3]);
-  //quad.quads.push(quad1);
-  //quad.quads.push(quad2);
+                      new RelEdge(quad.edges[1], startPoint, 1),
+                      quad.edges[2],
+                      new RelEdge(quad.edges[3], endPoint, 1));
   var newQuads = [];
   newQuads.push(quad1);
   newQuads.push(quad2);
@@ -110,7 +117,7 @@ var getNewHorizontalQuads = function(quad, r) {
 };
 // Returns a random number in the range 0.3 - 0.7
 var getLimitedRandom = function() {
-  return 0.5;//(Math.random() * 2 + 4) / 10;
+  return (Math.random() * 2 + 4) / 10;
 };
 // Divides an edge into a composite edge, composed of n edges
 var makeCompositeEdge = function(edge, n) {

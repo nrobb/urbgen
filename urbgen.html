@@ -68,7 +68,7 @@
       var divideRecur = function(quads) {
         var finished = true;
         for (var i = 0; i < quads.length; i++) {
-          if (quads[i].area() > 2500) {
+          if (!quads[i].atomic) {
             finished = false;
           }
           if (finished) {
@@ -88,7 +88,7 @@
       //////////////////////////////////////////////////////////////////////////
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
-      context.lineWidth = 2;
+      context.lineWidth = 0.5;
       context.strokeStyle = "#000000";
       /*
       // make an absolute edge
@@ -112,24 +112,14 @@
       }
       */
       var edge0 = new AbsEdge(new Point(0,0,0), new Point(1300,0,0));
-      var edge1 = new AbsEdge(new Point(1300,0,0), new Point(1300,700,0));
-      var edge2 = new AbsEdge(new Point(0,0,0), new Point(0,700,0));
-      var edge3 = new AbsEdge(new Point(0,700,0), new Point(1300,700,0));
+      var edge1 = new AbsEdge(new Point(0,0,0), new Point(0,600,0));
+      var edge2 = new AbsEdge(new Point(0,600,0), new Point(1300,600,0));
+      var edge3 = new AbsEdge(new Point(1300,0,0), new Point(1300,600,0));
       var quad = new Quad(edge0, edge1, edge2, edge3);
-      /*
-      divideQuad(quad);
-      quad.quads.forEach(divideQuad);
-      quad.quads[0].quads.forEach(divideQuad);
-      quad.quads[1].quads.forEach(divideQuad);
-      quad.quads[0].quads[0].quads.forEach(divideQuad);
-      quad.quads[0].quads[1].quads.forEach(divideQuad);
-      quad.quads[1].quads[0].quads.forEach(divideQuad);
-      quad.quads[1].quads[1].quads.forEach(divideQuad);
-      drawQuad(quad);
-      */
       var quads = [];
       quads.push(quad);
-      divideRecur(quads);
+      var newQuads = divideRecur(quads);
+      newQuads.forEach(drawQuad);
     </script>
   </body>
 </html>
