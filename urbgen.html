@@ -117,6 +117,12 @@
       var edge3 = new AbsEdge(new Point(1300,0,0), new Point(1300,600,0));
       var quad = new Quad(edge0, edge1, edge2, edge3);
       var quads = [];
+      quad.addIntersectionPoint(0, 0.2);
+      quad.addIntersectionPoint(1, 0.1);
+      quad.addIntersectionPoint(0, 0.5);
+      quad.addIntersectionPoint(1, 0.1);
+      quad.addIntersectionPoint(0, 0.9);
+      quad.addIntersectionPoint(1, 0.1);
       quads.push(quad);
       var newQuads = divideRecur(quads);
       newQuads.forEach(drawQuad);

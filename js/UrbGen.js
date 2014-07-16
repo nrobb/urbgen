@@ -1,14 +1,10 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
-var MIN_LENGTH = 50;
+var MIN_LENGTH = 20;
 // Defines a point, specified by x, y, and z coords
 var Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-};
-// Defines an edge
-var Edge = function() {
-  
 };
 // Defines an absolute edge, specified by a start and end point
 var AbsEdge = function(start, end) {
@@ -66,9 +62,25 @@ var Quad = function(edge1, edge2, edge3, edge4) {
   this.area = function() { // THIS IS APPROX, DOES NOT RETURN ACTUAL AREA
     return this.edges[0].length() * this.edges[1].length();
   };
+  this.intersectionPoints = [];
+  this.addIntersectionPoint = function(edge, r) {
+    if (edge === 0 || edge === 1) {
+      this.intersectionPoints.push({edge: edge, r: r});
+    }
+  };
 };
 // Divides a Quadrilateral in two, adding the two new quads to the original
 var divideQuad = function(quad) {
+  if (quad.intersectionPoints.length > 0) {
+    var r = quad.intersectionPoints[0].r;
+    if (quad.intersectionPoints[0].edge === 0) {
+      quad.intersectionPoints.shift();
+      return getNewVerticalQuads(quad, r);
+    } else {
+      quad.intersectionPoints.shift();
+      return getNewHorizontalQuads(quad, r);
+    }
+  }
   if (Math.random() > 0.5) {
     return getNewVerticalQuads(quad, getLimitedRandom());
   } else {
@@ -90,6 +102,9 @@ var getNewVerticalQuads = function(quad, r) {
                       newEdge,
                       new RelEdge(quad.edges[2], endPoint, 1),
                       quad.edges[3]);
+  for (var i = 0; i < quad.intersectionPoints.length; i++) {
+    quad2.addIntersectionPoint(quad.intersectionPoints[i].edge, quad.intersectionPoints[i].r);
+  }
   var newQuads = [];
   newQuads.push(quad1);
   newQuads.push(quad2);
@@ -110,6 +125,9 @@ var getNewHorizontalQuads = function(quad, r) {
                       new RelEdge(quad.edges[1], startPoint, 1),
                       quad.edges[2],
                       new RelEdge(quad.edges[3], endPoint, 1));
+  for (var i = 0; i < quad.intersectionPoints.length; i++) {
+    quad2.addIntersectionPoint(quad.intersectionPoints[i].edge, quad.intersectionPoints[i].r);
+  }
   var newQuads = [];
   newQuads.push(quad1);
   newQuads.push(quad2);
