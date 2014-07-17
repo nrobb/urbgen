@@ -1,14 +1,82 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
-var MIN_LENGTH = 20;
-// Defines a point, specified by x, y, and z coords
+var MIN_LENGTH = 35;
+/**
+ * Defines a point, specified by x, y, and z coords
+ */
 var Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
 };
+/**
+ * Defines an edge
+ */
+var Edge = function(start, end, opposite) {
+  this.start = start;
+  this.end = end;
+  this.opposite = opposite;
+  this.successors = [3];
+  this.angle = getAngle(this);
+  console.debug("edge has angle (in radians): " + this.angle / Math.PI + " Pi");
+  this.getPoint = function(r) {
+    return linearInterpolate(this, r);
+  };
+  this.length = function() {
+    return Math.sqrt(Math.pow((this.end.x - this.start.x), 2)
+      + Math.pow((this.end.y - this.start.y), 2));
+  };
+  this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
+};
+/**
+ * Divides the specified edge into two edges, at the specified break point r.
+ */
+var divideEdge = function(edge, r) {
+  var points = [];
+  points.push(edge.start);
+  points.push(edge.getPoint(r));
+  points.push(edge.end);
+  var newEdges = makeEdges(edge, points);
+};
+/**
+ * Returns the angle of an edge in radians
+ */
+var getAngle = function(edge) {
+  var x1 = edge.start.x;
+  var x2 = edge.end.x;
+  var y1 = edge.start.y;
+  var y2 = edge.end.y;
+  if (y1 === y2) {
+    if (x2 > x1) {return 0.5 * Math.PI;} else {return 1.5 * Math.PI;}
+  }
+  var angle = Math.atan2((y2 - y1), (x2 - x1));
+  console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
+  if (y2 > y1) {return angle} else {return (2 * Math.PI) + angle;}
+};
+/**
+ * Makes a chain of connected edges, spanning the same length as the specified
+ * edge. The first edge in the chain starts at edge.start, and the last edge
+ * in the chain ends at edge.end. The points in between are specified by points.
+ * Each of these points is the end of the previous edge and the start of the next.
+ */
+var makeEdges = function(edge, points) {
+  if (points.length < 2) return undefined;
+  if (points[0] !== edge.start) return undefined;
+  if (points[points.length - 1] !== edge.end) return undefined;
+  if (edge.opposite === undefined) return undefined;
+  var ret = [];
+  var start = points[0];
+  for (var i = 1; i < points.length; i++) {
+    end = points[i];
+    ret.push(new Edge(start, end, edge.opposite));
+    start = end;
+  }
+  for (var j = 0; j < ret.length - 1; j++) {
+    ret[j].successors[1] = ret[j + 1];
+  }
+  return ret;
+};
 // Defines an absolute edge, specified by a start and end point
 var AbsEdge = function(start, end) {
-  this.edges = [];
   this.start = start;
   this.end = end;
   this.getPoint = function(r) {
@@ -16,7 +84,8 @@ var AbsEdge = function(start, end) {
     //return cosineInterpolate(this, r);
   };
   this.length = function() {
-    return Math.sqrt(Math.pow((this.end.x - this.start.x), 2) + Math.pow((this.end.y - this.start.y), 2));
+    return Math.sqrt(Math.pow((this.end.x - this.start.x), 2)
+      + Math.pow((this.end.y - this.start.y), 2));
   };
   this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
@@ -28,10 +97,12 @@ var RelEdge = function(master, value0_1Start, value0_1End) {
   this.end = master.getPoint(value0_1End);
   this.master = master;
   this.getPoint = function(r) {
-    return master.getPoint(this.startValue + r * (this.endValue - this.startValue));
+    return master.getPoint(this.startValue
+      + r * (this.endValue - this.startValue));
   };
   this.length = function() {
-    return Math.sqrt(Math.pow((this.end.x - this.start.x), 2) + Math.pow((this.end.y - this.start.y), 2));
+    return Math.sqrt(Math.pow((this.end.x - this.start.x), 2)
+      + Math.pow((this.end.y - this.start.y), 2));
   };
   this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
@@ -90,7 +161,7 @@ var divideQuad = function(quad) {
 // Create two new vertical quads
 var getNewVerticalQuads = function(quad, r) {
   var startPoint = r;
-  var endPoint = r;
+  var endPoint = getLimitedRandom();//r;
   var start = quad.edges[0].getPoint(startPoint);
   var end = quad.edges[2].getPoint(endPoint);
   var newEdge = new AbsEdge(start, end);
@@ -103,7 +174,8 @@ var getNewVerticalQuads = function(quad, r) {
                       new RelEdge(quad.edges[2], endPoint, 1),
                       quad.edges[3]);
   for (var i = 0; i < quad.intersectionPoints.length; i++) {
-    quad2.addIntersectionPoint(quad.intersectionPoints[i].edge, quad.intersectionPoints[i].r);
+    quad2.addIntersectionPoint(quad.intersectionPoints[i].edge,
+      quad.intersectionPoints[i].r);
   }
   var newQuads = [];
   newQuads.push(quad1);
@@ -113,7 +185,7 @@ var getNewVerticalQuads = function(quad, r) {
 // Create two new horizontal quads
 var getNewHorizontalQuads = function(quad, r) {
   var startPoint = r;
-  var endPoint = r;
+  var endPoint = getLimitedRandom();//r;
   var start = quad.edges[1].getPoint(startPoint);
   var end = quad.edges[3].getPoint(endPoint);
   var newEdge = new AbsEdge(start, end);
@@ -126,7 +198,8 @@ var getNewHorizontalQuads = function(quad, r) {
                       quad.edges[2],
                       new RelEdge(quad.edges[3], endPoint, 1));
   for (var i = 0; i < quad.intersectionPoints.length; i++) {
-    quad2.addIntersectionPoint(quad.intersectionPoints[i].edge, quad.intersectionPoints[i].r);
+    quad2.addIntersectionPoint(quad.intersectionPoints[i].edge,
+      quad.intersectionPoints[i].r);
   }
   var newQuads = [];
   newQuads.push(quad1);

@@ -110,22 +110,31 @@
       for (var i = 0; i < edge3.edges.length; i++) {
         drawEdge(edge3.edges[i]);
       }
-      */
-      var edge0 = new AbsEdge(new Point(0,0,0), new Point(1300,0,0));
-      var edge1 = new AbsEdge(new Point(0,0,0), new Point(0,600,0));
-      var edge2 = new AbsEdge(new Point(0,600,0), new Point(1300,600,0));
-      var edge3 = new AbsEdge(new Point(1300,0,0), new Point(1300,600,0));
+      
+      
+      var edge0 = new Edge(new Point(0,0,0), new Point(1300,0,0));
+      var edge1 = new Edge(new Point(0,0,0), new Point(0,600,0));
+      var edge2 = new Edge(new Point(0,600,0), new Point(1300,600,0));
+      var edge3 = new Edge(new Point(1300,0,0), new Point(1300,600,0));
+      edge0.opposite = edge2;
+      edge1.opposite = edge3;
+      divideEdge(edge0, 0.5);
+      
+      var points = [
+        edge0.start,
+        edge0.getPoint(0.1),
+        edge0.getPoint(0.3),
+        edge0.getPoint(0.6),
+        edge0.end
+        ];
+     ///////////////////////////////////
       var quad = new Quad(edge0, edge1, edge2, edge3);
       var quads = [];
-      quad.addIntersectionPoint(0, 0.2);
-      quad.addIntersectionPoint(1, 0.1);
-      quad.addIntersectionPoint(0, 0.5);
-      quad.addIntersectionPoint(1, 0.1);
-      quad.addIntersectionPoint(0, 0.9);
-      quad.addIntersectionPoint(1, 0.1);
       quads.push(quad);
       var newQuads = divideRecur(quads);
       newQuads.forEach(drawQuad);
+      */
+      var edge0 = new Edge(new Point(0,0,0), new Point(0,0,0));
     </script>
   </body>
 </html>
