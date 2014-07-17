@@ -134,7 +134,9 @@
       var newQuads = divideRecur(quads);
       newQuads.forEach(drawQuad);
       */
-      var edge0 = new Edge(new Point(0,0,0), new Point(0,0,0));
+      var edge0 = new Edge(new Point(0,-6,0), new Point(3,3,0));
+      var edge1 = new Edge(new Point(0,-3,0), new Point(3,3,0));
+      findIntersectPoint(edge0, edge1);
     </script>
   </body>
 </html>

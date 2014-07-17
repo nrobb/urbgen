@@ -17,7 +17,7 @@ var Edge = function(start, end, opposite) {
   this.opposite = opposite;
   this.successors = [3];
   this.angle = getAngle(this);
-  console.debug("edge has angle (in radians): " + this.angle / Math.PI + " Pi");
+  //console.debug("edge has angle (in radians): " + this.angle / Math.PI + " Pi");
   this.getPoint = function(r) {
     return linearInterpolate(this, r);
   };
@@ -51,6 +51,57 @@ var getAngle = function(edge) {
   var angle = Math.atan2((y2 - y1), (x2 - x1));
   console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
   if (y2 > y1) {return angle} else {return (2 * Math.PI) + angle;}
+};
+/**
+ * Returns the point at which two lines intersect. The two lines are colinear
+ * with the two specified edges;
+ */
+var findIntersectPoint = function(edge1, edge2) {
+  var p = edge1.start;
+  var q = edge2.start;
+  var m1 = Math.tan(edge1.angle);
+  var m2 = Math.tan(edge2.angle);
+  if (m1 === m2) return undefined;
+  var x = (q.y - p.y + (m1 * p.x) - (m2 * q.x)) / (m1 - m2);
+  var y = m2 * (x - p.x) + q.y;
+  console.debug(x + ", " + y);
+  var point = new Point(x, y, 0);
+  if (pointOnEdge(edge1, point)) {
+    return point;
+  }
+  return undefined;
+};
+/**
+ * Given an edge and a point returns
+ * true if the point lies on the edge, false otherwise.
+ */
+var pointOnEdge = function(edge, point) {
+  var x1 = edge.start.x;
+  var y1 = edge.start.y;
+  var x2 = edge.end.x;
+  var y2 = edge.end.y;
+  var x3 = point.x;
+  var y3 = point.y;
+  var matrix = [
+    x1, y1, 1,
+    x2, y2, 1,
+    x3, y3, 1,
+    ];
+  if (det33(matrix) === 0) {
+    return true;
+  }
+  return false;
+};
+/**
+ * Finds the determinant of the specified 3 X 3 matrix
+ */
+var det33 = function(mat) {
+  var det = (mat[0] * (mat[4] * mat[8] - mat[5] * mat[7]))
+    - (mat[1] * (mat[3] * mat[8] - mat[5] * mat[6]))
+    + (mat[2] * (mat[3] * mat[7] - mat[3] * mat[6]));
+  det = Math.abs(Math.round(det));
+  //console.debug(det);
+  return det;
 };
 /**
  * Makes a chain of connected edges, spanning the same length as the specified
