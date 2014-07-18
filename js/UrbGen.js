@@ -49,8 +49,36 @@ var getAngle = function(edge) {
     if (x2 > x1) {return 0.5 * Math.PI;} else {return 1.5 * Math.PI;}
   }
   var angle = Math.atan2((y2 - y1), (x2 - x1));
-  console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
+  //console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
   if (y2 > y1) {return angle} else {return (2 * Math.PI) + angle;}
+};
+/**
+ * Returns a value that represents the specified point's
+ * location on the line colinear with the specified edge
+ */
+var getPointAsRatio = function(edge, point) {
+  if (!pointOnLine(edge, point)) {
+    return NaN;
+  }
+  var d1 = point.x - edge.start.x;
+  var d2 = edge.end.x - edge.start.x;
+  return d1 / d2;
+};
+/**
+ * Returns the shortest of two edges. If they are the same length, returns the
+ * first arg.
+ */
+ var getShortestEdge = function(edge1, edge2) {
+   if (edge1.length() > edge2.length()) {
+     return edge2;
+   }
+   return edge1;
+ };
+/**
+ * Returns a new edge with the specified start point and the specified angle
+ */
+var makeAngledEdge = function(start, angle) {
+  
 };
 /**
  * Returns the point at which two lines intersect. The two lines are colinear
@@ -63,45 +91,37 @@ var findIntersectPoint = function(edge1, edge2) {
   var m2 = Math.tan(edge2.angle);
   if (m1 === m2) return undefined;
   var x = (q.y - p.y + (m1 * p.x) - (m2 * q.x)) / (m1 - m2);
-  var y = m2 * (x - p.x) + q.y;
-  console.debug(x + ", " + y);
+  var y = m2 * (x - q.x) + q.y;
   var point = new Point(x, y, 0);
-  if (pointOnEdge(edge1, point)) {
-    return point;
+  return point;
+};
+var pointOnLine = function(edge, point) {
+  var area = areaTri(edge.start, point, edge.end);
+  if (Math.abs(area) < 0.000001) {
+    return true;
   }
-  return undefined;
+  return false;
 };
 /**
  * Given an edge and a point returns
  * true if the point lies on the edge, false otherwise.
  */
 var pointOnEdge = function(edge, point) {
-  var x1 = edge.start.x;
-  var y1 = edge.start.y;
-  var x2 = edge.end.x;
-  var y2 = edge.end.y;
-  var x3 = point.x;
-  var y3 = point.y;
-  var matrix = [
-    x1, y1, 1,
-    x2, y2, 1,
-    x3, y3, 1,
-    ];
-  if (det33(matrix) === 0) {
+  var pt = getPointAsRatio(edge, point);
+  if (isNaN(pt)) {
+    return false;
+  }
+  if (0 <= pt && pt <= 1) {
     return true;
   }
   return false;
 };
 /**
- * Finds the determinant of the specified 3 X 3 matrix
+ * Finds the area of a triangle specified by 3 points
  */
-var det33 = function(mat) {
-  var det = (mat[0] * (mat[4] * mat[8] - mat[5] * mat[7]))
-    - (mat[1] * (mat[3] * mat[8] - mat[5] * mat[6]))
-    + (mat[2] * (mat[3] * mat[7] - mat[3] * mat[6]));
-  det = Math.abs(Math.round(det));
-  //console.debug(det);
-  return det;
+var areaTri = function(p1, p2, p3) {
+  var ret = p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
+  return ret;
 };
 /**
  * Makes a chain of connected edges, spanning the same length as the specified
