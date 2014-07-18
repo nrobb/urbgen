@@ -14,10 +14,11 @@ var Point = function(x, y, z) {
 var Edge = function(start, end, opposite) {
   this.start = start;
   this.end = end;
-  this.opposite = opposite;
-  this.successors = [3];
+  this.opposite;
+  this.endConnector;
+  this.startConnector;
+  this.isMaster; // true if this edge forms the top of a quadrilateral
   this.angle = getAngle(this);
-  //console.debug("edge has angle (in radians): " + this.angle / Math.PI + " Pi");
   this.getPoint = function(r) {
     return linearInterpolate(this, r);
   };
@@ -53,6 +54,15 @@ var getAngle = function(edge) {
   if (y2 > y1) {return angle} else {return (2 * Math.PI) + angle;}
 };
 /**
+ * Adds the specified dA (dA * Pi) to the specified angle. The result is
+ * normalized to a value between 0 and 2 * Pi radians;
+ */
+var addAngle = function(angle, dA) {
+  var newAngle = (angle + dA * Math.PI) % (2 * Math.PI);
+  return newAngle;
+  
+};
+/**
  * Returns a value that represents the specified point's
  * location on the line colinear with the specified edge
  */
@@ -75,24 +85,33 @@ var getPointAsRatio = function(edge, point) {
    return edge1;
  };
 /**
- * Returns a new edge with the specified start point and the specified angle
+ * Given two lines, defined by a point on the line and the angle of the line,
+ * returns the point at which the two lines intersect. If the lines are colinear,
+ * returns p1.
  */
-var makeAngledEdge = function(start, angle) {
-  
-};
-/**
- * Returns the point at which two lines intersect. The two lines are colinear
- * with the two specified edges;
- */
-var findIntersectPoint = function(edge1, edge2) {
-  var p = edge1.start;
-  var q = edge2.start;
-  var m1 = Math.tan(edge1.angle);
-  var m2 = Math.tan(edge2.angle);
-  if (m1 === m2) return undefined;
-  var x = (q.y - p.y + (m1 * p.x) - (m2 * q.x)) / (m1 - m2);
-  var y = m2 * (x - q.x) + q.y;
-  var point = new Point(x, y, 0);
+var findIntersectPoint = function(p1, a1, p2, a2) {
+  var p = p1;
+  var q = p2;
+  var m1 = Math.tan(a1);
+  var m2 = Math.tan(a2);
+  var x;
+  var y;
+  var point;
+  // Check if the lines are colinear
+  if (m1 === m2) return p1;
+  // Check if either line is colinear with the y axis
+  if (m1 === Infinity) {
+    x = p.x;
+    y = q.x * m2 + q.y;
+  } else if (m2 === Infinity) {
+    x = q.x;
+    y = p.x * m1 + p.y;
+  // Otherwise, find the intersection point
+  } else {
+    x = (q.y - p.y + (m1 * p.x) - (m2 * q.x)) / (m1 - m2);
+    y = m2 * (x - q.x) + q.y;
+  }
+  point = new Point(x, y, 0);
   return point;
 };
 var pointOnLine = function(edge, point) {
@@ -133,17 +152,18 @@ var makeEdges = function(edge, points) {
   if (points.length < 2) return undefined;
   if (points[0] !== edge.start) return undefined;
   if (points[points.length - 1] !== edge.end) return undefined;
-  if (edge.opposite === undefined) return undefined;
   var ret = [];
   var start = points[0];
   for (var i = 1; i < points.length; i++) {
     end = points[i];
-    ret.push(new Edge(start, end, edge.opposite));
+    var newEdge = new Edge(start, end);
+    newEdge.opposite = edge.opposite;
+    newEdge.isMaster = edge.isMaster;
+    ret.push(newEdge);
     start = end;
   }
-  for (var j = 0; j < ret.length - 1; j++) {
-    ret[j].successors[1] = ret[j + 1];
-  }
+  ret[0].startConnector = edge.startConnector;
+  ret[ret.length - 1].endConnector = edge.endConnector;
   return ret;
 };
 // Defines an absolute edge, specified by a start and end point
