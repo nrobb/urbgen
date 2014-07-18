@@ -51,7 +51,7 @@ var getAngle = function(edge) {
   }
   var angle = Math.atan2((y2 - y1), (x2 - x1));
   //console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
-  if (y2 > y1) {return angle} else {return (2 * Math.PI) + angle;}
+  if (y2 > y1) {return angle; } else {return (2 * Math.PI) + angle;}
 };
 /**
  * Adds the specified dA (dA * Pi) to the specified angle. The result is

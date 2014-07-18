@@ -137,12 +137,26 @@
       var edge0 = new Edge(new Point(10,0,0), new Point(10,300,0));
       var edge1 = new Edge(new Point(100,6,0), new Point(363,143,0));
       var p = edge0.getPoint(0.5);
-      var angle2 = addAngle(edge0.angle, 0.6);
+      var angle2 = addAngle(edge0.angle, 0.55);
       var q = findIntersectPoint(p, angle2, edge1.start, edge1.angle);
       var e = new Edge(p, q);
-      drawEdge(e);
-      drawEdge(edge0);
-      drawEdge(edge1);
+      //////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
+      var seedEdge = new Edge(new Point(100, 10, 0), new Point(1200, 20, 0))
+      drawEdge(seedEdge);
+      
+      
+      
+      function main(edge) {
+        if (edge.opposite === undefined) {
+          
+        }
+      }
+      
+      main(seedEdge);
+      
+
     </script>
   </body>
 </html>
