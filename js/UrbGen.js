@@ -7,6 +7,11 @@ var Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
+  this.setValues = function(point) {
+    this.x = point.x;
+    this.y = point.y;
+    this.z = point.z;
+  };
 };
 /**
  * Defines an edge

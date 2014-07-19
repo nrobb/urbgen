@@ -143,20 +143,21 @@
       //////////////////////////////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////////
-      var seedEdge = new Edge(new Point(100, 10, 0), new Point(1200, 20, 0))
-      drawEdge(seedEdge);
-      
-      
-      
-      function main(edge) {
-        if (edge.opposite === undefined) {
-          
-        }
-      }
-      
-      main(seedEdge);
-      
-
+      var p0 = new Point(10,10,0);
+      var p1 = new Point(90,10,0);
+      var p2 = new Point(10,100,0);
+      var p3 = new Point(100,100,0);
+      var p4 = new Point(200,200,0);
+      var e0 = new Edge(p0, p1);
+      var e1 = new Edge(e0.start, p2);
+      var e2 = new Edge(p2, p3);
+      var e3 = new Edge(p1, p3);
+      var q = new Quad(e0, e1, e2, e3);
+      var p = e3.getPoint(0.6);
+      e3.end.x = p.x;
+      e3.end.y = p.y;
+      e3.start.setValues(e3.getPoint(0.3));
+      drawQuad(q);
     </script>
   </body>
 </html>
