@@ -1,5 +1,6 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
 var MIN_LENGTH = 35;
+var GRID_X = 0.25;
 /**
  * Defines a point, specified by x, y, and z coords
  */
@@ -23,7 +24,9 @@ var Edge = function(start, end, opposite) {
   this.endConnector;
   this.startConnector;
   this.isMaster; // true if this edge forms the top of a quadrilateral
-  this.angle = getAngle(this);
+  this.angle = function() {
+    return getAngle(this);
+  };
   this.getPoint = function(r) {
     return linearInterpolate(this, r);
   };
@@ -52,11 +55,27 @@ var getAngle = function(edge) {
   var y1 = edge.start.y;
   var y2 = edge.end.y;
   if (y1 === y2) {
-    if (x2 > x1) {return 0.5 * Math.PI;} else {return 1.5 * Math.PI;}
+    if (x2 > x1) {return 0;} else {return Math.PI;}
   }
   var angle = Math.atan2((y2 - y1), (x2 - x1));
   //console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
   if (y2 > y1) {return angle; } else {return (2 * Math.PI) + angle;}
+};
+/**
+ * Returns the angle of the grid axis that is closest to being perpendicular to
+ * the specified edge.
+ */
+var getGridAngle = function(edge) {
+  // Get the angle as a multiple of Pi adjusted to standard x y axes
+  var a = edge.angle() / Math.PI - GRID_X;
+  // Find which axis a line at this angle is closest to (0 or 4, 1, 2, 3)
+  a = Math.round(a * 2);
+  // If even, the line is closest to x axis, so return the y axis of the grid
+  if (a % 2 === 0) {
+    return Math.PI * (GRID_X + 0.5);
+  } else {
+    return Math.PI * GRID_X;
+  }
 };
 /**
  * Adds the specified dA (dA * Pi) to the specified angle. The result is
