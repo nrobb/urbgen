@@ -88,7 +88,7 @@
       //////////////////////////////////////////////////////////////////////////
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
-      context.lineWidth = 0.5;
+      context.lineWidth = 2;
       context.strokeStyle = "#000000";
       /*
       // make an absolute edge
@@ -116,44 +116,54 @@
       var edge1 = new Edge(new Point(0,0,0), new Point(0,600,0));
       var edge2 = new Edge(new Point(0,600,0), new Point(1300,600,0));
       var edge3 = new Edge(new Point(1300,0,0), new Point(1300,600,0));
-      edge0.opposite = edge2;
-      edge1.opposite = edge3;
-      divideEdge(edge0, 0.5);
-      
-      var points = [
-        edge0.start,
-        edge0.getPoint(0.1),
-        edge0.getPoint(0.3),
-        edge0.getPoint(0.6),
-        edge0.end
-        ];
-     ///////////////////////////////////
       var quad = new Quad(edge0, edge1, edge2, edge3);
       var quads = [];
       quads.push(quad);
       var newQuads = divideRecur(quads);
       newQuads.forEach(drawQuad);
       */
-      var edge0 = new Edge(new Point(10,0,0), new Point(10,300,0));
-      var edge1 = new Edge(new Point(100,6,0), new Point(363,143,0));
-      var p = edge0.getPoint(0.5);
-      var angle2 = addAngle(edge0.angle, 0.55);
-      var q = findIntersectPoint(p, angle2, edge1.start, edge1.angle);
-      var e = new Edge(p, q);
+      
       //////////////////////////////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////////
-      var p0 = new Point(100,100,0);
-      var p1 = new Point(90,10,0);
-      var p2 = new Point(10,100,0);
-      var p3 = new Point(100,100,0);
-      var p4 = new Point(200,200,0);
+      function go() {
+        if (Math.random() < 0.5) {
+          for (var i = 0; i < edges.length; i += 2) {
+            halve(edges[i], getGridAngle(edges[i]));
+          }
+        } else {
+          for (var i = 1; i < edges.length; i += 2) {
+            halve(edges[i]);
+          }
+        }
+        //edges.forEach(function(edge) {if (Math.random() < 0.5) {halve(edge)} else {(halve(edge+1))}});
+      }
+      var p0 = new Point(100,200,0);
+      var p1 = new Point(1200,200,0);
+      var p2 = new Point(300,500,0);
+      var p3 = new Point(1200,580,0);
       var e0 = new Edge(p0, p1);
       var e1 = new Edge(e0.start, p2);
       var e2 = new Edge(p2, p3);
-      var e3 = new Edge(p1, p3);
-      var q = new Quad(e0, e1, e2, e3);
-      var p = e3.getPoint(0.6);
+      var e3 = new Edge(e0.end, p3);
+      e0.opposite = e2;
+      e0.startConnector = e1;
+      e0.endConnector = e3;
+      e0.isMaster = true;
+      e1.opposite = e3;
+      e1.startConnector = e0;
+      e1.endConnector = e2;
+      edges = [e0, e1, e2, e3];
+      //var e = divideEdge(e1, 2);
+      for (var i = 0; i < 2; i++) {
+        go();
+      }
+      for (var i = 0; i < edges.length; i++) {
+        if (edges[i].length() > 100) {
+          edges[i].start.setValues(edges[i].getPoint(Math.random() / 2))
+        }
+      }
+      edges.forEach(drawEdge);
     </script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
-var MIN_LENGTH = 35;
-var GRID_X = 0.25;
+var MIN_LENGTH = 10;
+var GRID_X = 0.0;
 /**
  * Defines a point, specified by x, y, and z coords
  */
@@ -31,20 +31,157 @@ var Edge = function(start, end, opposite) {
     return linearInterpolate(this, r);
   };
   this.length = function() {
-    return Math.sqrt(Math.pow((this.end.x - this.start.x), 2)
-      + Math.pow((this.end.y - this.start.y), 2));
+    return getLength(this.start, this.end);
+    //return Math.sqrt(Math.pow((this.end.x - this.start.x), 2)+ Math.pow((this.end.y - this.start.y), 2));
   };
   this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
 /**
  * Divides the specified edge into two edges, at the specified break point r.
  */
-var divideEdge = function(edge, r) {
+var splitEdge = function(edge, r) {
   var points = [];
   points.push(edge.start);
   points.push(edge.getPoint(r));
   points.push(edge.end);
   var newEdges = makeEdges(edge, points);
+  return newEdges;
+};
+/**
+ * Halves an edge
+ */
+var halve = function(edge, angle, r) {
+  if (edge.opposite !== undefined) {
+    if (edge.length() / 2 < MIN_LENGTH || edge.opposite.length() / 2 < MIN_LENGTH) {
+      return;
+    }
+    //if (!edge.isMaster) return;
+    var es = splitEdgeAndConnect(edge, angle, r);
+    var args = [edges.indexOf(edge), 1].concat(es);
+    Array.prototype.splice.apply(edges, args);
+    edges.splice(edges.indexOf(edge.opposite), 1);
+  }
+};
+/**
+ * Divides an edge in two at the point r, creating a new connecting edge at angle
+ */
+var splitEdgeAndConnect = function(edge, angle, r) {
+  var newEdge;
+  var dR = 0;
+  if (edge.opposite === undefined) {
+    return;
+  }
+  if (r === undefined) {
+    r = getLimitedRandom();
+  }
+  var top = splitEdge(edge, r);
+  if (angle !== undefined) {
+    var intersect = findIntersectPoint(top[0].end, angle,
+      edge.opposite.start, edge.opposite.angle());
+    if (pointOnEdge(edge.opposite, intersect)) {
+      r = getPointAsRatio(edge.opposite, intersect);
+    } else {
+      dR = (Math.random() - 0.5) / 10;
+    }
+  } else {
+    dR = (Math.random() - 0.5) / 10;
+  }
+  var bottom = splitEdge(edge.opposite, r + dR);
+  newEdge = new Edge(top[0].end, bottom[0].end);
+  var ret = [];
+  setEdgeRelations(edge, top, edge.opposite, bottom, newEdge);
+  for (var i = 0; i < top.length; i++) {
+    ret.push(top[i]);
+    ret.push(bottom[i]);
+  }
+  ret.push(newEdge);
+  return ret;
+};
+/**
+ * Sets edge's connecting edges
+ */
+var setEdgeRelations = function(edge, newEdges, opposite, newOpposites, newEdge) {
+  if (edge.isMaster) {
+    newEdges[0].startConnector = edge.startConnector;
+    newEdges[0].endConnector = newEdge;
+    newEdges[1].startConnector = newEdge;
+    newEdges[1].endConnector = edge.endConnector;
+    newOpposites[0].startConnector = opposite.startConnector;
+    newOpposites[1].endConnector = opposite.endConnector;
+    for (var i = 0; i < newEdges.length; i++) {
+      newEdges[i].opposite = newOpposites[i];
+    }
+    if (newEdges[0].startConnector !== undefined) {
+      newEdges[0].startConnector.startConnector = newEdges[0];
+      newEdges[0].startConnector.endConnector = newOpposites[0];
+      newEdges[0].startConnector.opposite = newEdge;
+    }
+    newEdge.startConnector = newEdges[1];
+    newEdge.endConnector = newOpposites[1];
+    newEdge.opposite = edge.endConnector;
+    if (edge.endConnector !== undefined) {
+      newEdge.opposite = edge.endConnector;
+    }
+  } else {
+    newEdges[0].startConnector = edge.startConnector;
+    newEdges[0].endConnector = newEdge;
+    newEdges[1].startConnector = newEdge;
+    newEdges[1].endConnector = edge.endConnector;
+    newOpposites[0].startConnector = opposite.startConnector;
+    newOpposites[1].endConnector = opposite.endConnector;
+    for (var j = 0; j < newEdges.length; j++) {
+      newEdges[j].opposite = newOpposites[j];
+    }
+    if (newEdges[0].startConnector !== undefined) {
+      newEdges[0].startConnector.startConnector = newEdges[0];
+      newEdges[0].startConnector.endConnector = newOpposites[0];
+      newEdges[0].startConnector.opposite = newEdge;
+    }
+    newEdge.startConnector = newEdges[1];
+    newEdge.endConnector = newOpposites[1];
+    newEdge.opposite = edge.endConnector;
+    if (edge.endConnector !== undefined) {
+      newEdge.opposite = edge.endConnector;
+    }
+  }
+};
+/**
+ * Divides the specified edge into the specified number of segments
+ */
+var divideEdge = function(edge, numSegments) {
+  var points = [];
+  for (var i = 0; i < numSegments - 1; i++) {
+    points.push(Math.random());
+  }
+  points.sort();
+  var concretePoints = [];
+  concretePoints.push(edge.start);
+  for (var j = 0; j < points.length; j++) {
+    var p = edge.getPoint(points[j]);
+    if (getLength(concretePoints[concretePoints.length - 1], p) > MIN_LENGTH) {
+      concretePoints.push(p);
+    }
+  }
+  if (getLength(concretePoints[concretePoints.length - 1], edge.end) < MIN_LENGTH) {
+    concretePoints.pop();
+  }
+  concretePoints.push(edge.end);
+  var e = makeEdges(edge, concretePoints);
+  if (e === undefined) {
+    return [edge];
+  }
+  e[0].startConnector = edge.startConnector;
+  e[e.length - 1].endConnector = edge.endConnector;
+  return e;
+};
+/**
+ * Returns the length of a line segment between the two specified points
+ */
+var getLength = function(start, end) {
+  //console.debug(start.x + ", " + end.x);
+  var length = Math.sqrt(Math.pow((end.x - start.x), 2)
+    + Math.pow((end.y - start.y), 2));
+  return length;
 };
 /**
  * Returns the angle of an edge in radians
@@ -114,6 +251,7 @@ var getPointAsRatio = function(edge, point) {
  * returns p1.
  */
 var findIntersectPoint = function(p1, a1, p2, a2) {
+  //console.debug(p1.x + ", " + a1 + ", " + p2.x + ", " + a2);
   var p = p1;
   var q = p2;
   var m1 = Math.tan(a1);
@@ -138,6 +276,10 @@ var findIntersectPoint = function(p1, a1, p2, a2) {
   point = new Point(x, y, 0);
   return point;
 };
+/**
+ * Returns true if the specified point lies on the line colinear with the
+ * specified edge.
+ */
 var pointOnLine = function(edge, point) {
   var area = areaTri(edge.start, point, edge.end);
   if (Math.abs(area) < 0.000001) {
@@ -257,6 +399,7 @@ var Quad = function(edge1, edge2, edge3, edge4) {
 };
 // Divides a Quadrilateral in two, adding the two new quads to the original
 var divideQuad = function(quad) {
+  /*
   if (quad.intersectionPoints.length > 0) {
     var r = quad.intersectionPoints[0].r;
     if (quad.intersectionPoints[0].edge === 0) {
@@ -267,6 +410,7 @@ var divideQuad = function(quad) {
       return getNewHorizontalQuads(quad, r);
     }
   }
+  */
   if (Math.random() > 0.5) {
     return getNewVerticalQuads(quad, getLimitedRandom());
   } else {
@@ -275,11 +419,16 @@ var divideQuad = function(quad) {
 };
 // Create two new vertical quads
 var getNewVerticalQuads = function(quad, r) {
+  var newQuads = [];
   var startPoint = r;
   var endPoint = getLimitedRandom();//r;
   var start = quad.edges[0].getPoint(startPoint);
   var end = quad.edges[2].getPoint(endPoint);
-  var newEdge = new AbsEdge(start, end);
+  var newEdge = new Edge(start, end);
+  if (newEdge.length() < MIN_LENGTH) {
+    newQuads.push(quad);
+    return newQuads;
+  }
   var quad1 = new Quad(new RelEdge(quad.edges[0], 0, startPoint),
                       quad.edges[1],
                       new RelEdge(quad.edges[2], 0, endPoint),
@@ -292,7 +441,6 @@ var getNewVerticalQuads = function(quad, r) {
     quad2.addIntersectionPoint(quad.intersectionPoints[i].edge,
       quad.intersectionPoints[i].r);
   }
-  var newQuads = [];
   newQuads.push(quad1);
   newQuads.push(quad2);
   return newQuads;
@@ -303,7 +451,7 @@ var getNewHorizontalQuads = function(quad, r) {
   var endPoint = getLimitedRandom();//r;
   var start = quad.edges[1].getPoint(startPoint);
   var end = quad.edges[3].getPoint(endPoint);
-  var newEdge = new AbsEdge(start, end);
+  var newEdge = new Edge(start, end);
   var quad1 = new Quad(quad.edges[0],
                       new RelEdge(quad.edges[1], 0, startPoint),
                       newEdge,
@@ -355,7 +503,7 @@ var cosineInterpolate = function(edge, r) {
   return new Point(x, y, z);
 };
 // Finds the length of an edge
-var getLength = function(edge) {
+var getEdgeLength = function(edge) {
   return Math.sqrt(Math.pow(edge.end.x - edge.start.x, 2)
     + Math.pow(edge.end.y - edge.start.y, 2));
 };
