@@ -18,23 +18,81 @@ var Point = function(x, y, z) {
  * Defines an edge
  */
 var Edge = function(start, end, opposite) {
+  this.points = [];
+  this.points.push(start);
+  this.points.push(end);
   this.start = start;
+  this.midPoints = [];
   this.end = end;
   this.opposite;
   this.endConnector;
   this.startConnector;
   this.isMaster; // true if this edge forms the top of a quadrilateral
+  this.addPoint = function(p) {
+    
+  };
   this.angle = function() {
     return getAngle(this);
   };
   this.getPoint = function(r) {
-    return linearInterpolate(this, r);
+  var length = this.length();
+  console.debug("length: " + length);
+  var rLength = length * r;
+  console.debug("rlength: " + rLength);
+  var p = 0;
+  var segLength = getLength(this.points[p], this.points[p + 1]);
+  console.debug("segLength: " + segLength);
+  while (segLength < rLength) {
+    console.debug("segLength: " + segLength);
+    rLength -= segLength;
+    segLength = getLength(this.points[p++], this.points[p + 1]);
+  }
+  var segR = rLength / segLength;
+  console.debug("segR: " + segR);
+  var segStart = this.points[p];
+  var segEnd = this.points[p + 1];
+  console.debug(this.points[1].x);
+  console.debug("end: " + segEnd.x + " p = " + p);
+  var tempEdge = new Edge(segStart, segEnd);
+  return linearInterpolate(tempEdge, segR);
+  /*
+    if (this.midPoints.length === 0) {
+      return linearInterpolate(this, r);
+    } else {
+      var length = this.length();
+      var rLength = length * r;
+      var p = 0;
+      var segLength = getLength(this.start, this.midPoints[p]);
+      while (segLength < length) {
+        length -= segLength;
+        segLength = getLength(this.midPoints[p], this.midPoints[++p]);
+      }
+      var segR = length / segLength;
+      var segStart = this.midPoints[i];
+      var segEnd = (p === this.midPoints.length) ? this.end : this.midPoints[p]
+    }
+    */
   };
   this.length = function() {
-    return getLength(this.start, this.end);
-    //return Math.sqrt(Math.pow((this.end.x - this.start.x), 2)+ Math.pow((this.end.y - this.start.y), 2));
+    var len = 0;
+    for (var i = 0; i < this.points.length - 1; i++) {
+      len += getLength(this.points[i], this.points[i + 1]);
+    }
+    return len;
+    /*
+    if (this.midPoints.length === 0) {
+      return getLength(this.start, this.end);
+    } else {
+      var length = getLength(this.start, this.midPoints[0]);
+      for (var i = 0; i < this.midPoints.length - 1; i++) {
+        length += getLength(this.midPoints[i], this.midPoints[i + 1]);
+      }
+      length += getLength(this.midPoints[this.midPoints.length - 1], this.end);
+      return length;
+    }
+    */
   };
-  this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
+  //this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
 /**
  * Divides the specified edge into two edges, at the specified break point r.
@@ -178,10 +236,9 @@ var divideEdge = function(edge, numSegments) {
  * Returns the length of a line segment between the two specified points
  */
 var getLength = function(start, end) {
-  //console.debug(start.x + ", " + end.x);
-  var length = Math.sqrt(Math.pow((end.x - start.x), 2)
+  var len = Math.sqrt(Math.pow((end.x - start.x), 2)
     + Math.pow((end.y - start.y), 2));
-  return length;
+  return len;
 };
 /**
  * Returns the angle of an edge in radians

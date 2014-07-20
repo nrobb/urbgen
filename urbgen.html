@@ -47,9 +47,9 @@
         context.beginPath();
         start = edge.start;
         end = edge.end;
-        context.moveTo(start.x, start.y);
-        for (var i = 0; i <= 1; i += 0.05) {
-          var p = edge.getPoint(i);
+        context.moveTo(edge.points[0].x, edge.points[0].y);
+        for (var i = 0; i < edge.points.length; i++) {
+          var p = edge.points[i];
           context.lineTo(p.x, p.y);
         }
         context.lineTo(end.x, end.y);
@@ -146,24 +146,17 @@
       var e1 = new Edge(e0.start, p2);
       var e2 = new Edge(p2, p3);
       var e3 = new Edge(e0.end, p3);
-      e0.opposite = e2;
-      e0.startConnector = e1;
-      e0.endConnector = e3;
-      e0.isMaster = true;
-      e1.opposite = e3;
-      e1.startConnector = e0;
-      e1.endConnector = e2;
-      edges = [e0, e1, e2, e3];
-      //var e = divideEdge(e1, 2);
-      for (var i = 0; i < 2; i++) {
-        go();
-      }
-      for (var i = 0; i < edges.length; i++) {
-        if (edges[i].length() > 100) {
-          edges[i].start.setValues(edges[i].getPoint(Math.random() / 2))
-        }
-      }
-      edges.forEach(drawEdge);
+      var q = new Quad(e0, e1, e2, e3);
+      //drawQuad(q);
+      var p = e0.getPoint(0.3);
+      p.y += 100;
+      console.debug(e0.length());
+      e0.points.splice(1, 0, p);
+      var q = e0.getPoint(0.3);
+      q.y += 150;
+      e0.points.splice(1, 0, q);
+      console.debug(e0.length());
+      drawEdge(e0);
     </script>
   </body>
 </html>
