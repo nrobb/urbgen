@@ -138,25 +138,58 @@
         }
         //edges.forEach(function(edge) {if (Math.random() < 0.5) {halve(edge)} else {(halve(edge+1))}});
       }
-      var p0 = new Point(100,200,0);
-      var p1 = new Point(1200,200,0);
-      var p2 = new Point(300,500,0);
-      var p3 = new Point(1200,580,0);
+      var p0 = new Point(10,10,0);
+      var p1 = new Point(600,10,0);
+      var p2 = new Point(100,600,0);
+      var p3 = new Point(600,600,0);
       var e0 = new Edge(p0, p1);
       var e1 = new Edge(e0.start, p2);
-      var e2 = new Edge(p2, p3);
-      var e3 = new Edge(e0.end, p3);
-      var q = new Quad(e0, e1, e2, e3);
-      //drawQuad(q);
-      var p = e0.getPoint(0.3);
-      p.y += 100;
-      console.debug(e0.length());
-      e0.points.splice(1, 0, p);
-      var q = e0.getPoint(0.3);
-      q.y += 150;
-      e0.points.splice(1, 0, q);
-      console.debug(e0.length());
-      drawEdge(e0);
+      var e2 = new Edge(e1.end, p3);
+      var e3 = new Edge(e0.end, e2.end);
+      var quad = new Quad(e0, e1, e2, e3);
+      
+      //// this is a function starting here
+      var indices = getEdgePair(quad);
+      var short = quad.edges[indices[0]];
+      var long = quad.edges[indices[1]];
+      var start1 = short.getPoint(0.1);
+      var start2 = short.getPoint(0.9);
+      var end1 = findIntersectPoint(start1, getGridAngle(short), long.points[0], long.angle())
+      var end2 = findIntersectPoint(start2, getGridAngle(short), long.points[0], long.angle())
+      var newEdge;
+      var start;
+      var end;
+      if (pointOnEdge(long, end1)) {
+        start = start1;
+        end = end1
+      } else if (pointOnEdge(long, end2)) {
+        start = start2;
+        end = end2
+      } else {
+        console.debug("neither point is on the edge")
+      }
+      if (indices[0] > indices[1]) {
+        var temp = start;
+        start = end;
+        end = temp;
+      }
+      var newEdge = new Edge(start, end);
+      
+
+      
+      
+      drawEdge(newEdge);
+      
+      drawQuad(quad);
+      /*
+      var dY = Math.random();
+      for (var i = 0.99; i > 0.01; i -= 0.01) {
+        var p = e0.getPoint(i)
+        p.y += dY;
+        dY += 0.05;
+        e0.points.splice(1, 0, p)
+      }
+      */
     </script>
   </body>
 </html>

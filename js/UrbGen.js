@@ -1,6 +1,6 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
 var MIN_LENGTH = 10;
-var GRID_X = 0.0;
+var GRID_X = 0.478;
 /**
  * Defines a point, specified by x, y, and z coords
  */
@@ -17,18 +17,18 @@ var Point = function(x, y, z) {
 /**
  * Defines an edge
  */
-var Edge = function(start, end, opposite) {
-  this.points = [];
-  this.points.push(start);
-  this.points.push(end);
+var Edge = function(start, end) {
+  this.points = [start, end];
+  //this.points.push(start);
+  //this.points.push(end);
   this.start = start;
-  this.midPoints = [];
+  //this.midPoints = [];
   this.end = end;
   this.opposite;
   this.endConnector;
   this.startConnector;
   this.isMaster; // true if this edge forms the top of a quadrilateral
-  this.addPoint = function(p) {
+  this.addPoint = function(r) {
     
   };
   this.angle = function() {
@@ -93,6 +93,24 @@ var Edge = function(start, end, opposite) {
     */
   };
   //this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
+};
+/**
+ * Returns array of length 2, containing the indices of the shortest edge in the
+ * specified quad and its opposite.
+ */
+var getEdgePair = function(quad) {
+  var shortEdge = quad.edges[0];
+  var length = shortEdge.length();
+  for (var i = 1; i < quad.edges.length; i++) {
+    if (quad.edges[i].length() < length) {
+      shortEdge = quad.edges[i];
+      length = shortEdge.length();
+    }
+  }
+  var j = quad.edges.indexOf(shortEdge);
+  var k = (j < 2) ? j + 2 : (j + 2) % 2;
+  var edgeIndices = [j, k];
+  return edgeIndices;
 };
 /**
  * Divides the specified edge into two edges, at the specified break point r.
