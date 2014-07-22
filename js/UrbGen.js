@@ -1,18 +1,20 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
 var MIN_LENGTH = 10;
 var GRID_X = 0.478;
+var URBGEN = URBGEN || {};
+URBGEN.Util = {};
 /**
  * Defines a point, specified by x, y, and z coords
  */
-var Point = function(x, y, z) {
+URBGEN.Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-  this.setValues = function(point) {
-    this.x = point.x;
-    this.y = point.y;
-    this.z = point.z;
-  };
+};
+URBGEN.Point.prototype.setValues = function(point) {
+  this.x = point.x;
+  this.y = point.y;
+  this.z = point.z;
 };
 /**
  * Defines an edge
@@ -348,7 +350,7 @@ var findIntersectPoint = function(p1, a1, p2, a2) {
     x = (q.y - p.y + (m1 * p.x) - (m2 * q.x)) / (m1 - m2);
     y = m2 * (x - q.x) + q.y;
   }
-  point = new Point(x, y, 0);
+  point = new URBGEN.Point(x, y, 0);
   return point;
 };
 /**
@@ -567,7 +569,7 @@ var linearInterpolate = function(edge, r) {
   var x = (1 - r) * edge.start.x + r * edge.end.x;
   var y = (1 - r) * edge.start.y + r * edge.end.y;
   var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new Point(x, y, z);
+  return new URBGEN.Point(x, y, z);
 };
 // Finds a point on an edge using cosine interpolation for y value
 var cosineInterpolate = function(edge, r) {
@@ -575,7 +577,7 @@ var cosineInterpolate = function(edge, r) {
   var x = (1 - r) * edge.start.x + r * edge.end.x;
   var y = (1 - r2) * edge.start.y + r2 * edge.end.y;
   var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new Point(x, y, z);
+  return new URBGEN.Point(x, y, z);
 };
 // Finds the length of an edge
 var getEdgeLength = function(edge) {
