@@ -1,8 +1,17 @@
 // Edges with length less than MIN_LENGTH are marked as atomic
 var MIN_LENGTH = 10;
-var GRID_X = 0.478;
+var GRID_X = 0.25;
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// URBGEN
+////////////////////////////////////////////////////////////////////////////////
 var URBGEN = URBGEN || {};
-URBGEN.Util = {};
 /**
  * Defines a point, specified by x, y, and z coords
  */
@@ -10,12 +19,245 @@ URBGEN.Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
+  this.canMove = true;
+  this.neighbors = [];
 };
 URBGEN.Point.prototype.setValues = function(point) {
   this.x = point.x;
   this.y = point.y;
   this.z = point.z;
 };
+/**
+ * Defines a Quadrilateral, specified by four points
+ */
+URBGEN.Quad = function(p0, p1, p2, p3) {
+  this.corners = [p0, p1, p2, p3];
+};
+/**
+ * Defines an edge with the specified start and end points
+ */
+URBGEN.Edge = function(p0, p1, direction) {
+  this.start = p0;
+  this.end = p1;
+  this.direction = direction;
+};
+/**
+ * Defines an edge pair with the specified edges
+ */
+URBGEN.EdgePair = function(e0, e1) {
+  this.e0 = e0;
+  this.e1 = e1;
+};
+URBGEN.EdgePair.prototype.getShortEdge = function() {
+  var e0Length = URBGEN.Util.getLength(e0.start, e0.end);
+  var e1Length = URBGEN.Util.getLength(e1.start, e1.end);
+  if (e0Length <= e1Length) {
+    return e0;
+  }
+  return e1;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// URBGEN.Util
+////////////////////////////////////////////////////////////////////////////////
+URBGEN.Util = {};
+/**
+ * Returns the length of a line segment between the two specified points
+ */
+URBGEN.Util.getLength = function(p0, p1) {
+  //TODO enable support for points that are not neigbors
+  if (p0.neighbors.indexOf(p1) === -1) {
+    //return NaN;
+  }
+  var length = Math.sqrt(Math.pow((p1.x - p0.x), 2)
+    + Math.pow((p1.y - p0.y), 2));
+  return length;
+};
+/**
+ * Finds a point on the line segment p0p1 using linear interpolation
+ */
+URBGEN.Util.linearInterpolate = function(p0, p1, r) {
+  var x = (1 - r) * p0.x + r * p1.x;
+  var y = (1 - r) * p0.y + r * p1.y;
+  var z = (1 - r) * p0.z + r * p1.z;
+  return new URBGEN.Point(x, y, z);
+};
+/**
+ * Returns the angle of the line segment p0p1 in radians
+ */
+URBGEN.Util.getAngle = function(p0, p1) {
+  var x1 = p0.x;
+  var x2 = p1.x;
+  var y1 = p0.y;
+  var y2 = p1.y;
+  if (y1 === y2) {
+    if (x2 > x1) {return 0;} else {return Math.PI;}
+  }
+  var angle = Math.atan2((y2 - y1), (x2 - x1));
+  /* console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI)); */
+  if (y2 > y1) {
+    return angle;
+    
+  } else {
+    return (2 * Math.PI) + angle;
+  }
+};
+/**
+ * Returns the angle of the grid axis that is closest to being perpendicular to
+ * the line through p0 and p1.
+ */
+URBGEN.Util.getGridAngle = function(p0, p1) {
+  // Get the angle as a multiple of Pi adjusted to standard x y axes
+  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - GRID_X;
+  // Find which axis a line at this angle is closest to (0 or 4, 1, 2, 3)
+  var axis = Math.round(angle * 2);
+  // If even, the line is closest to x axis, so return the y axis of the grid
+  if (axis % 2 === 0) {
+    return Math.PI * (GRID_X + 0.5);
+  } else {
+    return Math.PI * GRID_X;
+  }
+};
+/**
+ * Adds the specified dA (dA * Pi) to the specified angle. The result is
+ * normalized to a value between 0 and 2 * Pi radians;
+ */
+URBGEN.Util.addAngle = function(angle, dA) {
+  var newAngle = (angle + dA * Math.PI) % (2 * Math.PI);
+  return newAngle;
+  
+};
+/**
+ * Returns a value that represents the specified point's location on the line
+ * through p0 and p1, relative to the line segment p0p1.
+ */
+URBGEN.Util.getPointAsRatio = function(point, p0, p1) {
+  if (!URBGEN.Util.pointOnLine(point, p0, p1)) {
+    return NaN;
+  }
+  var d1 = point.x - p0.x;
+  var d2 = p1.x - p0.x;
+  return d1 / d2;
+};
+/**
+ * Returns the shortest of two line segments. If they are the same length, returns the
+ * l1.
+ */
+URBGEN.Util.getShortest = function(l1, l2) {
+  // TODO
+ };
+/**
+ * Given two lines, defined by a point on the line and the angle of the line,
+ * returns the point at which the two lines intersect. If the lines are colinear,
+ * returns p1.
+ */
+URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
+  var m0 = Math.tan(a0);
+  var m1 = Math.tan(a1);
+  var x;
+  var y;
+  var point;
+  // Check if the lines are colinear
+  if (m0 === m1) return p0;
+  // Check if either line is colinear with the y axis
+  if (m0 === Infinity) {
+    x = p0.x;
+    y = p1.x * m1 + p1.y;
+  } else if (m1 === Infinity) {
+    x = p1.x;
+    y = p0.x * m0 + p0.y;
+  // Otherwise, find the intersection point
+  } else {
+    x = (p1.y - p0.y + (m0 * p0.x) - (m1 * p1.x)) / (m0 - m1);
+    y = m1 * (x - p1.x) + p1.y;
+  }
+  point = new URBGEN.Point(x, y, 0);
+  return point;
+};
+/**
+ * Returns true if the specified point lies on the line through p0 and p1
+ */
+URBGEN.Util.onLine = function(point, p0, p1) {
+  var area = URBGEN.Util.areaTri(p0, point, p1);
+  if (Math.abs(area) < 0.000001) {
+    return true;
+  }
+  return false;
+};
+/**
+ * Returns true if the specified point lies on the line segment p0p1
+ */
+URBGEN.Util.onLineSegment = function(point, p0, p1) {
+  var r = getPointAsRatio(point, p0, p1);
+  if (isNaN(pt)) {
+    return false;
+  }
+  if (0 <= pt && pt <= 1) {
+    return true;
+  }
+  return false;
+};
+/**
+ * Returns the area of the triangle specified by 3 points
+ */
+URBGEN.Util.areaTri = function(p0, p1, p2) {
+  var area = p0.x * (p1.y - p2.y) + p1.x * (p2.y - p0.y) + p2.x * (p0.y - p1.y);
+  return area;
+};
+/**
+ * Returns an array of points representing a path from p0 to p1 in the specified
+ * direction. If p1 is not found in maxSteps iterations, returns false. If
+ * maxSteps is not specified, defaults to 100.
+ */
+URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
+  var path = [p0];
+  var point = p0;
+  if (maxSteps === undefined) {
+    maxSteps = 100;
+  }
+  for (var i = 0; i < maxSteps; i++) {
+    point = point.neighbors[direction];
+    if (point === undefined) {
+      return false;
+    }
+    path.push[point];
+    if (point === p1) {
+      return path;
+    }
+  }
+  return false;
+};
+/**
+ * Returns the direction (0 - 3) in which you must travel from p0 to reach p1.
+ * If p1 is not found in maxSteps (defaults to 100) iterations, returns false.
+ */
+URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
+  var points = [p0, p0, p0, p0];
+  if (maxSteps === undefined) {
+    maxSteps = 10;
+  }
+  for (var i = 0; i < maxSteps; i++) {
+    for (var j = 0; j < 4; j++) {
+      var point = points[j].neighbors[j];
+      if (point !== undefined) {
+        if (point === p1) {
+          return j;
+        }
+        points[j] = point;
+      }
+    }
+  }
+  return false;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 /**
  * Defines an edge
  */
@@ -252,139 +494,18 @@ var divideEdge = function(edge, numSegments) {
   e[e.length - 1].endConnector = edge.endConnector;
   return e;
 };
-/**
- * Returns the length of a line segment between the two specified points
- */
-var getLength = function(start, end) {
-  var len = Math.sqrt(Math.pow((end.x - start.x), 2)
-    + Math.pow((end.y - start.y), 2));
-  return len;
-};
-/**
- * Returns the angle of an edge in radians
- */
-var getAngle = function(edge) {
-  var x1 = edge.start.x;
-  var x2 = edge.end.x;
-  var y1 = edge.start.y;
-  var y2 = edge.end.y;
-  if (y1 === y2) {
-    if (x2 > x1) {return 0;} else {return Math.PI;}
-  }
-  var angle = Math.atan2((y2 - y1), (x2 - x1));
-  //console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI));
-  if (y2 > y1) {return angle; } else {return (2 * Math.PI) + angle;}
-};
-/**
- * Returns the angle of the grid axis that is closest to being perpendicular to
- * the specified edge.
- */
-var getGridAngle = function(edge) {
-  // Get the angle as a multiple of Pi adjusted to standard x y axes
-  var a = edge.angle() / Math.PI - GRID_X;
-  // Find which axis a line at this angle is closest to (0 or 4, 1, 2, 3)
-  a = Math.round(a * 2);
-  // If even, the line is closest to x axis, so return the y axis of the grid
-  if (a % 2 === 0) {
-    return Math.PI * (GRID_X + 0.5);
-  } else {
-    return Math.PI * GRID_X;
-  }
-};
-/**
- * Adds the specified dA (dA * Pi) to the specified angle. The result is
- * normalized to a value between 0 and 2 * Pi radians;
- */
-var addAngle = function(angle, dA) {
-  var newAngle = (angle + dA * Math.PI) % (2 * Math.PI);
-  return newAngle;
-  
-};
-/**
- * Returns a value that represents the specified point's
- * location on the line colinear with the specified edge
- */
-var getPointAsRatio = function(edge, point) {
-  if (!pointOnLine(edge, point)) {
-    return NaN;
-  }
-  var d1 = point.x - edge.start.x;
-  var d2 = edge.end.x - edge.start.x;
-  return d1 / d2;
-};
-/**
- * Returns the shortest of two edges. If they are the same length, returns the
- * first arg.
- */
- var getShortestEdge = function(edge1, edge2) {
-   if (edge1.length() > edge2.length()) {
-     return edge2;
-   }
-   return edge1;
- };
-/**
- * Given two lines, defined by a point on the line and the angle of the line,
- * returns the point at which the two lines intersect. If the lines are colinear,
- * returns p1.
- */
-var findIntersectPoint = function(p1, a1, p2, a2) {
-  //console.debug(p1.x + ", " + a1 + ", " + p2.x + ", " + a2);
-  var p = p1;
-  var q = p2;
-  var m1 = Math.tan(a1);
-  var m2 = Math.tan(a2);
-  var x;
-  var y;
-  var point;
-  // Check if the lines are colinear
-  if (m1 === m2) return p1;
-  // Check if either line is colinear with the y axis
-  if (m1 === Infinity) {
-    x = p.x;
-    y = q.x * m2 + q.y;
-  } else if (m2 === Infinity) {
-    x = q.x;
-    y = p.x * m1 + p.y;
-  // Otherwise, find the intersection point
-  } else {
-    x = (q.y - p.y + (m1 * p.x) - (m2 * q.x)) / (m1 - m2);
-    y = m2 * (x - q.x) + q.y;
-  }
-  point = new URBGEN.Point(x, y, 0);
-  return point;
-};
-/**
- * Returns true if the specified point lies on the line colinear with the
- * specified edge.
- */
-var pointOnLine = function(edge, point) {
-  var area = areaTri(edge.start, point, edge.end);
-  if (Math.abs(area) < 0.000001) {
-    return true;
-  }
-  return false;
-};
-/**
- * Given an edge and a point returns
- * true if the point lies on the edge, false otherwise.
- */
-var pointOnEdge = function(edge, point) {
-  var pt = getPointAsRatio(edge, point);
-  if (isNaN(pt)) {
-    return false;
-  }
-  if (0 <= pt && pt <= 1) {
-    return true;
-  }
-  return false;
-};
-/**
- * Finds the area of a triangle specified by 3 points
- */
-var areaTri = function(p1, p2, p3) {
-  var ret = p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
-  return ret;
-};
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Makes a chain of connected edges, spanning the same length as the specified
  * edge. The first edge in the chain starts at edge.start, and the last edge
@@ -453,24 +574,6 @@ var CompEdge = function(edges) {
     } else {
       var r2 = (r - this.edgeSize * edge) / this.edgeSize;
       return edges[edge].getPoint(r2);
-    }
-  };
-};
-// Defines a Quadrilateral, specified by four edges
-var Quad = function(edge1, edge2, edge3, edge4) {
-  this.edges = [edge1, edge2, edge3, edge4];
-  if (edge1.atomic || edge2.atomic || edge3.atomic || edge4.atomic) {
-    this.atomic = true;
-  } else {
-    this.atomic = false;
-  }
-  this.area = function() { // THIS IS APPROX, DOES NOT RETURN ACTUAL AREA
-    return this.edges[0].length() * this.edges[1].length();
-  };
-  this.intersectionPoints = [];
-  this.addIntersectionPoint = function(edge, r) {
-    if (edge === 0 || edge === 1) {
-      this.intersectionPoints.push({edge: edge, r: r});
     }
   };
 };
@@ -563,13 +666,6 @@ var makeCompositeEdge = function(edge, n) {
     edges.push(new AbsEdge(start, end));
   }
   return new CompEdge(edges);
-};
-// Finds a point on an edge using linear interpolation
-var linearInterpolate = function(edge, r) {
-  var x = (1 - r) * edge.start.x + r * edge.end.x;
-  var y = (1 - r) * edge.start.y + r * edge.end.y;
-  var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new URBGEN.Point(x, y, z);
 };
 // Finds a point on an edge using cosine interpolation for y value
 var cosineInterpolate = function(edge, r) {
