@@ -64,15 +64,35 @@ URBGEN.EdgePair.prototype.getShortEdge = function() {
 ////////////////////////////////////////////////////////////////////////////////
 URBGEN.Util = {};
 /**
- * Returns the length of a line segment between the two specified points
+ * Returns the length of a line segment(s) between the two specified points
  */
 URBGEN.Util.getLength = function(p0, p1) {
-  //TODO enable support for points that are not neigbors
   if (p0.neighbors.indexOf(p1) === -1) {
-    //return NaN;
+    var direction = URBGEN.Util.getDirection(p0, p1);
+    if (direction === false) {
+      return NaN;
+    }
+    var path = URBGEN.Util.getDirectedPath(p0, p1, direction);
+    return URBGEN.Util.getPathLength(path);
   }
+  return URBGEN.Util.getLineSegmentLength(p0, p1);
+};
+/**
+ * Returns the length of the line segment p0p1.
+ */
+URBGEN.Util.getLineSegmentLength = function(p0, p1) {
   var length = Math.sqrt(Math.pow((p1.x - p0.x), 2)
     + Math.pow((p1.y - p0.y), 2));
+    return length;
+};
+/**
+ * Returns the total length of the line segments described by path.
+ */
+URBGEN.Util.getPathLength = function(path) {
+  var length = 0;
+  for (var i = 0; i < path.length - 1; i++) {
+    length += URBGEN.Util.getLineSegmentLength(path[i], path[i + 1]);
+  }
   return length;
 };
 /**
@@ -81,6 +101,16 @@ URBGEN.Util.getLength = function(p0, p1) {
 URBGEN.Util.linearInterpolate = function(p0, p1, r) {
   var x = (1 - r) * p0.x + r * p1.x;
   var y = (1 - r) * p0.y + r * p1.y;
+  var z = (1 - r) * p0.z + r * p1.z;
+  return new URBGEN.Point(x, y, z);
+};
+/**
+ * Finds a point on the line segment p0p1 using cosine interpolation (for y value)
+ */
+URBGEN.Util.cosineInterpolate = function(p0, p1, r) {
+  r2 = (-1 * Math.cos(Math.PI * r) / 2) + 0.5;
+  var x = (1 - r) * p0.x + r * p1.x;
+  var y = (1 - r2) * p0.y + r2 * p1.y;
   var z = (1 - r) * p0.z + r * p1.z;
   return new URBGEN.Point(x, y, z);
 };
@@ -181,6 +211,7 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
  */
 URBGEN.Util.onLine = function(point, p0, p1) {
   var area = URBGEN.Util.areaTri(p0, point, p1);
+  // If the area of tri formed by  3 points is 0, then they are colinear
   if (Math.abs(area) < 0.000001) {
     return true;
   }
@@ -190,11 +221,11 @@ URBGEN.Util.onLine = function(point, p0, p1) {
  * Returns true if the specified point lies on the line segment p0p1
  */
 URBGEN.Util.onLineSegment = function(point, p0, p1) {
-  var r = getPointAsRatio(point, p0, p1);
-  if (isNaN(pt)) {
+  var r = URBGEN.Util.getPointAsRatio(point, p0, p1);
+  if (isNaN(r)) {
     return false;
   }
-  if (0 <= pt && pt <= 1) {
+  if (0 <= r && r <= 1) {
     return true;
   }
   return false;
@@ -213,21 +244,20 @@ URBGEN.Util.areaTri = function(p0, p1, p2) {
  */
 URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
   var path = [p0];
-  var point = p0;
   if (maxSteps === undefined) {
     maxSteps = 100;
   }
   for (var i = 0; i < maxSteps; i++) {
-    point = point.neighbors[direction];
-    if (point === undefined) {
+    if (path[i].neighbors[direction] !== undefined) {
+      var point = path[i].neighbors[direction];
+      path.push(point);
+      if (point === p1) {
+        return path;
+      }
+    } else {
       return false;
     }
-    path.push[point];
-    if (point === p1) {
-      return path;
-    }
   }
-  return false;
 };
 /**
  * Returns the direction (0 - 3) in which you must travel from p0 to reach p1.
@@ -258,9 +288,55 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
 
 
 
-/**
- * Defines an edge
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+DEPRECATED
+////////////////////////////////////////////////////////////////////////////////
+
 var Edge = function(start, end) {
   this.points = [start, end];
   //this.points.push(start);
@@ -299,7 +375,7 @@ var Edge = function(start, end) {
   console.debug("end: " + segEnd.x + " p = " + p);
   var tempEdge = new Edge(segStart, segEnd);
   return linearInterpolate(tempEdge, segR);
-  /*
+  
     if (this.midPoints.length === 0) {
       return linearInterpolate(this, r);
     } else {
@@ -315,7 +391,7 @@ var Edge = function(start, end) {
       var segStart = this.midPoints[i];
       var segEnd = (p === this.midPoints.length) ? this.end : this.midPoints[p]
     }
-    */
+    
   };
   this.length = function() {
     var len = 0;
@@ -323,7 +399,7 @@ var Edge = function(start, end) {
       len += getLength(this.points[i], this.points[i + 1]);
     }
     return len;
-    /*
+    
     if (this.midPoints.length === 0) {
       return getLength(this.start, this.end);
     } else {
@@ -334,14 +410,11 @@ var Edge = function(start, end) {
       length += getLength(this.midPoints[this.midPoints.length - 1], this.end);
       return length;
     }
-    */
+    
   };
   //this.atomic = ((this.length() < MIN_LENGTH) ? true : false);
 };
-/**
- * Returns array of length 2, containing the indices of the shortest edge in the
- * specified quad and its opposite.
- */
+
 var getEdgePair = function(quad) {
   var shortEdge = quad.edges[0];
   var length = shortEdge.length();
@@ -356,9 +429,7 @@ var getEdgePair = function(quad) {
   var edgeIndices = [j, k];
   return edgeIndices;
 };
-/**
- * Divides the specified edge into two edges, at the specified break point r.
- */
+
 var splitEdge = function(edge, r) {
   var points = [];
   points.push(edge.start);
@@ -367,9 +438,7 @@ var splitEdge = function(edge, r) {
   var newEdges = makeEdges(edge, points);
   return newEdges;
 };
-/**
- * Halves an edge
- */
+
 var halve = function(edge, angle, r) {
   if (edge.opposite !== undefined) {
     if (edge.length() / 2 < MIN_LENGTH || edge.opposite.length() / 2 < MIN_LENGTH) {
@@ -382,9 +451,7 @@ var halve = function(edge, angle, r) {
     edges.splice(edges.indexOf(edge.opposite), 1);
   }
 };
-/**
- * Divides an edge in two at the point r, creating a new connecting edge at angle
- */
+
 var splitEdgeAndConnect = function(edge, angle, r) {
   var newEdge;
   var dR = 0;
@@ -417,9 +484,7 @@ var splitEdgeAndConnect = function(edge, angle, r) {
   ret.push(newEdge);
   return ret;
 };
-/**
- * Sets edge's connecting edges
- */
+
 var setEdgeRelations = function(edge, newEdges, opposite, newOpposites, newEdge) {
   if (edge.isMaster) {
     newEdges[0].startConnector = edge.startConnector;
@@ -465,9 +530,7 @@ var setEdgeRelations = function(edge, newEdges, opposite, newOpposites, newEdge)
     }
   }
 };
-/**
- * Divides the specified edge into the specified number of segments
- */
+
 var divideEdge = function(edge, numSegments) {
   var points = [];
   for (var i = 0; i < numSegments - 1; i++) {
@@ -495,23 +558,6 @@ var divideEdge = function(edge, numSegments) {
   return e;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Makes a chain of connected edges, spanning the same length as the specified
- * edge. The first edge in the chain starts at edge.start, and the last edge
- * in the chain ends at edge.end. The points in between are specified by points.
- * Each of these points is the end of the previous edge and the start of the next.
- */
 var makeEdges = function(edge, points) {
   if (points.length < 2) return undefined;
   if (points[0] !== edge.start) return undefined;
@@ -579,7 +625,7 @@ var CompEdge = function(edges) {
 };
 // Divides a Quadrilateral in two, adding the two new quads to the original
 var divideQuad = function(quad) {
-  /*
+  
   if (quad.intersectionPoints.length > 0) {
     var r = quad.intersectionPoints[0].r;
     if (quad.intersectionPoints[0].edge === 0) {
@@ -590,7 +636,7 @@ var divideQuad = function(quad) {
       return getNewHorizontalQuads(quad, r);
     }
   }
-  */
+  
   if (Math.random() > 0.5) {
     return getNewVerticalQuads(quad, getLimitedRandom());
   } else {
@@ -667,22 +713,11 @@ var makeCompositeEdge = function(edge, n) {
   }
   return new CompEdge(edges);
 };
-// Finds a point on an edge using cosine interpolation for y value
-var cosineInterpolate = function(edge, r) {
-  r2 = (-1 * Math.cos(Math.PI * r) / 2) + 0.5;
-  var x = (1 - r) * edge.start.x + r * edge.end.x;
-  var y = (1 - r2) * edge.start.y + r2 * edge.end.y;
-  var z = (1 - r) * edge.start.z + r * edge.end.z;
-  return new URBGEN.Point(x, y, z);
-};
 // Finds the length of an edge
 var getEdgeLength = function(edge) {
   return Math.sqrt(Math.pow(edge.end.x - edge.start.x, 2)
     + Math.pow(edge.end.y - edge.start.y, 2));
 };
-////////////////////////////////////////////////////////////////////////////////
-/* DEPRECATED
-////////////////////////////////////////////////////////////////////////////////
 // Initializes the vertices array
 var vertices = [];
 // Initializes the roads array

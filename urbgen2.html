@@ -33,6 +33,20 @@
         }
       };
       //////////////////////////////////////////////////////////////////////////
+      // FUNCTION
+      // SETS POINTS' NEIGHBORS
+      //////////////////////////////////////////////////////////////////////////
+      function initNeighbors() {
+        p0.neighbors[3] = p1;
+        p0.neighbors[2] = p2;
+        p1.neighbors[1] = p0;
+        p1.neighbors[2] = p3;
+        p2.neighbors[0] = p0;
+        p2.neighbors[3] = p3;
+        p3.neighbors[1] = p1;
+        p3.neighbors[2] = p2;
+      }
+      //////////////////////////////////////////////////////////////////////////
       // INITIALIZE CANVAS AND CONTEXT
       //////////////////////////////////////////////////////////////////////////
       var canvas = document.getElementById("canvas");
@@ -47,22 +61,14 @@
       var p1 = new URBGEN.Point(1250, 5, 0);
       var p2 = new URBGEN.Point(20, 610, 0);
       var p3 = new URBGEN.Point(1200, 620, 0);
-      // Set each point's neighbors
-      p0.neighbors[3] = p1;
-      p0.neighbors[2] = p2;
-      p1.neighbors[1] = p0;
-      p1.neighbors[2] = p3;
-      p2.neighbors[0] = p0;
-      p2.neighbors[3] = p3;
-      p3.neighbors[1] = p1;
-      p3.neighbors[2] = p2;
+      // Set each point's neighbors correctly
+      initNeighbors();
       // Make a new quad
       var quad = new URBGEN.Quad(p0, p1, p2, p3);
       var e0 = new URBGEN.Edge(p0, p1);
       var e1 = new URBGEN.Edge(p2, p3);
       var ep = new URBGEN.EdgePair(e0, e1);
       var e = ep.getShortEdge();
-      drawLine(e.start, e.end);
     </script>
   </body>
 </html>
