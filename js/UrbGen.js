@@ -160,6 +160,27 @@ URBGEN.Util.addAngle = function(angle, dA) {
   
 };
 /**
+ * Returns a point a distance r along the line segment between p0 and it's
+ * neighbor in the specified direction. r must be in range 0 - 1 (exclusive).
+ * direction must be either 2 or 3.
+ */
+URBGEN.Util.getNewPoint = function(point, direction, r) {
+  if (2 > direction || direction > 3) {
+    return undefined;
+  }
+  if (0 >= r || r >= 1) {
+    return undefined;
+  }
+  var p = point;
+  var q = point.neighbors[direction];
+  var newPoint = URBGEN.Util.linearInterpolate(p, q, r);
+  q.neighbors[direction - 2] = newPoint;
+  p.neighbors[direction] = newPoint;
+  newPoint.neighbors[direction] = q;
+  newPoint.neighbors[direction - 2] = p;
+  return newPoint;
+};
+/**
  * Returns a value that represents the specified point's location on the line
  * through p0 and p1, relative to the line segment p0p1.
  */
@@ -178,58 +199,6 @@ URBGEN.Util.getPointAsRatio = function(point, p0, p1) {
 URBGEN.Util.getShortest = function(l1, l2) {
   // TODO
  };
-/**
- * Given two lines, defined by a point on the line and the angle of the line,
- * returns the point at which the two lines intersect. If the lines are colinear,
- * returns p1.
- */
-URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
-  var m0 = Math.tan(a0);
-  var m1 = Math.tan(a1);
-  var x;
-  var y;
-  var point;
-  // Check if the lines are colinear
-  if (m0 === m1) return p0;
-  // Check if either line is colinear with the y axis
-  if (m0 === Infinity) {
-    x = p0.x;
-    y = p1.x * m1 + p1.y;
-  } else if (m1 === Infinity) {
-    x = p1.x;
-    y = p0.x * m0 + p0.y;
-  // Otherwise, find the intersection point
-  } else {
-    x = (p1.y - p0.y + (m0 * p0.x) - (m1 * p1.x)) / (m0 - m1);
-    y = m1 * (x - p1.x) + p1.y;
-  }
-  point = new URBGEN.Point(x, y, 0);
-  return point;
-};
-/**
- * Returns true if the specified point lies on the line through p0 and p1
- */
-URBGEN.Util.onLine = function(point, p0, p1) {
-  var area = URBGEN.Util.areaTri(p0, point, p1);
-  // If the area of tri formed by  3 points is 0, then they are colinear
-  if (Math.abs(area) < 0.000001) {
-    return true;
-  }
-  return false;
-};
-/**
- * Returns true if the specified point lies on the line segment p0p1
- */
-URBGEN.Util.onLineSegment = function(point, p0, p1) {
-  var r = URBGEN.Util.getPointAsRatio(point, p0, p1);
-  if (isNaN(r)) {
-    return false;
-  }
-  if (0 <= r && r <= 1) {
-    return true;
-  }
-  return false;
-};
 /**
  * Returns the area of the triangle specified by 3 points
  */
@@ -278,6 +247,101 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
         points[j] = point;
       }
     }
+  }
+  return false;
+};
+/**
+ * Given two lines, defined by a point on the line and the angle of the line,
+ * returns the point at which the two lines intersect. If the lines are colinear,
+ * returns p1.
+ */
+URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
+  var m0 = Math.tan(a0);
+  var m1 = Math.tan(a1);
+  var x;
+  var y;
+  var point;
+  // Check if the lines are colinear
+  if (m0 === m1) return p0;
+  // Check if either line is colinear with the y axis
+  if (m0 === Infinity) {
+    x = p0.x;
+    y = p1.x * m1 + p1.y;
+  } else if (m1 === Infinity) {
+    x = p1.x;
+    y = p0.x * m0 + p0.y;
+  // Otherwise, find the intersection point
+  } else {
+    x = (p1.y - p0.y + (m0 * p0.x) - (m1 * p1.x)) / (m0 - m1);
+    y = m1 * (x - p1.x) + p1.y;
+  }
+  point = new URBGEN.Point(x, y, 0);
+  return point;
+};
+/**
+ * Delegate to the relevant function.
+ */
+URBGEN.Util.insertPoint = function() {
+  if (isNaN(arguments[2])) {
+    URBGEN.Util.insertPointUsingPoints(arguments[0], arguments[1], arguments[2]);
+  } else {
+    URBGEN.Util.insertPointUsingDir(arguments[0], arguments[1], arguments[2]);
+  }
+}
+/**
+ * Sets the neighbor relations of p0 and p1 with the newPoint. If p0 and p1 are
+ * not neighbors, returns false.
+ */
+URBGEN.Util.insertPointUsingPoints = function(newPoint, p0, p1) {
+  var direction = p0.neighbors.indexOf(p1);
+  if (2 > direction || direction > 3) {
+    return false;
+  }
+  var p = p0;
+  var q = p1;
+  q.neighbors[direction - 2] = newPoint;
+  p.neighbors[direction] = newPoint;
+  newPoint.neighbors[direction] = q;
+  newPoint.neighbors[direction - 2] = p;
+  return true;
+}
+/**
+ * Sets the neighbor relations of p0 and its neighbor in the specified direction
+ * with the newPoint.
+ */
+URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
+  if (2 > direction || direction > 3) {
+    return undefined;
+  }
+  var p = p0;
+  var q = p0.neighbors[direction];
+  q.neighbors[direction - 2] = newPoint;
+  p.neighbors[direction] = newPoint;
+  newPoint.neighbors[direction] = q;
+  newPoint.neighbors[direction - 2] = p;
+  return true;
+}
+/**
+ * Returns true if the specified point lies on the line through p0 and p1
+ */
+URBGEN.Util.onLine = function(point, p0, p1) {
+  var area = URBGEN.Util.areaTri(p0, point, p1);
+  // If the area of tri formed by  3 points is 0, then they are colinear
+  if (Math.abs(area) < 0.000001) {
+    return true;
+  }
+  return false;
+};
+/**
+ * Returns true if the specified point lies on the line segment p0p1
+ */
+URBGEN.Util.onLineSegment = function(point, p0, p1) {
+  var r = URBGEN.Util.getPointAsRatio(point, p0, p1);
+  if (isNaN(r)) {
+    return false;
+  }
+  if (0 <= r && r <= 1) {
+    return true;
   }
   return false;
 };
