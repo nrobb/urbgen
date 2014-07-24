@@ -268,7 +268,7 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
  * direction (2 or 3) to determine which of the quad's top left point's
  * neighbors is the first edge to divide.
  */
-URBGEN.Util.divideQuad = function(quad, rStart, rEnd, direction) {
+URBGEN.Util.divideQuad2 = function(quad, rStart, rEnd, direction) {
   var newQuads = [];
   if (!URBGEN.Util.testForQuad(quad).isQuad) {
     newQuads.push(quad);
@@ -372,16 +372,21 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   return true;
 }
 /**
- * Returns the point in {p0, p1} that has the shortest straight line distance to
- * goal. If the distances are equal, returns p0.
+ * Returns the point in points that has the shortest straight line distance to
+ * target. If any points have equal distances to target, returns the point which
+ * comse first in points.
  */
-URBGEN.Util.nearest = function(p0, p1, target) {
-  var p0Distance = (URBGEN.Util.getLineSegmentLength(p0, target));
-  var p1Distance = (URBGEN.Util.getLineSegmentLength(p1, target));
-  if (p0Distance <= p1Distance) {
-    return p0;
+URBGEN.Util.nearest = function(points, target) {
+  var index = 0;
+  var shortest = URBGEN.Util.getLineSegmentLength(points[0], target);
+  for (var i = 1; i < points.length; i++) {
+    var length = URBGEN.Util.getLineSegmentLength(points[i], target);
+    if (length < shortest) {
+      index = i;
+      shortest = length;
+    }
   }
-  return p1;
+  return points[index];
 }
 /**
  * Returns true if the specified point lies on the line through p0 and p1
