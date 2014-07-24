@@ -219,6 +219,17 @@ URBGEN.Util.areaTri = function(p0, p1, p2) {
   return area;
 };
 /**
+ * Returns the area of the specified quad.
+ */
+URBGEN.Util.areaQuad = function(quad) {
+  var x0 = quad.corners[3].x - quad.corners[0].x;
+  var y0 = quad.corners[3].y - quad.corners[0].y;
+  var x1 = quad.corners[1].x - quad.corners[2].x;
+  var y1 = quad.corners[1].y - quad.corners[2].y;
+  var area = Math.abs((x0 * y1 - x1 * y0) / 2);
+  return area;
+};
+/**
  * Returns an array of points representing a path from p0 to p1 in the specified
  * direction. If p1 is not found in maxSteps iterations, returns false. If
  * maxSteps is not specified, defaults to 100.

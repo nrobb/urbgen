@@ -69,19 +69,17 @@
       // TESTING
       //////////////////////////////////////////////////////////////////////////
       // Set up the points
-      var p0 = new URBGEN.Point(10, 10, 0);
-      var p1 = new URBGEN.Point(1250, 5, 0);
-      var p2 = new URBGEN.Point(20, 610, 0);
-      var p3 = new URBGEN.Point(1200, 620, 0);
+      var p0 = new URBGEN.Point(10, 20, 0);
+      var p1 = new URBGEN.Point(1050, 25, 0);
+      var p2 = new URBGEN.Point(20, 500, 0);
+      var p3 = new URBGEN.Point(1200, 605, 0);
       // Set each point's neighbors correctly
       initNeighbors();
       var points = [p0, p1, p2, p3];
       var poly = new URBGEN.Poly(p0, p1, p2, p3);
       /************************************************************************/
       
-      
       var polys = URBGEN.Util.divideQuad2(poly, Math.random(), Math.random(), Math.floor(Math.random() * 2 + 2));
-      
       
       /************************************************************************/
       polys.forEach(drawTopLeft);
