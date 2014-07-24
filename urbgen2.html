@@ -24,7 +24,7 @@
       // DRAWS TOP AND LEFT EDGES OF A QUAD
       //////////////////////////////////////////////////////////////////////////
       function drawPoint(point) {
-        for (var i = 2; i < point.neighbors.length; i++) {
+        for (var i = 2; i < 4; i++) {
           var q = point.neighbors[i];
           if (q !== undefined) {
             drawLine(point, q);
@@ -35,9 +35,9 @@
       // FUNCTION
       // DRAWS TOP AND LEFT EDGES OF A QUAD
       //////////////////////////////////////////////////////////////////////////
-      function drawTopLeft(quad) {
-        var point = quad.corners[0];
-        for (var i = 0; i < point.neighbors.length; i++) {
+      function drawTopLeft(poly) {
+        var point = poly.corners[0];
+        for (var i = 2; i < 4; i++) {
           var q = point.neighbors[i];
           if (q !== undefined) {
             drawLine(point, q);
@@ -76,12 +76,15 @@
       // Set each point's neighbors correctly
       initNeighbors();
       var points = [p0, p1, p2, p3];
-      
+      var poly = new URBGEN.Poly(p0, p1, p2, p3);
       /************************************************************************/
       
-      /************************************************************************/
       
-      points.forEach(drawPoint);
+      var polys = URBGEN.Util.divideQuad(poly, Math.random(), Math.random(), Math.floor(Math.random() * 2 + 2));
+      
+      
+      /************************************************************************/
+      polys.forEach(drawTopLeft);
     </script>
   </body>
 </html>

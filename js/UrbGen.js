@@ -19,8 +19,8 @@ URBGEN.Point = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-  this.canMove = true;
-  this.neighbors = [];
+  this.anchored = false;
+  this.neighbors = [0, 0, 0, 0];
 };
 URBGEN.Point.prototype.setValues = function(point) {
   this.x = point.x;
@@ -28,15 +28,15 @@ URBGEN.Point.prototype.setValues = function(point) {
   this.z = point.z;
 };
 /**
- * Defines a Quadrilateral, specified by four points
+ * Defines a polygon, specified by four points.
  */
-URBGEN.Quad = function(p0, p1, p2, p3) {
+URBGEN.Poly = function(p0, p1, p2, p3) {
   this.corners = [p0, p1, p2, p3];
 };
 /**
  * Defines an edge with the specified start and end points
  */
-URBGEN.Edge = function(p0, p1, direction) {
+URBGEN.LineSegment = function(p0, p1, direction) {
   this.start = p0;
   this.end = p1;
   this.direction = direction;
@@ -44,17 +44,17 @@ URBGEN.Edge = function(p0, p1, direction) {
 /**
  * Defines an edge pair with the specified edges
  */
-URBGEN.EdgePair = function(e0, e1) {
-  this.e0 = e0;
-  this.e1 = e1;
+URBGEN.LineSegPair = function(l0, l1) {
+  this.l0 = l0;
+  this.l1 = l1;
 };
-URBGEN.EdgePair.prototype.getShortEdge = function() {
-  var e0Length = URBGEN.Util.getLength(e0.start, e0.end);
-  var e1Length = URBGEN.Util.getLength(e1.start, e1.end);
-  if (e0Length <= e1Length) {
-    return e0;
+URBGEN.LineSegPair.prototype.getShort = function() {
+  var l0Length = URBGEN.Util.getLength(l0.start, l0.end);
+  var l1Length = URBGEN.Util.getLength(l1.start, l1.end);
+  if (l0Length <= l1Length) {
+    return l0;
   }
-  return e1;
+  return l1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +96,19 @@ URBGEN.Util.getPathLength = function(path) {
   return length;
 };
 /**
- * Finds a point on the line segment p0p1 using linear interpolation
+ * Finds a point on the line segment p0p1 which is the specified length along
+ * the line.
+ */
+URBGEN.Util.linearInterpolateByLength = function(p0, p1, length) {
+  var totalLength = URBGEN.Util.getLineSegmentLength(p0, p1);
+  if (length > totalLength) {
+    return p1;
+  }
+  var r = length / totalLength;
+  return URBGEN.Util.linearInterpolate(p0, p1, r);
+};
+/**
+ * Finds a point on the line segment p0p1.
  */
 URBGEN.Util.linearInterpolate = function(p0, p1, r) {
   var x = (1 - r) * p0.x + r * p1.x;
@@ -251,6 +263,44 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
   return false;
 };
 /**
+ * Divides the specified quad into two quads, by inserting a line connecting
+ * opposite edges, using rStart and rEnd to determine the division points and
+ * direction (2 or 3) to determine which of the quad's top left point's
+ * neighbors is the first edge to divide.
+ */
+URBGEN.Util.divideQuad = function(quad, rStart, rEnd, direction) {
+  var newQuads = [];
+  if (!URBGEN.Util.testForQuad(quad).isQuad) {
+    newQuads.push(quad);
+    return newQuads;
+  }
+  if (3 < direction || direction < 2) {
+    newQuads.push(quad);
+    return newQuads;
+  }
+  // Find the perpendicular direction
+  var perpDirection = ((direction + 1) % 2) + 2;
+  // Find the corners
+  var p0 = quad.corners[0];
+  var p1 = p0.neighbors[direction];
+  var p2 = p0.neighbors[perpDirection];
+  var p3 = p2.neighbors[direction];
+  // Add two new points to opposite edges
+  var p = URBGEN.Util.linearInterpolate(p0, p1, rStart);
+  URBGEN.Util.insertPoint(p, p0, p1);
+  var q = URBGEN.Util.linearInterpolate(p2, p3, rEnd);
+  URBGEN.Util.insertPoint(q, p2, p3);
+  // Set the new point's as neighbors
+  p.neighbors[perpDirection] = q;
+  q.neighbors[perpDirection - 2] = p;
+  // Make two new quads
+  var q0 = new URBGEN.Poly(p0, p, p2, q);
+  var q1 = new URBGEN.Poly(p, p1, q, p3);
+  newQuads.push(q0);
+  newQuads.push(q1);
+  return newQuads;
+};
+/**
  * Given two lines, defined by a point on the line and the angle of the line,
  * returns the point at which the two lines intersect. If the lines are colinear,
  * returns p1.
@@ -322,6 +372,18 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   return true;
 }
 /**
+ * Returns the point in {p0, p1} that has the shortest straight line distance to
+ * goal. If the distances are equal, returns p0.
+ */
+URBGEN.Util.nearest = function(p0, p1, target) {
+  var p0Distance = (URBGEN.Util.getLineSegmentLength(p0, target));
+  var p1Distance = (URBGEN.Util.getLineSegmentLength(p1, target));
+  if (p0Distance <= p1Distance) {
+    return p0;
+  }
+  return p1;
+}
+/**
  * Returns true if the specified point lies on the line through p0 and p1
  */
 URBGEN.Util.onLine = function(point, p0, p1) {
@@ -344,6 +406,55 @@ URBGEN.Util.onLineSegment = function(point, p0, p1) {
     return true;
   }
   return false;
+};
+/**
+ * Tests the specified poly to ascertain whether or not it is a quad. A quad is
+ * a poly whose four adjacent corners are neighbors, ie, there are no extra
+ * points along any of the edges. Returns a results object which contains
+ * isQuad (boolean) and 4 arrays, which contain the points composing a side if
+ * that side is not a line segment.
+ */
+URBGEN.Util.testForQuad = function(poly) {
+  var result = {
+    isQuad: true,
+    p0p1: [],
+    p0p2: [],
+    p1p3: [],
+    p2p3: []
+  };
+  if (poly.corners[0].neighbors[3] !== poly.corners[1]) {
+    result.isQuad = false;
+    var path = URBGEN.Util.getDirectedPath(poly.corners[0], poly.corners[1], 3);
+    result.p0p1 = path;
+  }
+  if (poly.corners[0].neighbors[2] !== poly.corners[2]) {
+    result.isQuad = false;
+    var path = URBGEN.Util.getDirectedPath(poly.corners[0], poly.corners[2], 2);
+    result.p0p2 = path;
+  }
+  if (poly.corners[1].neighbors[1] !== poly.corners[0]) {
+    result.isQuad = false;
+  }
+  if (poly.corners[1].neighbors[2] !== poly.corners[3]) {
+    result.isQuad = false;
+    var path = URBGEN.Util.getDirectedPath(poly.corners[1], poly.corners[3], 2);
+    result.p1p3 = path;
+  }
+  if (poly.corners[2].neighbors[0] !== poly.corners[0]) {
+    result.isQuad = false;
+  }
+  if (poly.corners[2].neighbors[3] !== poly.corners[3]) {
+    result.isQuad = false;
+    var path = URBGEN.Util.getDirectedPath(poly.corners[2], poly.corners[3], 3);
+    result.p2p3 = path;
+  }
+  if (poly.corners[3].neighbors[0] !== poly.corners[1]) {
+    result.isQuad = false;
+  }
+  if (poly.corners[3].neighbors[1] !== poly.corners[2]) {
+    result.isQuad = false;
+  }
+  return result;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
