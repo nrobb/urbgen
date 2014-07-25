@@ -78,11 +78,28 @@
       var points = [p0, p1, p2, p3];
       var poly = new URBGEN.Poly(p0, p1, p2, p3);
       /************************************************************************/
-      
-      var polys = URBGEN.Util.divideQuad2(poly, Math.random(), Math.random(), Math.floor(Math.random() * 2 + 2));
-      
+      var newPoints = [
+        URBGEN.Util.linearInterpolate(p0, p1, Math.random()),
+        URBGEN.Util.linearInterpolate(p0, p2, Math.random()),
+        URBGEN.Util.linearInterpolate(p2, p3, Math.random()),
+        URBGEN.Util.linearInterpolate(p1, p3, Math.random())
+        ];
+      var step1 = URBGEN.Util.divideQuad4(poly, newPoints);
+      p0 = step1[3].corners[0];
+      p1 = step1[3].corners[1];
+      p2 = step1[3].corners[2];
+      p3 = step1[3].corners[3];
+      var newPoints2 = [
+        URBGEN.Util.linearInterpolate(p0, p1, Math.random()),
+        URBGEN.Util.linearInterpolate(p0, p2, Math.random()),
+        URBGEN.Util.linearInterpolate(p2, p3, Math.random()),
+        URBGEN.Util.linearInterpolate(p1, p3, Math.random())
+        ];
+      var step2 = URBGEN.Util.divideQuad4(step1[3], newPoints2);
       /************************************************************************/
-      polys.forEach(drawTopLeft);
+      step2.forEach(drawTopLeft);
+      drawLine(p1, p3);
+      drawLine(p2, p3);
     </script>
   </body>
 </html>

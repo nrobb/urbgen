@@ -1,16 +1,9 @@
-// Edges with length less than MIN_LENGTH are marked as atomic
-var MIN_LENGTH = 10;
-var GRID_X = 0.25;
-
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // URBGEN
 ////////////////////////////////////////////////////////////////////////////////
+/**
+ * Global namespace
+ */
 var URBGEN = URBGEN || {};
 /**
  * Defines a point, specified by x, y, and z coords
@@ -312,6 +305,50 @@ URBGEN.Util.divideQuad2 = function(quad, rStart, rEnd, direction) {
   return newQuads;
 };
 /**
+ * Divides the specified quad into four quads, by adding new points to each edge
+ * and connecting these new points to the center.
+ */
+URBGEN.Util.divideQuad4 = function(quad, newPoints, center) {
+  var newQuads = [];
+  if (!URBGEN.Util.testForQuad(quad).isQuad) {
+    newQuads.push(quad);
+    return newQuads;
+  }
+  // If no center is specified, find one
+  if (center === undefined) {
+    center = URBGEN.Util.getQuadCenter(quad);
+  }
+  // Find the corners of the quad
+  var p0 = quad.corners[0];
+  var p1 = quad.corners[1];
+  var p2 = quad.corners[2];
+  var p3 = quad.corners[3];
+  // Insert the new points
+  URBGEN.Util.insertPoint(newPoints[0], p0, p1);
+  URBGEN.Util.insertPoint(newPoints[1], p0, p2);
+  URBGEN.Util.insertPoint(newPoints[2], p2, p3);
+  URBGEN.Util.insertPoint(newPoints[3], p1, p3);
+  // Set the new points and the center as neighbors
+  newPoints[0].neighbors[2] = center;
+  newPoints[1].neighbors[3] = center;
+  newPoints[2].neighbors[0] = center;
+  newPoints[3].neighbors[1] = center;
+  center.neighbors[0] = newPoints[0];
+  center.neighbors[1] = newPoints[1];
+  center.neighbors[2] = newPoints[2];
+  center.neighbors[3] = newPoints[3];
+  // Make 4 new quads
+  var q0 = new URBGEN.Poly(p0, newPoints[0], newPoints[1], center);
+  var q1 = new URBGEN.Poly(newPoints[0], p1, center, newPoints[3]);
+  var q2 = new URBGEN.Poly(newPoints[1], center, p2, newPoints[2]);
+  var q3 = new URBGEN.Poly(center, newPoints[3], newPoints[2], p3);
+  newQuads.push(q0);
+  newQuads.push(q1);
+  newQuads.push(q2);
+  newQuads.push(q3);
+  return newQuads;
+};
+/**
  * Given two lines, defined by a point on the line and the angle of the line,
  * returns the point at which the two lines intersect. If the lines are colinear,
  * returns p1.
@@ -424,6 +461,26 @@ URBGEN.Util.onLineSegment = function(point, p0, p1) {
   return false;
 };
 /**
+ * Finds the population center of the specified quad, depending on the location
+ * of the global city center and the city's denisty.
+ */
+URBGEN.Util.getQuadCenter = function(quad) {
+  var nearestCorner = URBGEN.Util.nearest(quad.corners, globalCityCenter);
+  var oppositeCorner;
+  for (var i = 0; i < quad.corners.length; i++) {
+    if (quad.corners[i] === nearestCorner) {
+      continue;
+    }
+    if (nearestCorner.neighbors.indexOf(quad.corners[i]) === -1) {
+      oppositeCorner = quad.corners[i];
+      break;
+    }
+  }
+  var center = URBGEN.Util.linearInterpolate(nearestCorner,
+    oppositeCorner, globalCityDensity);
+  return center;
+};
+/**
  * Tests the specified poly to ascertain whether or not it is a quad. A quad is
  * a poly whose four adjacent corners are neighbors, ie, there are no extra
  * points along any of the edges. Returns a results object which contains
@@ -476,6 +533,20 @@ URBGEN.Util.testForQuad = function(poly) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////////////////
+// USER CONTROLLED VARIABLES
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * CITY CENTER
+ */
+var globalCityCenter = new URBGEN.Point(800, 300, 0);
+/**
+ * CITY DENISTY - HIGHER NUMBER IS LOWER DENSITY
+ */
+var density = 0.3; // this is the number that will come from the slider
+var globalCityDensity = 1 - density; // convert it for use
+
+////////////////////////////////////////////////////////////////////////////////
 
 
 
