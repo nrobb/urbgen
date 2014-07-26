@@ -233,7 +233,7 @@ URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
     maxSteps = 100;
   }
   for (var i = 0; i < maxSteps; i++) {
-    if (path[i].neighbors[direction] !== undefined) {
+    if (path[i].neighbors[direction] !== 0) {
       var point = path[i].neighbors[direction];
       path.push(point);
       if (point === p1) {
@@ -298,8 +298,15 @@ URBGEN.Util.divideQuad2 = function(quad, rStart, rEnd, direction) {
   p.neighbors[perpDirection] = q;
   q.neighbors[perpDirection - 2] = p;
   // Make two new quads
-  var q0 = new URBGEN.Poly(p0, p, p2, q);
-  var q1 = new URBGEN.Poly(p, p1, q, p3);
+  var q0;
+  var q1;
+  if (direction === 3) {
+    q0 = new URBGEN.Poly(p0, p, p2, q);
+    q1 = new URBGEN.Poly(p, p1, q, p3);
+  } else {
+    q0 = new URBGEN.Poly(p0, p2, p, q);
+    q1 = new URBGEN.Poly(p, q, p1, p3);
+  }
   newQuads.push(q0);
   newQuads.push(q1);
   return newQuads;
