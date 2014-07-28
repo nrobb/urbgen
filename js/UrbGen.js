@@ -203,6 +203,30 @@ URBGEN.Builder.GridBuilder.prototype.setNewPoints = function(poly) {
   
 };
 /**
+ * Consructs a TargetBasedBuilder
+ */
+URBGEN.Builder.TargetBasedBuilder = function() {
+  URBGEN.Builder.call(this);
+};
+/**
+ * Creates a TargetBasedBuilder prototype that inherits from Builder.prototype.
+ */
+URBGEN.Builder.TargetBasedBuilder.prototype
+  = Object.create(URBGEN.Builder.prototype);
+/**
+ * Sets the constructor to refer to TargetBasedBuilder
+ */
+URBGEN.Builder.TargetBasedBuilder.prototype.constructor
+  = URBGEN.Builder.TargetBasedBuilder;
+/**
+ * Returns n {2, 4} points using the specified poly's targets and center.
+ */
+URBGEN.Builder.TargetBasedBuilder.prototype.setNewPoints = function(poly, n) {
+  if (n !== 2 || n !== 4) {
+    //TODO illegal argument
+  }
+};
+/**
  * Constructs a connector
  */
 URBGEN.Builder.Connector = function() {
