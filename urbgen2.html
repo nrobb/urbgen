@@ -79,15 +79,39 @@
       var poly = new URBGEN.Poly(p0, p1, p2, p3);
       /************************************************************************/
       
-      var polys = URBGEN.Util.divideQuad2(poly, Math.random() * 0.2 + 0.4, Math.random() * 0.2 + 0.4, 3);
-      polys = URBGEN.Util.divideQuad2(polys[0], Math.random() * 0.2 + 0.4, Math.random() * 0.2 + 0.4, 3);
-      polys = URBGEN.Util.divideQuad2(polys[0], Math.random() * 0.2 + 0.4, Math.random() * 0.2 + 0.4, 3);
-      polys = URBGEN.Util.divideQuad2(polys[0], Math.random() * 0.2 + 0.4, Math.random() * 0.2 + 0.4, 2);
-      polys = URBGEN.Util.divideQuad2(polys[0], Math.random() * 0.2 + 0.4, Math.random() * 0.2 + 0.4, 2);
-      console.debug(polys.length);
-      
+      var p = URBGEN.Util.linearInterpolate(p3, p2, 0.2);
+      URBGEN.Util.insertPoint(p, p2, 3);
+      var quadTest = URBGEN.Util.testForQuad(poly);
+      if (quadTest.isQuad === false) {
+        var edgePair;
+        var direction;
+        if (quadTest.horizontal.getMostSegmented().points.length >= quadTest.vertical.getMostSegmented().points.length) {
+          edgePair = quadTest.horizontal;
+          direction = 3;
+        } else {
+          edgePair = quadTest.vertical;
+          direction = 2;
+        }
+        var edge0 = edgePair.getMostSegmented();
+        var edge1 = edgePair.getOpposite(edge0);
+        var start = edge0.points[1];
+        var end;
+        if (edge1.points.length > 2) {
+          end = edge1.points[1];
+        } else {
+          //TODO change this
+          end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], 0.5);
+        }
+        if (edgePair.e0 === edge1) {
+          console.debug("ye");
+          var temp = end;
+          end = start;
+          start = temp;
+        }
+        var polys = URBGEN.Util.divideQuad2(poly, [start, end], direction);
+        polys.forEach(drawTopLeft);
+      }
       /************************************************************************/
-      polys.forEach(drawTopLeft);
     </script>
   </body>
 </html>

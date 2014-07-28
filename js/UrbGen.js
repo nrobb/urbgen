@@ -25,6 +25,7 @@ URBGEN.Point.prototype.setValues = function(point) {
  */
 URBGEN.Poly = function(p0, p1, p2, p3) {
   this.corners = [p0, p1, p2, p3];
+  this.atomic = false;
 };
 /**
  * Defines an edge with the specified start and end points
@@ -48,6 +49,64 @@ URBGEN.LineSegPair.prototype.getShort = function() {
     return l0;
   }
   return l1;
+};
+/**
+ * Defines an edge
+ */
+URBGEN.Edge = function(points, direction) {
+  this.points = points;
+  this.direction = direction;
+};
+/**
+ * Defines an edge pair with the specified edges
+ */
+URBGEN.EdgePair = function(e0, e1) {
+  this.e0 = e0;
+  this.e1 = e1;
+};
+/**
+ * Returns the shortest of the two edge that make up this edge pair
+ */
+URBGEN.EdgePair.prototype.getShort = function() {
+  var e0Length = URBGEN.Util.getLength(this.e0.points[0],
+    this.e0.points[this.e0.points.length - 1]);
+  var e1Length = URBGEN.Util.getLength(this.e1.points[0],
+    this.e1.points[this.e1.points.length - 1]);
+  if (e0Length <= e1Length) {
+    return this.e0;
+  }
+  return this.e1;
+};
+/**
+ * Returns the longest of the two edges that make up this edge pair
+ */
+URBGEN.EdgePair.prototype.getLong = function() {
+  var e0Length = URBGEN.Util.getLength(this.e0.points[0],
+    this.e0.points[this.e0.points.length - 1]);
+  var e1Length = URBGEN.Util.getLength(this.e1.points[0],
+    this.e1.points[this.e1.points.length - 1]);
+  if (e0Length > e1Length) {
+    return this.e0;
+  }
+  return this.e1;
+};
+/**
+ * Returns the edge in this edge pair composed of the largest number of segments
+ */
+URBGEN.EdgePair.prototype.getMostSegmented = function() {
+  if (this.e0.points.length >= this.e1.points.length) {
+    return this.e0;
+  }
+  return this.e1;
+};
+/**
+ * Returns the opposite edge to the specified edge
+ */
+URBGEN.EdgePair.prototype.getOpposite = function(edge) {
+  if (edge === this.e0) {
+    return this.e1;
+  }
+  return this.e0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,8 +142,8 @@ URBGEN.Util.getLineSegmentLength = function(p0, p1) {
  */
 URBGEN.Util.getPathLength = function(path) {
   var length = 0;
-  for (var i = 0; i < path.length - 1; i++) {
-    length += URBGEN.Util.getLineSegmentLength(path[i], path[i + 1]);
+  for (var i = 0; i < path.points.length - 1; i++) {
+    length += URBGEN.Util.getLineSegmentLength(path.points[i], path.points[i + 1]);
   }
   return length;
 };
@@ -228,15 +287,16 @@ URBGEN.Util.areaQuad = function(quad) {
  * maxSteps is not specified, defaults to 100.
  */
 URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
-  var path = [p0];
+  var points = [p0];
   if (maxSteps === undefined) {
     maxSteps = 100;
   }
   for (var i = 0; i < maxSteps; i++) {
-    if (path[i].neighbors[direction] !== 0) {
-      var point = path[i].neighbors[direction];
-      path.push(point);
+    if (points[i].neighbors[direction] !== 0) {
+      var point = points[i].neighbors[direction];
+      points.push(point);
       if (point === p1) {
+        var path = new URBGEN.Edge(points, direction);
         return path;
       }
     } else {
@@ -251,12 +311,12 @@ URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
 URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
   var points = [p0, p0, p0, p0];
   if (maxSteps === undefined) {
-    maxSteps = 10;
+    maxSteps = 100;
   }
   for (var i = 0; i < maxSteps; i++) {
     for (var j = 0; j < 4; j++) {
       var point = points[j].neighbors[j];
-      if (point !== undefined) {
+      if (point !== 0) {
         if (point === p1) {
           return j;
         }
@@ -272,12 +332,14 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
  * direction (2 or 3) to determine which of the quad's top left point's
  * neighbors is the first edge to divide.
  */
-URBGEN.Util.divideQuad2 = function(quad, rStart, rEnd, direction) {
+URBGEN.Util.divideQuad2 = function(quad, newPoints, direction) {
   var newQuads = [];
-  if (!URBGEN.Util.testForQuad(quad).isQuad) {
+  /* TODO might not be needed
+  if (URBGEN.Util.testForQuad(quad).isQuad) {
     newQuads.push(quad);
     return newQuads;
   }
+  */
   if (3 < direction || direction < 2) {
     newQuads.push(quad);
     return newQuads;
@@ -289,11 +351,16 @@ URBGEN.Util.divideQuad2 = function(quad, rStart, rEnd, direction) {
   var p1 = p0.neighbors[direction];
   var p2 = p0.neighbors[perpDirection];
   var p3 = p2.neighbors[direction];
-  // Add two new points to opposite edges
-  var p = URBGEN.Util.linearInterpolate(p0, p1, rStart);
-  URBGEN.Util.insertPoint(p, p0, p1);
-  var q = URBGEN.Util.linearInterpolate(p2, p3, rEnd);
-  URBGEN.Util.insertPoint(q, p2, p3);
+  // Get refs to the new points
+  var p = newPoints[0];
+  var q = newPoints[1];
+  // If the new points have not already been inserted, insert them
+  if (p0.neighbors[direction] !== p) {
+    URBGEN.Util.insertPoint(p, p0, p1);
+  }
+  if (p2.neighbors[direction] !== q) {
+    URBGEN.Util.insertPoint(q, p2, p3);
+  }
   // Set the new point's as neighbors
   p.neighbors[perpDirection] = q;
   q.neighbors[perpDirection - 2] = p;
@@ -495,44 +562,50 @@ URBGEN.Util.getQuadCenter = function(quad) {
  * that side is not a line segment.
  */
 URBGEN.Util.testForQuad = function(poly) {
-  var result = {
-    isQuad: true,
-    p0p1: [],
-    p0p2: [],
-    p1p3: [],
-    p2p3: []
-  };
+  var isQuad = true;
+  // Create four edges
+  var p0p1 = new URBGEN.Edge([poly.corners[0], poly.corners[1]], 3);
+  var p0p2 = new URBGEN.Edge([poly.corners[0], poly.corners[2]], 2);
+  var p1p3 = new URBGEN.Edge([poly.corners[1], poly.corners[3]], 2);
+  var p2p3 = new URBGEN.Edge([poly.corners[2], poly.corners[3]], 3);
+  // Check if all edges are line segments
   if (poly.corners[0].neighbors[3] !== poly.corners[1]) {
-    result.isQuad = false;
+    isQuad = false;
     var path = URBGEN.Util.getDirectedPath(poly.corners[0], poly.corners[1], 3);
-    result.p0p1 = path;
+    p0p1 = path;
   }
   if (poly.corners[0].neighbors[2] !== poly.corners[2]) {
-    result.isQuad = false;
+    isQuad = false;
     var path = URBGEN.Util.getDirectedPath(poly.corners[0], poly.corners[2], 2);
-    result.p0p2 = path;
+    p0p2 = path;
   }
   if (poly.corners[1].neighbors[1] !== poly.corners[0]) {
-    result.isQuad = false;
+    isQuad = false;
   }
   if (poly.corners[1].neighbors[2] !== poly.corners[3]) {
-    result.isQuad = false;
+    isQuad = false;
     var path = URBGEN.Util.getDirectedPath(poly.corners[1], poly.corners[3], 2);
-    result.p1p3 = path;
+    p1p3 = path;
   }
   if (poly.corners[2].neighbors[0] !== poly.corners[0]) {
-    result.isQuad = false;
+    isQuad = false;
   }
   if (poly.corners[2].neighbors[3] !== poly.corners[3]) {
-    result.isQuad = false;
+    isQuad = false;
     var path = URBGEN.Util.getDirectedPath(poly.corners[2], poly.corners[3], 3);
-    result.p2p3 = path;
+    p2p3 = path;
   }
   if (poly.corners[3].neighbors[0] !== poly.corners[1]) {
-    result.isQuad = false;
+    isQuad = false;
   }
   if (poly.corners[3].neighbors[1] !== poly.corners[2]) {
-    result.isQuad = false;
+    isQuad = false;
+  }
+  // Make the results object to return
+  var result = {
+    isQuad: isQuad,
+    horizontal: new URBGEN.EdgePair(p0p1, p2p3),
+    vertical: new URBGEN.EdgePair(p0p2, p1p3)
   }
   return result;
 };
