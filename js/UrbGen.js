@@ -135,9 +135,9 @@ URBGEN.Control.prototype.processPolys = function(polys) {
       this.prepareBuilder(polys[i]);
       builder.setValues();
       builder.setNewPoints();
-      dividedPolys = builder.dividePoly();
+      replacementPolys = builder.buildPolys();
       for (var j = 0; j < dividePolys.length; j++) {
-        newPolys.push(dividePolys[j]);
+        newPolys.push(replacementPolys[j]);
       }
       polysChanged = true;
     }
@@ -175,10 +175,15 @@ URBGEN.Builder.prototype.setValues = function(poly) {
  */
 URBGEN.Builder.prototype.setNewPoints = function() {};
 /**
- * Divides the current poly, using the current newPoints and current direction
+ * Returns an array of new polys created from this builder's current points.
  */
-URBGEN.Builder.prototype.dividePoly = function() {
-  return URBGEN.Util.dividePoly(this.poly, this.newPoints, this.direction);
+URBGEN.Builder.prototype.buildPolys = function() {
+  var polys = [];
+  for (var i = 0; i < this.newPoints.length; i++) {
+    var points = this.newPoints[i];
+    polys.push(new URBGEN.Poly(points[0], points[1], points[2], points[3]));
+  }
+  return polys;
 };
 /**
  * Consructs a grid builder
