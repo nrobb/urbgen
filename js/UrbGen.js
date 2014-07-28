@@ -113,6 +113,149 @@ URBGEN.EdgePair.prototype.getOpposite = function(edge) {
   }
   return this.e0;
 };
+/**
+ * Cnstructs a controller
+ */
+URBGEN.Control = function() {
+  this.builder;
+};
+/**
+ * Processes the specified polys
+ */
+URBGEN.Control.prototype.processPolys = function(polys) {
+  var newPolys = [];
+  var polysChanged = false;
+  for (var i = 0; i < polys.length; i++) {
+    if (polys[i].atomic) {
+      newPolys.push(polys[i]);
+    } else if (URBGEN.Util.getArea(polys[i]) < MIN_AREA) { //TODO what is MIN_AREA!?
+      polys[i].atomic = true;
+      newPolys.push(polys[i]);
+    } else {
+      this.prepareBuilder(polys[i]);
+      builder.setValues();
+      builder.setNewPoints();
+      dividedPolys = builder.dividePoly();
+      for (var j = 0; j < dividePolys.length; j++) {
+        newPolys.push(dividePolys[j]);
+      }
+      polysChanged = true;
+    }
+  }
+  if (polysChanged) {
+    return processPolys(newPolys);
+  }
+  return newPolys;
+};
+/**
+ * Sets the correct builder for the specified poly
+ */
+URBGEN.Control.prototype.prepareBuilder = function(poly) {
+  
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// URBGEN.Builder
+////////////////////////////////////////////////////////////////////////////////
+URBGEN.Builder = function() {
+  /** The poly being processed */
+  this.poly;
+  /** The new points to be used for division */
+  this.newPoints;
+  /** The direction to used for division */
+  this.direction;
+};
+URBGEN.Builder.prototype.setValues = function(poly) {
+  
+};
+/**
+ * Abstract
+ */
+URBGEN.Builder.prototype.setNewPoints = function() {};
+/**
+ * Divides the current poly, using the current newPoints and current direction
+ */
+URBGEN.Builder.prototype.dividePoly = function() {
+  return URBGEN.Util.dividePoly(this.poly, this.newPoints, this.direction);
+};
+/**
+ * Consructs a grid builder
+ */
+URBGEN.Builder.GridBuilder = function() {
+  URBGEN.Builder.call(this);
+};
+/**
+ * Creates a GridBuilder prototype that inherits from Builder.prototype.
+ */
+URBGEN.Builder.GridBuilder.prototype = Object.create(URBGEN.Builder.prototype);
+/**
+ * Sets the constructor to refer to GridBuilder
+ */
+URBGEN.Builder.GridBuilder.prototype.constructor = URBGEN.Builder.GridBuilder;
+/**
+ * Returns a start point and end point using the specified poly's grid angle. If
+ * the poly's grid angle cannot be used, sets the poly's grid angle to an angle
+ * as close to the original as possible and uses this new angle to find points.
+ */
+URBGEN.Builder.GridBuilder.prototype.setNewPoints = function(poly) {
+  
+};
+/**
+ * Constructs a connector
+ */
+URBGEN.Builder.Connector = function() {
+  URBGEN.Builder.call(this);
+};
+/**
+ * Creates a Connector prototype that inherits from Builder.prototype.
+ */
+URBGEN.Builder.Connector.prototype = Object.create(URBGEN.Builder.prototype);
+/**
+ * Sets the constructor to refer to Connector
+ */
+URBGEN.Builder.Connector.prototype.constructor = URBGEN.Builder.Connector;
+/**
+ * Given a poly that is not a quad, returns the first segment end point of the
+ * most segmented edge, and a point on the opposite edge. The latter point is
+ * either the first segment end (if the opposite edge has segments) or else a
+ * point determined by an appropriate method.
+ */
+URBGEN.Builder.Connector.prototype.setNewPoints = function(quadTestResult) {
+  var edgePair;
+  var direction;
+  // Find the Edge Pair containing the most segmented edge and the direction
+  if (quadTestResult.horizontal.getMostSegmented().points.length
+    >= quadTestResult.vertical.getMostSegmented().points.length) {
+      edgePair = quadTestResult.horizontal;
+      direction = 3;
+  } else {
+    edgePair = quadTestResult.vertical;
+    direction = 2;
+  }
+  // Get the edges
+  var edge0 = edgePair.getMostSegmented();
+  var edge1 = edgePair.getOpposite(edge0);
+  // Find the start and end points
+  var start = edge0.points[1];
+  var end;
+  if (edge1.points.length > 2) {
+    end = edge1.points[1];
+  } else {
+    //TODO change this
+    end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], 0.5);
+  }
+  // If the start and end points need swapped, swap them
+  if (edgePair.e0 === edge1) {
+    var temp = end;
+    end = start;
+    start = temp;
+  }
+  // Return the points
+  var points = [start, end];
+  return points;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -346,22 +489,22 @@ URBGEN.Util.dividePoly = function(poly, points, direction) {
  * direction (2 or 3) to determine which of the quad's top left point's
  * neighbors is the first edge to divide.
  */
-URBGEN.Util.dividePoly2 = function(quad, newPoints, direction) {
-  var newQuads = [];
+URBGEN.Util.dividePoly2 = function(poly, newPoints, direction) {
+  var newPolys = [];
   /* TODO might not be needed
-  if (URBGEN.Util.testForQuad(quad).isQuad) {
-    newQuads.push(quad);
-    return newQuads;
+  if (URBGEN.Util.testForQuad(poly).isQuad) {
+    newPolys.push(poly);
+    return newPolys;
   }
   */
   if (3 < direction || direction < 2) {
-    newQuads.push(quad);
-    return newQuads;
+    newPolys.push(poly);
+    return newPolys;
   }
   // Find the perpendicular direction
   var perpDirection = ((direction + 1) % 2) + 2;
   // Find the corners
-  var p0 = quad.corners[0];
+  var p0 = poly.corners[0];
   var p1 = p0.neighbors[direction];
   var p2 = p0.neighbors[perpDirection];
   var p3 = p2.neighbors[direction];
@@ -388,26 +531,26 @@ URBGEN.Util.dividePoly2 = function(quad, newPoints, direction) {
     q0 = new URBGEN.Poly(p0, p2, p, q);
     q1 = new URBGEN.Poly(p, q, p1, p3);
   }
-  newQuads.push(q0);
-  newQuads.push(q1);
-  return newQuads;
+  newPolys.push(q0);
+  newPolys.push(q1);
+  return newPolys;
 };
 /**
  * Divides the specified quad into four quads, by adding new points to each edge
  * and connecting these new points to the center.
  */
-URBGEN.Util.dividePoly4 = function(quad, newPoints) {
-  var newQuads = [];
-  if (!URBGEN.Util.testForQuad(quad).isQuad) {
-    newQuads.push(quad);
-    return newQuads;
+URBGEN.Util.dividePoly4 = function(poly, newPoints) {
+  var newPolys = [];
+  if (!URBGEN.Util.testForQuad(poly).isQuad) {
+    newPolys.push(poly);
+    return newPolys;
   }
-  var center = URBGEN.Util.getQuadCenter(quad);
-  // Find the corners of the quad
-  var p0 = quad.corners[0];
-  var p1 = quad.corners[1];
-  var p2 = quad.corners[2];
-  var p3 = quad.corners[3];
+  var center = URBGEN.Util.getQuadCenter(poly);
+  // Find the corners of the poly
+  var p0 = poly.corners[0];
+  var p1 = poly.corners[1];
+  var p2 = poly.corners[2];
+  var p3 = poly.corners[3];
   // Insert the new points
   URBGEN.Util.insertPoint(newPoints[0], p0, p1);
   URBGEN.Util.insertPoint(newPoints[1], p0, p2);
@@ -427,11 +570,11 @@ URBGEN.Util.dividePoly4 = function(quad, newPoints) {
   var q1 = new URBGEN.Poly(newPoints[0], p1, center, newPoints[3]);
   var q2 = new URBGEN.Poly(newPoints[1], center, p2, newPoints[2]);
   var q3 = new URBGEN.Poly(center, newPoints[3], newPoints[2], p3);
-  newQuads.push(q0);
-  newQuads.push(q1);
-  newQuads.push(q2);
-  newQuads.push(q3);
-  return newQuads;
+  newPolys.push(q0);
+  newPolys.push(q1);
+  newPolys.push(q2);
+  newPolys.push(q3);
+  return newPolys;
 };
 /**
  * Given two lines, defined by a point on the line and the angle of the line,
