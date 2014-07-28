@@ -28,6 +28,7 @@ URBGEN.Poly = function(p0, p1, p2, p3) {
   this.atomic = false;
 };
 /**
+ * DEPRECATED
  * Defines an edge with the specified start and end points
  */
 URBGEN.LineSegment = function(p0, p1, direction) {
@@ -36,12 +37,16 @@ URBGEN.LineSegment = function(p0, p1, direction) {
   this.direction = direction;
 };
 /**
+ * DEPRECATED
  * Defines an edge pair with the specified edges
  */
 URBGEN.LineSegPair = function(l0, l1) {
   this.l0 = l0;
   this.l1 = l1;
 };
+/**
+ * DEPRECATED
+ */
 URBGEN.LineSegPair.prototype.getShort = function() {
   var l0Length = URBGEN.Util.getLength(l0.start, l0.end);
   var l1Length = URBGEN.Util.getLength(l1.start, l1.end);
@@ -65,7 +70,7 @@ URBGEN.EdgePair = function(e0, e1) {
   this.e1 = e1;
 };
 /**
- * Returns the shortest of the two edge that make up this edge pair
+ * Returns the shortest of the two edgeS that make up this edge pair
  */
 URBGEN.EdgePair.prototype.getShort = function() {
   var e0Length = URBGEN.Util.getLength(this.e0.points[0],
@@ -327,12 +332,21 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
   return false;
 };
 /**
+ * Calls the appropriate method to divide the specified poly
+ */
+URBGEN.Util.dividePoly = function(poly, points, arg3) {
+  if (points.length === 2) {
+    return URBGEN.Util.dividePoly2(poly, points, arg3);
+  }
+  return URBGEN.Util.dividePoly4(poly, points, arg3);
+};
+/**
  * Divides the specified quad into two quads, by inserting a line connecting
  * opposite edges, using rStart and rEnd to determine the division points and
  * direction (2 or 3) to determine which of the quad's top left point's
  * neighbors is the first edge to divide.
  */
-URBGEN.Util.divideQuad2 = function(quad, newPoints, direction) {
+URBGEN.Util.dividePoly2 = function(quad, newPoints, direction) {
   var newQuads = [];
   /* TODO might not be needed
   if (URBGEN.Util.testForQuad(quad).isQuad) {
@@ -382,7 +396,7 @@ URBGEN.Util.divideQuad2 = function(quad, newPoints, direction) {
  * Divides the specified quad into four quads, by adding new points to each edge
  * and connecting these new points to the center.
  */
-URBGEN.Util.divideQuad4 = function(quad, newPoints, center) {
+URBGEN.Util.dividePoly4 = function(quad, newPoints, center) {
   var newQuads = [];
   if (!URBGEN.Util.testForQuad(quad).isQuad) {
     newQuads.push(quad);
@@ -451,13 +465,13 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
   return point;
 };
 /**
- * Delegate to the relevant function.
+ * Delegate to the relevant function. arg3 can be either a point or a direction.
  */
-URBGEN.Util.insertPoint = function() {
-  if (isNaN(arguments[2])) {
-    URBGEN.Util.insertPointUsingPoints(arguments[0], arguments[1], arguments[2]);
+URBGEN.Util.insertPoint = function(newPoint, p0, arg3) {
+  if (isNaN(arg3)) {
+    return URBGEN.Util.insertPointUsingPoints(newPoint, p0, arg3);
   } else {
-    URBGEN.Util.insertPointUsingDir(arguments[0], arguments[1], arguments[2]);
+    return URBGEN.Util.insertPointUsingDir(newPoint, p0, arg3);
   }
 }
 /**

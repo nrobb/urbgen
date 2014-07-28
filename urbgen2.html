@@ -80,7 +80,7 @@
       /************************************************************************/
       
       var p = URBGEN.Util.linearInterpolate(p3, p2, 0.9);
-      URBGEN.Util.insertPoint(p, p2, 3);
+      console.debug(URBGEN.Util.insertPoint(p, p2, p3));
       var quadTest = URBGEN.Util.testForQuad(poly);
       if (quadTest.isQuad === false) {
         
@@ -128,7 +128,7 @@ var getConnectingPoints = function(quadTestResult) {
 
         var quadTest = URBGEN.Util.testForQuad(poly);
         var points = getConnectingPoints(quadTest);
-        var polys = URBGEN.Util.divideQuad2(poly, points, 3);
+        var polys = URBGEN.Util.dividePoly(poly, points, 3);
         polys.forEach(drawTopLeft);
       }
       /************************************************************************/
