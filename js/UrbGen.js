@@ -334,11 +334,11 @@ URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
 /**
  * Calls the appropriate method to divide the specified poly
  */
-URBGEN.Util.dividePoly = function(poly, points, arg3) {
+URBGEN.Util.dividePoly = function(poly, points, direction) {
   if (points.length === 2) {
-    return URBGEN.Util.dividePoly2(poly, points, arg3);
+    return URBGEN.Util.dividePoly2(poly, points, direction);
   }
-  return URBGEN.Util.dividePoly4(poly, points, arg3);
+  return URBGEN.Util.dividePoly4(poly, points);
 };
 /**
  * Divides the specified quad into two quads, by inserting a line connecting
@@ -396,16 +396,13 @@ URBGEN.Util.dividePoly2 = function(quad, newPoints, direction) {
  * Divides the specified quad into four quads, by adding new points to each edge
  * and connecting these new points to the center.
  */
-URBGEN.Util.dividePoly4 = function(quad, newPoints, center) {
+URBGEN.Util.dividePoly4 = function(quad, newPoints) {
   var newQuads = [];
   if (!URBGEN.Util.testForQuad(quad).isQuad) {
     newQuads.push(quad);
     return newQuads;
   }
-  // If no center is specified, find one
-  if (center === undefined) {
-    center = URBGEN.Util.getQuadCenter(quad);
-  }
+  var center = URBGEN.Util.getQuadCenter(quad);
   // Find the corners of the quad
   var p0 = quad.corners[0];
   var p1 = quad.corners[1];

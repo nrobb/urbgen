@@ -77,12 +77,8 @@
       initNeighbors();
       var points = [p0, p1, p2, p3];
       var poly = new URBGEN.Poly(p0, p1, p2, p3);
-      /************************************************************************/
       
-      var p = URBGEN.Util.linearInterpolate(p3, p2, 0.9);
-      console.debug(URBGEN.Util.insertPoint(p, p2, p3));
-      var quadTest = URBGEN.Util.testForQuad(poly);
-      if (quadTest.isQuad === false) {
+      /************************************************************************/
         
 /**
  * Given a poly that is not a quad, returns the first segment end point of the
@@ -125,12 +121,6 @@ var getConnectingPoints = function(quadTestResult) {
   return points;
 }
 
-
-        var quadTest = URBGEN.Util.testForQuad(poly);
-        var points = getConnectingPoints(quadTest);
-        var polys = URBGEN.Util.dividePoly(poly, points, 3);
-        polys.forEach(drawTopLeft);
-      }
       /************************************************************************/
     </script>
   </body>
