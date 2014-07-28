@@ -80,17 +80,7 @@
       var polys = [poly];
       
       /************************************************************************/
-      var p = new URBGEN.Util.linearInterpolate(p0, p1, 0.2);
-      var q = new URBGEN.Util.linearInterpolate(p2, p3, 0.4);
-      URBGEN.Util.insertPoint(p0, p1, p);
-      URBGEN.Util.insertPoint(p2, p3, q);
-      p.neighbors[2] = q;
-      q.neighbors[0] = p;
-      var points = [[p0, p, p2, q], [p, p1, q, p3]];
-      var builder = new URBGEN.Builder();
-      builder.newPoints = points;
-      var newpolys = builder.buildPolys();
-      newpolys.forEach(drawTopLeft);
+      
       /************************************************************************/
       
     </script>

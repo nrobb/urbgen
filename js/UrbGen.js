@@ -426,9 +426,6 @@ URBGEN.Util.getNewPoint = function(point, direction, r) {
  * through p0 and p1, relative to the line segment p0p1.
  */
 URBGEN.Util.getPointAsRatio = function(point, p0, p1) {
-  if (!URBGEN.Util.pointOnLine(point, p0, p1)) {
-    return NaN;
-  }
   var d1 = point.x - p0.x;
   var d2 = p1.x - p0.x;
   return d1 / d2;
@@ -676,6 +673,33 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   newPoint.neighbors[direction - 2] = p;
   return true;
 }
+/**
+ * Returns a point on the specified edge (including the edge's start and end
+ * points) that is within the specified distance of the specified point. If no
+ * such point exists, returns the original point.
+ */
+URBGEN.Util.checkNearPoints = function(edge, point, distance) {
+  // Find the point as a ratio of the line
+  var pointR = URBGEN.Util.getPointAsRatio(point, edge.points[0],
+    edge.points[edge.points.length - 1]);
+  // Use the line length to get the distance as a ration
+  var length = URBGEN.Util.getLength(edge.points[0],
+    edge.points[edge.points.length - 1]);
+  var distanceR = distance / length;
+  // Get the range in which points must be found
+  var minR = Math.max(0, pointR - distanceR);
+  var maxR = Math.min(1, pointR + distanceR);
+  // Check each point on the edge, returning the first that lies in range
+  for (var i = 0; i < edge.points.length; i++) {
+    var currPoint = edge.points[i];
+    var r = URBGEN.Util.getPointAsRatio(currPoint, edge.points[0],
+      edge.points[edge.points.length - 1]);
+    if (minR <= r && r <= maxR) {
+      return currPoint;
+    }
+  }
+  return point;
+};
 /**
  * Returns the point in points that has the shortest straight line distance to
  * target. If any points have equal distances to target, returns the point which
