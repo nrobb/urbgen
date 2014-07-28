@@ -674,11 +674,12 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   return true;
 }
 /**
- * Returns a point on the specified edge (including the edge's start and end
- * points) that is within the specified distance of the specified point. If no
- * such point exists, returns the original point.
+ * Returns a point on the specified edge that is within the specified distance
+ * of the specified point. If includeEnds is true, then the start and end points
+ * of the edge will be included in the search. If no such point exists, returns
+ * the original point.
  */
-URBGEN.Util.checkNearPoints = function(edge, point, distance) {
+URBGEN.Util.checkNearPoints = function(edge, point, distance, includeEnds) {
   // Find the point as a ratio of the line
   var pointR = URBGEN.Util.getPointAsRatio(point, edge.points[0],
     edge.points[edge.points.length - 1]);
@@ -690,7 +691,16 @@ URBGEN.Util.checkNearPoints = function(edge, point, distance) {
   var minR = Math.max(0, pointR - distanceR);
   var maxR = Math.min(1, pointR + distanceR);
   // Check each point on the edge, returning the first that lies in range
-  for (var i = 0; i < edge.points.length; i++) {
+  var start;
+  var end;
+  if (includeEnds) {
+    start = 0;
+    end = edge.points.length;
+  } else {
+    start = 1;
+    end = edge.points.length - 1;
+  }
+  for (var i = start; i < end; i++) {
     var currPoint = edge.points[i];
     var r = URBGEN.Util.getPointAsRatio(currPoint, edge.points[0],
       edge.points[edge.points.length - 1]);
