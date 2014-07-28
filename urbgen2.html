@@ -79,36 +79,56 @@
       var poly = new URBGEN.Poly(p0, p1, p2, p3);
       /************************************************************************/
       
-      var p = URBGEN.Util.linearInterpolate(p3, p2, 0.2);
+      var p = URBGEN.Util.linearInterpolate(p3, p2, 0.9);
       URBGEN.Util.insertPoint(p, p2, 3);
       var quadTest = URBGEN.Util.testForQuad(poly);
       if (quadTest.isQuad === false) {
-        var edgePair;
-        var direction;
-        if (quadTest.horizontal.getMostSegmented().points.length >= quadTest.vertical.getMostSegmented().points.length) {
-          edgePair = quadTest.horizontal;
-          direction = 3;
-        } else {
-          edgePair = quadTest.vertical;
-          direction = 2;
-        }
-        var edge0 = edgePair.getMostSegmented();
-        var edge1 = edgePair.getOpposite(edge0);
-        var start = edge0.points[1];
-        var end;
-        if (edge1.points.length > 2) {
-          end = edge1.points[1];
-        } else {
-          //TODO change this
-          end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], 0.5);
-        }
-        if (edgePair.e0 === edge1) {
-          console.debug("ye");
-          var temp = end;
-          end = start;
-          start = temp;
-        }
-        var polys = URBGEN.Util.divideQuad2(poly, [start, end], direction);
+        
+/**
+ * Given a poly that is not a quad, returns the first segment end point of the
+ * most segmented edge, and a point on the opposite edge. The latter point is
+ * either the first segment end (if the opposite edge has segments) or else a
+ * point determined by an appropriate method.
+ */
+var getConnectingPoints = function(quadTestResult) {
+  var edgePair;
+  var direction;
+  // Find the Edge Pair containing the most segmented edge and the direction
+  if (quadTestResult.horizontal.getMostSegmented().points.length
+    >= quadTestResult.vertical.getMostSegmented().points.length) {
+      edgePair = quadTestResult.horizontal;
+      direction = 3;
+  } else {
+    edgePair = quadTestResult.vertical;
+    direction = 2;
+  }
+  // Get the edges
+  var edge0 = edgePair.getMostSegmented();
+  var edge1 = edgePair.getOpposite(edge0);
+  // Find the start and end points
+  var start = edge0.points[1];
+  var end;
+  if (edge1.points.length > 2) {
+    end = edge1.points[1];
+  } else {
+    //TODO change this
+    end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], 0.5);
+  }
+  // If the start and end points need swapped, swap them
+  if (edgePair.e0 === edge1) {
+    var temp = end;
+    end = start;
+    start = temp;
+  }
+  // Return the points
+  var points = [start, end];
+  return points;
+}
+
+
+        var quadTest = URBGEN.Util.testForQuad(poly);
+        var points = getConnectingPoints(quadTest);
+        var polys = URBGEN.Util.divideQuad2(poly, points, 3);
         polys.forEach(drawTopLeft);
       }
       /************************************************************************/
