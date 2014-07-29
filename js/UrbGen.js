@@ -61,6 +61,8 @@ URBGEN.LineSegPair.prototype.getShort = function() {
 URBGEN.Edge = function(points, direction) {
   this.points = points;
   this.direction = direction;
+  this.angle = URBGEN.Util.getAngle(this.points[0],
+    this.points[this.points.length - 1]);
 };
 /**
  * Defines an edge pair with the specified edges
@@ -160,25 +162,25 @@ URBGEN.Control.prototype.prepareBuilder = function(poly) {
   var p1 = poly.corners[1];
   var p2 = poly.corners[2];
   var p3 = poly.corners[3];
-  if (random < 0.333) {
+  if (random < 0) {
     this.builder = this.horizontalBuilder;
     this.builder.origin = URBGEN.Util.linearInterpolate(p0, p2, r);
-    this.poly = poly;
+    this.builder.poly = poly;
     this.builder.angles = [URBGEN.Util.getGridAngle(p0, p2)];
-  } else if (random < 2) {
+  } else if (random < 0) {
     this.builder = this.verticalBuilder;
     this.builder.origin = URBGEN.Util.linearInterpolate(p0, p1, r);
-    this.poly = poly;
+    this.builder.poly = poly;
     this.builder.angles = [URBGEN.Util.getGridAngle(p0, p1)];
   } else {
     this.builder = this.gridBuilder;
     this.builder.origin = URBGEN.Util.getPopCenter(poly);
-    this.poly = poly;
+    this.builder.poly = poly;
     this.builder.angles = [
       URBGEN.Util.getGridAngle(p0, p1),
       URBGEN.Util.getGridAngle(p0, p2),
-      URBGEN.Util.getGridAngle(p1, p3),
-      URBGEN.Util.getGridAngle(p2, p3)
+      URBGEN.Util.getGridAngle(p2, p3),
+      URBGEN.Util.getGridAngle(p1, p3)
     ];
   }
 };
@@ -238,7 +240,36 @@ URBGEN.Builder.GridBuilder.prototype.constructor = URBGEN.Builder.GridBuilder;
  * as close to the original as possible and uses this new angle to find points.
  */
 URBGEN.Builder.GridBuilder.prototype.setNewPoints = function() {
-  
+  var center = this.origin;
+  var points = [0, 0, 0, 0];
+  var edges = [
+    new URBGEN.Edge([this.poly.corners[0], this.poly.corners[1]], 3),
+    new URBGEN.Edge([this.poly.corners[0], this.poly.corners[2]], 2),
+    new URBGEN.Edge([this.poly.corners[2], this.poly.corners[3]], 3),
+    new URBGEN.Edge([this.poly.corners[1], this.poly.corners[3]], 2)
+  ];
+  for (var i = 0; i < edges.length; i++) {
+    var edge = edges[i];
+    var intersect = URBGEN.Util.getIntersect(edge.points[0], edge.angle, center, this.angles[i]);
+    var r = URBGEN.Util.getPointAsRatio(intersect, edge.points[0], edge.points[edge.points.length - 1]);
+    if (r > 0.9) {
+      r = 0.9;
+    }
+    if (r < 0.1) {
+      r = 0.1;
+    }
+    intersect = URBGEN.Util.linearInterpolate(edge.points[0], edge.points[edge.points.length - 1], r);
+    intersect = URBGEN.Util.checkNearPoints(edge, intersect, 50, false);
+    points[i] = intersect;
+    center.neighbors[i] = points[i];
+    points[i].neighbors[(i + 2) % 4] = center;
+  }
+  this.newPoints = [
+    [poly.corners[0], points[0], points[1], center],
+    [points[0], poly.corners[1], center, points[3]],
+    [points[1], center, poly.corners[2], points[2]],
+    [center, points[3], points[2], poly.corners[3]]
+  ];
 };
 /**
  * Consructs a HorizontalBuilder
@@ -899,6 +930,6 @@ var globalCityDensity = 1 - density; // convert it for use
 /**
  * ANGLE OF GRID'S X AXIS
  */
-var globalCityGridX = 0.2;
+var globalCityGridX = 0.225;
 
 ////////////////////////////////////////////////////////////////////////////////

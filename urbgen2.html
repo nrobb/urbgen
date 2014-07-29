@@ -77,10 +77,14 @@
       initNeighbors();
       var points = [topLeft, topRight, bottomLeft, bottomRight];
       var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
-      var polys = [poly];
-      
+
       /************************************************************************/
-      
+      var control = new URBGEN.Control();
+      control.prepareBuilder(poly);
+      control.builder.setNewPoints();
+      var polys = control.builder.buildPolys();
+      console.debug(polys.length);
+      polys.forEach(drawTopLeft);
       /************************************************************************/
       
     </script>
