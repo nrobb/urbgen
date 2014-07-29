@@ -71,22 +71,35 @@
       // Set up the points
       var topLeft = new URBGEN.Point(10, 20, 0);
       var topRight = new URBGEN.Point(1050, 25, 0);
-      var bottomLeft = new URBGEN.Point(20, 500, 0);
-      var bottomRight = new URBGEN.Point(1200, 605, 0);
+      var bottomLeft = new URBGEN.Point(20, 600, 0);
+      var bottomRight = new URBGEN.Point(1200, 500, 0);
       // Set each point's neighbors correctly
       initNeighbors();
       var points = [topLeft, topRight, bottomLeft, bottomRight];
       var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
-
-      /************************************************************************/
+      var polys = [poly];
+      var minArea = 220000;
       var control = new URBGEN.Control();
-      control.prepareBuilder(poly);
-      control.builder.setNewPoints();
-      var polys = control.builder.buildPolys();
-      console.debug(polys.length);
-      polys.forEach(drawTopLeft);
       /************************************************************************/
       
+var test = function(polys) {
+  var ret = [];
+  for (var i = 0; i < polys.length; i++) {
+    control.prepareBuilder(polys[i]);
+    control.builder.setNewPoints();
+    var newPolys = control.builder.buildPolys();
+    for (var j = 0; j < newPolys.length; j++){
+      ret.push(newPolys[j]);
+    }
+  }
+  return ret;
+};
+      /************************************************************************/
+      for (var i = 0; i < 10; i++) {
+        polys = test(polys);
+      }
+      console.debug(polys.length);
+      polys.forEach(drawTopLeft);
     </script>
   </body>
 </html>

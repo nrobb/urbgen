@@ -167,7 +167,7 @@ URBGEN.Control.prototype.prepareBuilder = function(poly) {
     this.builder.origin = URBGEN.Util.linearInterpolate(p0, p2, r);
     this.builder.poly = poly;
     this.builder.angles = [URBGEN.Util.getGridAngle(p0, p2)];
-  } else if (random < 0) {
+  } else if (random < 2) {
     this.builder = this.verticalBuilder;
     this.builder.origin = URBGEN.Util.linearInterpolate(p0, p1, r);
     this.builder.poly = poly;
@@ -264,6 +264,10 @@ URBGEN.Builder.GridBuilder.prototype.setNewPoints = function() {
     center.neighbors[i] = points[i];
     points[i].neighbors[(i + 2) % 4] = center;
   }
+  URBGEN.Util.insertPoint(points[0], poly.corners[0], 3);
+  URBGEN.Util.insertPoint(points[1], poly.corners[0], 2);
+  URBGEN.Util.insertPoint(points[2], poly.corners[2], 3);
+  URBGEN.Util.insertPoint(points[3], poly.corners[1], 2);
   this.newPoints = [
     [poly.corners[0], points[0], points[1], center],
     [points[0], poly.corners[1], center, points[3]],
@@ -295,7 +299,7 @@ URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function() {
   var p1 = poly.corners[1];
   var p2 = poly.corners[2];
   var p3 = poly.corners[3];
-  var edge = new URBGEN.Edge([p0, p1], 2);
+  var edge = new URBGEN.Edge([p0, p2], 2);
   var p = this.origin;
   var pAngle = this.angles[0];
   var p1Angle = URBGEN.Util.getAngle(p1, p3);
@@ -309,8 +313,8 @@ URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function() {
   }
   q = URBGEN.Util.linearInterpolate(p1, p3, r);
   q = URBGEN.Util.checkNearPoints(edge, q, 50, false);
-  URBGEN.Util.insertPoint(p0, p2, p);
-  URBGEN.Util.insertPoint(p1, p3, q);
+  URBGEN.Util.insertPoint(p, p0, 2);
+  URBGEN.Util.insertPoint(q, p1, 2);
   p.neighbors[3] = q;
   q.neighbors[2] = p;
   this.newPoints = [
@@ -335,10 +339,7 @@ URBGEN.Builder.VerticalBuilder.prototype
 URBGEN.Builder.VerticalBuilder.prototype.constructor
   = URBGEN.Builder.VerticalBuilder;
 /**
- * Given a poly that is not a quad, returns the first segment end point of the
- * most segmented edge, and a point on the opposite edge. The latter point is
- * either the first segment end (if the opposite edge has segments) or else a
- * point determined by an appropriate method.
+ *
  */
 URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function() {
   var p0 = poly.corners[0];
@@ -359,8 +360,8 @@ URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function() {
   }
   q = URBGEN.Util.linearInterpolate(p2, p3, r);
   q = URBGEN.Util.checkNearPoints(edge, q, 50, false);
-  URBGEN.Util.insertPoint(p0, p1, p);
-  URBGEN.Util.insertPoint(p2, p3, q);
+  URBGEN.Util.insertPoint(p, p0, 3);
+  URBGEN.Util.insertPoint(q, p2, 3);
   p.neighbors[2] = q;
   q.neighbors[0] = p;
   this.newPoints = [
@@ -530,11 +531,11 @@ URBGEN.Util.areaTri = function(p0, p1, p2) {
 /**
  * Returns the area of the specified quad.
  */
-URBGEN.Util.areaQuad = function(quad) {
-  var x0 = quad.corners[3].x - quad.corners[0].x;
-  var y0 = quad.corners[3].y - quad.corners[0].y;
-  var x1 = quad.corners[1].x - quad.corners[2].x;
-  var y1 = quad.corners[1].y - quad.corners[2].y;
+URBGEN.Util.areaPoly = function(poly) {
+  var x0 = poly.corners[3].x - poly.corners[0].x;
+  var y0 = poly.corners[3].y - poly.corners[0].y;
+  var x1 = poly.corners[1].x - poly.corners[2].x;
+  var y1 = poly.corners[1].y - poly.corners[2].y;
   var area = Math.abs((x0 * y1 - x1 * y0) / 2);
   return area;
 };
@@ -750,6 +751,12 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   }
   var maxSteps = 100;
   for (var i = 0; i < maxSteps; i++) {
+    if (p0.neighbors[direction] === 0) {
+      console.debug(p0);
+      console.debug(p0.neighbors[0]);
+      console.debug(p0.neighbors[3]);
+      console.debug(newPoint);
+    }
     var r = URBGEN.Util.getPointAsRatio(newPoint, p0, p0.neighbors[direction]);
     if (r < 1) {
       return URBGEN.Util.insertPointUsingPoints(newPoint, p0, p0.neighbors[direction])
