@@ -204,86 +204,55 @@ URBGEN.Builder.GridBuilder.prototype.constructor = URBGEN.Builder.GridBuilder;
  * the poly's grid angle cannot be used, sets the poly's grid angle to an angle
  * as close to the original as possible and uses this new angle to find points.
  */
-URBGEN.Builder.GridBuilder.prototype.setNewPoints = function(poly) {
+URBGEN.Builder.GridBuilder.prototype.setNewPoints = function() {
   
 };
 /**
- * Consructs a TargetBasedBuilder
+ * Consructs a HorizontalBuilder
  */
-URBGEN.Builder.TargetBasedBuilder = function() {
+URBGEN.Builder.HorizontalBuilder = function() {
   URBGEN.Builder.call(this);
 };
 /**
- * Creates a TargetBasedBuilder prototype that inherits from Builder.prototype.
+ * Creates a HorizontalBuilder prototype that inherits from Builder.prototype.
  */
-URBGEN.Builder.TargetBasedBuilder.prototype
+URBGEN.Builder.HorizontalBuilder.prototype
   = Object.create(URBGEN.Builder.prototype);
 /**
- * Sets the constructor to refer to TargetBasedBuilder
+ * Sets the constructor to refer to HorizontalBuilder
  */
-URBGEN.Builder.TargetBasedBuilder.prototype.constructor
-  = URBGEN.Builder.TargetBasedBuilder;
+URBGEN.Builder.HorizontalBuilder.prototype.constructor
+  = URBGEN.Builder.HorizontalBuilder;
 /**
  * Returns n {2, 4} points using the specified poly's targets and center.
  */
-URBGEN.Builder.TargetBasedBuilder.prototype.setNewPoints = function(poly, n) {
-  if (n !== 2 || n !== 4) {
-    //TODO illegal argument
-  }
+URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function() {
+  
 };
 /**
- * Constructs a connector
+ * Constructs a VerticalBuilder
  */
-URBGEN.Builder.Connector = function() {
+URBGEN.Builder.VerticalBuilder = function() {
   URBGEN.Builder.call(this);
 };
 /**
- * Creates a Connector prototype that inherits from Builder.prototype.
+ * Creates a VerticalBuilder prototype that inherits from Builder.prototype.
  */
-URBGEN.Builder.Connector.prototype = Object.create(URBGEN.Builder.prototype);
+URBGEN.Builder.VerticalBuilder.prototype
+  = Object.create(URBGEN.Builder.prototype);
 /**
- * Sets the constructor to refer to Connector
+ * Sets the constructor to refer to VerticalBuilder
  */
-URBGEN.Builder.Connector.prototype.constructor = URBGEN.Builder.Connector;
+URBGEN.Builder.VerticalBuilder.prototype.constructor
+  = URBGEN.Builder.VerticalBuilder;
 /**
  * Given a poly that is not a quad, returns the first segment end point of the
  * most segmented edge, and a point on the opposite edge. The latter point is
  * either the first segment end (if the opposite edge has segments) or else a
  * point determined by an appropriate method.
  */
-URBGEN.Builder.Connector.prototype.setNewPoints = function(quadTestResult) {
-  var edgePair;
-  var direction;
-  // Find the Edge Pair containing the most segmented edge and the direction
-  if (quadTestResult.horizontal.getMostSegmented().points.length
-    >= quadTestResult.vertical.getMostSegmented().points.length) {
-      edgePair = quadTestResult.horizontal;
-      direction = 3;
-  } else {
-    edgePair = quadTestResult.vertical;
-    direction = 2;
-  }
-  // Get the edges
-  var edge0 = edgePair.getMostSegmented();
-  var edge1 = edgePair.getOpposite(edge0);
-  // Find the start and end points
-  var start = edge0.points[1];
-  var end;
-  if (edge1.points.length > 2) {
-    end = edge1.points[1];
-  } else {
-    //TODO change this
-    end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], 0.5);
-  }
-  // If the start and end points need swapped, swap them
-  if (edgePair.e0 === edge1) {
-    var temp = end;
-    end = start;
-    start = temp;
-  }
-  // Return the points
-  var points = [start, end];
-  return points;
+URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function() {
+  
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -904,8 +873,8 @@ var Edge = function(start, end) {
   //this.midPoints = [];
   this.end = end;
   this.opposite;
-  this.endConnector;
-  this.startConnector;
+  this.endVerticalBuilder;
+  this.startVerticalBuilder;
   this.isMaster; // true if this edge forms the top of a quadrilateral
   this.addPoint = function(r) {
     
@@ -1046,46 +1015,46 @@ var splitEdgeAndConnect = function(edge, angle, r) {
 
 var setEdgeRelations = function(edge, newEdges, opposite, newOpposites, newEdge) {
   if (edge.isMaster) {
-    newEdges[0].startConnector = edge.startConnector;
-    newEdges[0].endConnector = newEdge;
-    newEdges[1].startConnector = newEdge;
-    newEdges[1].endConnector = edge.endConnector;
-    newOpposites[0].startConnector = opposite.startConnector;
-    newOpposites[1].endConnector = opposite.endConnector;
+    newEdges[0].startVerticalBuilder = edge.startVerticalBuilder;
+    newEdges[0].endVerticalBuilder = newEdge;
+    newEdges[1].startVerticalBuilder = newEdge;
+    newEdges[1].endVerticalBuilder = edge.endVerticalBuilder;
+    newOpposites[0].startVerticalBuilder = opposite.startVerticalBuilder;
+    newOpposites[1].endVerticalBuilder = opposite.endVerticalBuilder;
     for (var i = 0; i < newEdges.length; i++) {
       newEdges[i].opposite = newOpposites[i];
     }
-    if (newEdges[0].startConnector !== undefined) {
-      newEdges[0].startConnector.startConnector = newEdges[0];
-      newEdges[0].startConnector.endConnector = newOpposites[0];
-      newEdges[0].startConnector.opposite = newEdge;
+    if (newEdges[0].startVerticalBuilder !== undefined) {
+      newEdges[0].startVerticalBuilder.startVerticalBuilder = newEdges[0];
+      newEdges[0].startVerticalBuilder.endVerticalBuilder = newOpposites[0];
+      newEdges[0].startVerticalBuilder.opposite = newEdge;
     }
-    newEdge.startConnector = newEdges[1];
-    newEdge.endConnector = newOpposites[1];
-    newEdge.opposite = edge.endConnector;
-    if (edge.endConnector !== undefined) {
-      newEdge.opposite = edge.endConnector;
+    newEdge.startVerticalBuilder = newEdges[1];
+    newEdge.endVerticalBuilder = newOpposites[1];
+    newEdge.opposite = edge.endVerticalBuilder;
+    if (edge.endVerticalBuilder !== undefined) {
+      newEdge.opposite = edge.endVerticalBuilder;
     }
   } else {
-    newEdges[0].startConnector = edge.startConnector;
-    newEdges[0].endConnector = newEdge;
-    newEdges[1].startConnector = newEdge;
-    newEdges[1].endConnector = edge.endConnector;
-    newOpposites[0].startConnector = opposite.startConnector;
-    newOpposites[1].endConnector = opposite.endConnector;
+    newEdges[0].startVerticalBuilder = edge.startVerticalBuilder;
+    newEdges[0].endVerticalBuilder = newEdge;
+    newEdges[1].startVerticalBuilder = newEdge;
+    newEdges[1].endVerticalBuilder = edge.endVerticalBuilder;
+    newOpposites[0].startVerticalBuilder = opposite.startVerticalBuilder;
+    newOpposites[1].endVerticalBuilder = opposite.endVerticalBuilder;
     for (var j = 0; j < newEdges.length; j++) {
       newEdges[j].opposite = newOpposites[j];
     }
-    if (newEdges[0].startConnector !== undefined) {
-      newEdges[0].startConnector.startConnector = newEdges[0];
-      newEdges[0].startConnector.endConnector = newOpposites[0];
-      newEdges[0].startConnector.opposite = newEdge;
+    if (newEdges[0].startVerticalBuilder !== undefined) {
+      newEdges[0].startVerticalBuilder.startVerticalBuilder = newEdges[0];
+      newEdges[0].startVerticalBuilder.endVerticalBuilder = newOpposites[0];
+      newEdges[0].startVerticalBuilder.opposite = newEdge;
     }
-    newEdge.startConnector = newEdges[1];
-    newEdge.endConnector = newOpposites[1];
-    newEdge.opposite = edge.endConnector;
-    if (edge.endConnector !== undefined) {
-      newEdge.opposite = edge.endConnector;
+    newEdge.startVerticalBuilder = newEdges[1];
+    newEdge.endVerticalBuilder = newOpposites[1];
+    newEdge.opposite = edge.endVerticalBuilder;
+    if (edge.endVerticalBuilder !== undefined) {
+      newEdge.opposite = edge.endVerticalBuilder;
     }
   }
 };
@@ -1112,8 +1081,8 @@ var divideEdge = function(edge, numSegments) {
   if (e === undefined) {
     return [edge];
   }
-  e[0].startConnector = edge.startConnector;
-  e[e.length - 1].endConnector = edge.endConnector;
+  e[0].startVerticalBuilder = edge.startVerticalBuilder;
+  e[e.length - 1].endVerticalBuilder = edge.endVerticalBuilder;
   return e;
 };
 
@@ -1131,8 +1100,8 @@ var makeEdges = function(edge, points) {
     ret.push(newEdge);
     start = end;
   }
-  ret[0].startConnector = edge.startConnector;
-  ret[ret.length - 1].endConnector = edge.endConnector;
+  ret[0].startVerticalBuilder = edge.startVerticalBuilder;
+  ret[ret.length - 1].endVerticalBuilder = edge.endVerticalBuilder;
   return ret;
 };
 // Defines an absolute edge, specified by a start and end point
