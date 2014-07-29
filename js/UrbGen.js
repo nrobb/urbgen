@@ -117,6 +117,9 @@ URBGEN.EdgePair.prototype.getOpposite = function(edge) {
  * Cnstructs a controller
  */
 URBGEN.Control = function() {
+  this.gridBuilder = new URBGEN.Builder.GridBuilder();
+  this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder();
+  this.verticalBuilder = new URBGEN.Builder.VerticalBuilder();
   this.builder;
 };
 /**
@@ -151,7 +154,33 @@ URBGEN.Control.prototype.processPolys = function(polys) {
  * Sets the correct builder for the specified poly
  */
 URBGEN.Control.prototype.prepareBuilder = function(poly) {
-  
+  var random = Math.random();
+  var r = Math.random() * 0.8 + 0.1;
+  var p0 = poly.corners[0];
+  var p1 = poly.corners[1];
+  var p2 = poly.corners[2];
+  var p3 = poly.corners[3];
+  if (random < 0.333) {
+    this.builder = this.horizontalBuilder;
+    this.builder.origin = URBGEN.Util.linearInterpolate(p0, p2, r);
+    this.poly = poly;
+    this.builder.angles = [URBGEN.Util.getGridAngle(p0, p2)];
+  } else if (random < 2) {
+    this.builder = this.verticalBuilder;
+    this.builder.origin = URBGEN.Util.linearInterpolate(p0, p1, r);
+    this.poly = poly;
+    this.builder.angles = [URBGEN.Util.getGridAngle(p0, p1)];
+  } else {
+    this.builder = this.gridBuilder;
+    this.builder.origin = URBGEN.Util.getPopCenter(poly);
+    this.poly = poly;
+    this.builder.angles = [
+      URBGEN.Util.getGridAngle(p0, p1),
+      URBGEN.Util.getGridAngle(p0, p2),
+      URBGEN.Util.getGridAngle(p1, p3),
+      URBGEN.Util.getGridAngle(p2, p3)
+    ];
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,10 +191,14 @@ URBGEN.Control.prototype.prepareBuilder = function(poly) {
 URBGEN.Builder = function() {
   /** The poly being processed */
   this.poly;
+  /** The origin point for new lines */
+  this.origin;
+  /** The edges this builder will divide */
+  this.edges = [];
+  /** The angles used for dividing edges */
+  this.angles = [];
   /** The new points to be used for division */
   this.newPoints;
-  /** The direction to used for division */
-  this.direction;
 };
 URBGEN.Builder.prototype.setValues = function(poly) {
   
@@ -227,7 +260,32 @@ URBGEN.Builder.HorizontalBuilder.prototype.constructor
  * Returns n {2, 4} points using the specified poly's targets and center.
  */
 URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function() {
-  
+  var p0 = poly.corners[0];
+  var p1 = poly.corners[1];
+  var p2 = poly.corners[2];
+  var p3 = poly.corners[3];
+  var edge = new URBGEN.Edge([p0, p1], 2);
+  var p = this.origin;
+  var pAngle = this.angles[0];
+  var p1Angle = URBGEN.Util.getAngle(p1, p3);
+  var q = URBGEN.Util.getIntersect(p, pAngle, p1, p1Angle);
+  var r = URBGEN.Util.getPointAsRatio(q, p1, p3);
+  if (r > 0.9) {
+    r = 0.9;
+  }
+  if (r < 0.1) {
+    r = 0.1;
+  }
+  q = URBGEN.Util.linearInterpolate(p1, p3, r);
+  q = URBGEN.Util.checkNearPoints(edge, q, 50, false);
+  URBGEN.Util.insertPoint(p0, p2, p);
+  URBGEN.Util.insertPoint(p1, p3, q);
+  p.neighbors[3] = q;
+  q.neighbors[2] = p;
+  this.newPoints = [
+    [p0, p1, p, q],
+    [p, q, p2, p3]
+  ];
 };
 /**
  * Constructs a VerticalBuilder
@@ -252,7 +310,32 @@ URBGEN.Builder.VerticalBuilder.prototype.constructor
  * point determined by an appropriate method.
  */
 URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function() {
-  
+  var p0 = poly.corners[0];
+  var p1 = poly.corners[1];
+  var p2 = poly.corners[2];
+  var p3 = poly.corners[3];
+  var edge = new URBGEN.Edge([p0, p1], 3);
+  var p = this.origin;
+  var pAngle = this.angles[0];
+  var p2Angle = URBGEN.Util.getAngle(p2, p3);
+  var q = URBGEN.Util.getIntersect(p, pAngle, p2, p2Angle);
+  var r = URBGEN.Util.getPointAsRatio(q, p2, p3);
+  if (r > 0.9) {
+    r = 0.9;
+  }
+  if (r < 0.1) {
+    r = 0.1;
+  }
+  q = URBGEN.Util.linearInterpolate(p2, p3, r);
+  q = URBGEN.Util.checkNearPoints(edge, q, 50, false);
+  URBGEN.Util.insertPoint(p0, p1, p);
+  URBGEN.Util.insertPoint(p2, p3, q);
+  p.neighbors[2] = q;
+  q.neighbors[0] = p;
+  this.newPoints = [
+    [p0, p, p2, q],
+    [p, p1, q, p3]
+  ];
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,14 +433,14 @@ URBGEN.Util.getAngle = function(p0, p1) {
  */
 URBGEN.Util.getGridAngle = function(p0, p1) {
   // Get the angle as a multiple of Pi adjusted to standard x y axes
-  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - GRID_X;
+  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - globalCityGridX;
   // Find which axis a line at this angle is closest to (0 or 4, 1, 2, 3)
   var axis = Math.round(angle * 2);
   // If even, the line is closest to x axis, so return the y axis of the grid
   if (axis % 2 === 0) {
-    return Math.PI * (GRID_X + 0.5);
+    return Math.PI * (globalCityGridX + 0.5);
   } else {
-    return Math.PI * GRID_X;
+    return Math.PI * globalCityGridX;
   }
 };
 /**
@@ -540,7 +623,7 @@ URBGEN.Util.dividePoly4 = function(poly, newPoints) {
     newPolys.push(poly);
     return newPolys;
   }
-  var center = URBGEN.Util.getQuadCenter(poly);
+  var center = URBGEN.Util.getPopCenter(poly);
   // Find the corners of the poly
   var p0 = poly.corners[0];
   var p1 = poly.corners[1];
@@ -634,13 +717,15 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   if (2 > direction || direction > 3) {
     return undefined;
   }
-  var p = p0;
-  var q = p0.neighbors[direction];
-  q.neighbors[direction - 2] = newPoint;
-  p.neighbors[direction] = newPoint;
-  newPoint.neighbors[direction] = q;
-  newPoint.neighbors[direction - 2] = p;
-  return true;
+  var maxSteps = 100;
+  for (var i = 0; i < maxSteps; i++) {
+    var r = URBGEN.Util.getPointAsRatio(newPoint, p0, p0.neighbors[direction]);
+    if (r < 1) {
+      return URBGEN.Util.insertPointUsingPoints(newPoint, p0, p0.neighbors[direction])
+    }
+    p0 = p0.neighbors[direction];
+  }
+  return false;
 }
 /**
  * Returns a point on the specified edge that is within the specified distance
@@ -724,7 +809,7 @@ URBGEN.Util.onLineSegment = function(point, p0, p1) {
  * Finds the population center of the specified quad, depending on the location
  * of the global city center and the city's denisty.
  */
-URBGEN.Util.getQuadCenter = function(quad) {
+URBGEN.Util.getPopCenter = function(quad) {
   var nearestCorner = URBGEN.Util.nearest(quad.corners, globalCityCenter);
   var oppositeCorner;
   for (var i = 0; i < quad.corners.length; i++) {
@@ -811,5 +896,9 @@ var globalCityCenter = new URBGEN.Point(800, 300, 0);
  */
 var density = 0.3; // this is the number that will come from the slider
 var globalCityDensity = 1 - density; // convert it for use
+/**
+ * ANGLE OF GRID'S X AXIS
+ */
+var globalCityGridX = 0.2;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -49,14 +49,14 @@
       // SETS POINTS' NEIGHBORS
       //////////////////////////////////////////////////////////////////////////
       function initNeighbors() {
-        p0.neighbors[3] = p1;
-        p0.neighbors[2] = p2;
-        p1.neighbors[1] = p0;
-        p1.neighbors[2] = p3;
-        p2.neighbors[0] = p0;
-        p2.neighbors[3] = p3;
-        p3.neighbors[0] = p1;
-        p3.neighbors[1] = p2;
+        topLeft.neighbors[3] = topRight;
+        topLeft.neighbors[2] = bottomLeft;
+        topRight.neighbors[1] = topLeft;
+        topRight.neighbors[2] = bottomRight;
+        bottomLeft.neighbors[0] = topLeft;
+        bottomLeft.neighbors[3] = bottomRight;
+        bottomRight.neighbors[0] = topRight;
+        bottomRight.neighbors[1] = bottomLeft;
       }
       //////////////////////////////////////////////////////////////////////////
       // INITIALIZE CANVAS AND CONTEXT
@@ -69,14 +69,14 @@
       // TESTING
       //////////////////////////////////////////////////////////////////////////
       // Set up the points
-      var p0 = new URBGEN.Point(10, 20, 0);
-      var p1 = new URBGEN.Point(1050, 25, 0);
-      var p2 = new URBGEN.Point(20, 500, 0);
-      var p3 = new URBGEN.Point(1200, 605, 0);
+      var topLeft = new URBGEN.Point(10, 20, 0);
+      var topRight = new URBGEN.Point(1050, 25, 0);
+      var bottomLeft = new URBGEN.Point(20, 500, 0);
+      var bottomRight = new URBGEN.Point(1200, 605, 0);
       // Set each point's neighbors correctly
       initNeighbors();
-      var points = [p0, p1, p2, p3];
-      var poly = new URBGEN.Poly(p0, p1, p2, p3);
+      var points = [topLeft, topRight, bottomLeft, bottomRight];
+      var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
       var polys = [poly];
       
       /************************************************************************/
