@@ -190,6 +190,10 @@ URBGEN.Builder.HorizontalBuilder.prototype.getNewPoints = function(data) {
   var originalPoints = data.originalPoints;
   var end = URBGEN.Util.getIntersect(start, angle, edge1.points[0], edge1.angle);
   var r = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
+  //TODO change these values to 0 and 1, as will be using proxy edges
+  if (r < 0.1) r = 0.1; // if (r < 0) end = edge1.points[0];
+  if (r > 0.9) r = 0.9; // if (r > 1) end = edge1.points[edge1.points.length - 1];
+  end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], r);
   URBGEN.Util.addPointToEdge(start, edge0);
   URBGEN.Util.addPointToEdge(end, edge1);
   start.neighbors[3] = end;
@@ -227,6 +231,10 @@ URBGEN.Builder.VerticalBuilder.prototype.getNewPoints = function(data) {
   var originalPoints = data.originalPoints;
   var end = URBGEN.Util.getIntersect(start, angle, edge1.points[0], edge1.angle);
   var r = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
+  //TODO change these values to 0 and 1, as will be using proxy edges
+  if (r < 0.1) r = 0.1; // if (r < 0) end = edge1.points[0];
+  if (r > 0.9) r = 0.9; // if (r > 1) end = edge1.points[edge1.points.length - 1];
+  end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], r);
   URBGEN.Util.addPointToEdge(start, edge0);
   URBGEN.Util.addPointToEdge(end, edge1);
   start.neighbors[2] = end;
@@ -629,26 +637,42 @@ URBGEN.Util.insertPointUsingPoints = function(newPoint, p0, p1) {
 }
 /**
  * Sets the neighbor relations of p0 and its neighbor in the specified direction
- * with the newPoint.
+ * with the newPoint. NOT WORKING!
  */
 URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   if (2 > direction || direction > 3) {
-    return undefined;
+    return false;
   }
   var maxSteps = 100;
   for (var i = 0; i < maxSteps; i++) {
+    try {
     var r = URBGEN.Util.getPointAsRatio(newPoint, p0, p0.neighbors[direction]);
     if (r <= 1) {
       return URBGEN.Util.insertPointUsingPoints(newPoint, p0, p0.neighbors[direction])
     }
     p0 = p0.neighbors[direction];
+    } catch (e) {
+      console.log("", e);
+      console.log("", p0)
+    }
   }
   return false;
 };
 URBGEN.Util.addPointToEdge = function(point, edge) {
   var closestPoint = URBGEN.Util.checkNearPoints(edge, point, 100, false);
   if (closestPoint === point) {
-    return URBGEN.Util.insertPointUsingDir(point, edge.points[0], edge.direction);
+    var start = edge.points[0];
+    var end = edge.points[edge.points.length - 1];
+    var direction = edge.direction;
+    var oppDirection = (direction + 2) % 4;
+    var rClosest = URBGEN.Util.getPointAsRatio(start, end, closestPoint);
+    var rPoint = URBGEN.Util.getPointAsRatio(start, end, point);
+    if (rClosest > rPoint) {
+      return URBGEN.Util.insertPointUsingPoints(point, closestPoint.neighbors[oppDirection], closestPoint);
+    } else {
+      return URBGEN.Util.insertPointUsingPoints(point, closestPoint, closestPoint.neighbors[direction]);
+    }
+    return URBGEN.Util.insertPointUsingPoints(point, edge.points[0], edge.points[0].neighbors[edge.direction]);
   } else {
     point = closestPoint;
     return true;
