@@ -189,14 +189,11 @@ URBGEN.Builder.HorizontalBuilder.prototype.getNewPoints = function(data) {
   var edge1 = data.edges[1];
   var originalPoints = data.originalPoints;
   var end = URBGEN.Util.getIntersect(start, angle, edge1.points[0], edge1.angle);
-  console.debug("end point on line: " + URBGEN.Util.onLineSegment(end, edge1.points[0], edge1.points[1]));
-  var endR = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
-  console.debug(URBGEN.Util.addPointToEdge(start, edge0));
-  console.debug(URBGEN.Util.addPointToEdge(end, edge1));
+  var r = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
+  URBGEN.Util.addPointToEdge(start, edge0);
+  URBGEN.Util.addPointToEdge(end, edge1);
   start.neighbors[3] = end;
   end.neighbors[1] = start;
-  //THIS IS ONE PROBLEM: END IS SOMETIMES ON TOP OF TOP RIGHT POINT OF POLY
-  console.debug("end = topright: " + (end === originalPoints[1]));
   var newPoints = [
     [originalPoints[0], originalPoints[1], start, end],
     [start, end, originalPoints[2], originalPoints[3]]
@@ -229,12 +226,11 @@ URBGEN.Builder.VerticalBuilder.prototype.getNewPoints = function(data) {
   var edge1 = data.edges[1];
   var originalPoints = data.originalPoints;
   var end = URBGEN.Util.getIntersect(start, angle, edge1.points[0], edge1.angle);
-  var endR = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
-  console.debug(URBGEN.Util.addPointToEdge(start, edge0));
-  console.debug(URBGEN.Util.addPointToEdge(end, edge1));
+  var r = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
+  URBGEN.Util.addPointToEdge(start, edge0);
+  URBGEN.Util.addPointToEdge(end, edge1);
   start.neighbors[2] = end;
   end.neighbors[0] = start;
-  console.debug("start = end: " + (start === end));
   var newPoints = [
     [originalPoints[0], start, originalPoints[2], end],
     [start, originalPoints[1], end, originalPoints[3]]
@@ -592,10 +588,10 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
   // Check if either line is colinear with the y axis
   if (m0 === Infinity) {
     x = p0.x;
-    y = p1.x * m1 + p1.y;
+    y = x * m1 + (p1.y - m1 * p1.x);
   } else if (m1 === Infinity) {
     x = p1.x;
-    y = p0.x * m0 + p0.y;
+    y = x * m0 + (p0.y - m0 * p0.x);
   // Otherwise, find the intersection point
   } else {
     x = (p1.y - p0.y + (m0 * p0.x) - (m1 * p1.x)) / (m0 - m1);
@@ -641,24 +637,16 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   }
   var maxSteps = 100;
   for (var i = 0; i < maxSteps; i++) {
-    if (p0.neighbors[direction] === 0) {
-      console.debug(p0);
-      console.debug(p0.neighbors[0]);
-      console.debug(p0.neighbors[3]);
-      console.debug(newPoint);
-    }
     var r = URBGEN.Util.getPointAsRatio(newPoint, p0, p0.neighbors[direction]);
     if (r <= 1) {
       return URBGEN.Util.insertPointUsingPoints(newPoint, p0, p0.neighbors[direction])
     }
-    if (p0.neighbors[direction] !== 0) {
-      p0 = p0.neighbors[direction];
-    }
+    p0 = p0.neighbors[direction];
   }
   return false;
 };
 URBGEN.Util.addPointToEdge = function(point, edge) {
-  var closestPoint = URBGEN.Util.checkNearPoints(edge, point, 20, false);
+  var closestPoint = URBGEN.Util.checkNearPoints(edge, point, 100, false);
   if (closestPoint === point) {
     return URBGEN.Util.insertPointUsingDir(point, edge.points[0], edge.direction);
   } else {
