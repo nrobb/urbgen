@@ -78,10 +78,10 @@
       // TESTING
       //////////////////////////////////////////////////////////////////////////
       // Set up the points
-      var topLeft = new URBGEN.Point(100, 40, 0);
-      var topRight = new URBGEN.Point(1050, 5, 0);
-      var bottomLeft = new URBGEN.Point(40, 300, 0);
-      var bottomRight = new URBGEN.Point(900, 400, 0);
+      var topLeft = new URBGEN.Point(10, 15, 0);
+      var topRight = new URBGEN.Point(1250, 5, 0);
+      var bottomLeft = new URBGEN.Point(40, 580, 0);
+      var bottomRight = new URBGEN.Point(1100, 600, 0);
       // Set each point's neighbors correctly
       var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
       var polys = [poly];
@@ -139,7 +139,12 @@ var run = function(origPolys, r) {
   }
   return ret;
 }
-
+var n = 1;
+for (var i = 0; i < 8; i++) {
+  polys = run(polys, (n++) % 2);
+}
+polys.forEach(drawPoly);
+console.debug(polys.length);
     </script>
   </body>
 </html>
