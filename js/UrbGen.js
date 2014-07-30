@@ -658,24 +658,35 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
   }
   return false;
 };
+/**
+ * Adds the specified point to the specified edge
+ */
 URBGEN.Util.addPointToEdge = function(point, edge) {
-  var closestPoint = URBGEN.Util.checkNearPoints(edge, point, 100, false);
-  if (closestPoint === point) {
-    var start = edge.points[0];
-    var end = edge.points[edge.points.length - 1];
-    var direction = edge.direction;
-    var oppDirection = (direction + 2) % 4;
-    var rClosest = URBGEN.Util.getPointAsRatio(start, end, closestPoint);
-    var rPoint = URBGEN.Util.getPointAsRatio(start, end, point);
-    if (rClosest > rPoint) {
-      return URBGEN.Util.insertPointUsingPoints(point, closestPoint.neighbors[oppDirection], closestPoint);
-    } else {
-      return URBGEN.Util.insertPointUsingPoints(point, closestPoint, closestPoint.neighbors[direction]);
+  var neighbors = URBGEN.Util.getNeighbors(point, edge);
+  var index = edge.points.indexOf(neighbors.next);
+  edge.points.splice(index, 0, point);
+  return URBGEN.Util.insertPoint(point, neighbors.prev, neighbors.next);
+};
+/**
+ * Returns the specified point's neighbors on the edge
+ */
+URBGEN.Util.getNeighbors = function(point, edge) {
+  var neighbors = {
+    prev: undefined,
+    next: undefined
+  };
+  // Find the point as a ratio of the line
+  var pointR = URBGEN.Util.getPointAsRatio(point, edge.points[0],
+    edge.points[edge.points.length - 1]);
+  for (var i = 1; i < edge.points.length; i++) {
+    var currPoint = edge.points[i];
+    var r = URBGEN.Util.getPointAsRatio(currPoint, edge.points[0],
+      edge.points[edge.points.length - 1]);
+    if (r > pointR) {
+      neighbors.prev = edge.points[i - 1];
+      neighbors.next = edge.points[i];
+      return neighbors;
     }
-    return URBGEN.Util.insertPointUsingPoints(point, edge.points[0], edge.points[0].neighbors[edge.direction]);
-  } else {
-    point = closestPoint;
-    return true;
   }
   return false;
 };
@@ -685,32 +696,25 @@ URBGEN.Util.addPointToEdge = function(point, edge) {
  * of the edge will be included in the search. If no such point exists, returns
  * the original point.
  */
-URBGEN.Util.checkNearPoints = function(edge, point, distance, includeEnds) {
-  // Find the point as a ratio of the line
-  var pointR = URBGEN.Util.getPointAsRatio(point, edge.points[0],
-    edge.points[edge.points.length - 1]);
-  // Use the line length to get the distance as a ratio
-  var length = URBGEN.Util.getPathLength(edge);
-  var distanceR = distance / length;
-  // Get the range in which points must be found
-  var minR = Math.max(0, pointR - distanceR);
-  var maxR = Math.min(1, pointR + distanceR);
-  // Check each point on the edge, returning the first that lies in range
-  var start;
-  var end;
-  if (includeEnds) {
-    start = 0;
-    end = edge.points.length;
-  } else {
-    start = 1;
-    end = edge.points.length - 1;
-  }
-  for (var i = start; i < end; i++) {
-    var currPoint = edge.points[i];
-    var r = URBGEN.Util.getPointAsRatio(currPoint, edge.points[0],
-      edge.points[edge.points.length - 1]);
-    if (minR <= r && r <= maxR) {
-      return currPoint;
+URBGEN.Util.checkNearPoints = function(point, edge, distance, includeEnds) {
+  var neighbors = URBGEN.Util.getNeighbors(point, edge);
+  var d0 = Math.abs(URBGEN.Util.getLineSegmentLength(neighbors.prev, point));
+  var d1 = Math.abs(URBGEN.Util.getLineSegmentLength(point, neighbors.next));
+  if (d0 < distance && d0 <= d1) {
+    if (neighbors.prev === edge.points[0]) {
+      if (includeEnds) {
+        return edge.points[0];
+      }
+    } else {
+      return neighbors.prev;
+    }
+  } else if (d1 < distance) {
+    if (neighbors.next === edge.points[edge.points.length - 1]) {
+      if (includeEnds) {
+        return edge.points[edge.points.length - 1];
+      }
+    } else {
+      return neighbors.next;
     }
   }
   return point;
