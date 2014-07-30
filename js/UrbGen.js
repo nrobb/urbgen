@@ -115,92 +115,13 @@ URBGEN.EdgePair.prototype.getOpposite = function(edge) {
   }
   return this.e0;
 };
-/**
- * Cnstructs a controller
- */
-URBGEN.Control = function() {
-  this.gridBuilder = new URBGEN.Builder.GridBuilder();
-  this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder();
-  this.verticalBuilder = new URBGEN.Builder.VerticalBuilder();
-  this.builder;
-};
-/**
- * Processes the specified polys
- */
-URBGEN.Control.prototype.processPolys = function(polys) {
-  var newPolys = [];
-  var polysChanged = false;
-  for (var i = 0; i < polys.length; i++) {
-    if (polys[i].atomic) {
-      newPolys.push(polys[i]);
-    } else if (URBGEN.Util.getArea(polys[i]) < MIN_AREA) { //TODO what is MIN_AREA!?
-      polys[i].atomic = true;
-      newPolys.push(polys[i]);
-    } else {
-      this.prepareBuilder(polys[i]);
-      builder.setValues();
-      builder.setNewPoints();
-      replacementPolys = builder.buildPolys();
-      for (var j = 0; j < dividePolys.length; j++) {
-        newPolys.push(replacementPolys[j]);
-      }
-      polysChanged = true;
-    }
-  }
-  if (polysChanged) {
-    return processPolys(newPolys);
-  }
-  return newPolys;
-};
-/**
- * Sets the correct builder for the specified poly
- */
-URBGEN.Control.prototype.prepareBuilder = function(poly) {
-  var random = Math.random();
-  var r = Math.random() * 0.8 + 0.1;
-  var p0 = poly.corners[0];
-  var p1 = poly.corners[1];
-  var p2 = poly.corners[2];
-  var p3 = poly.corners[3];
-  if (random < 0) {
-    this.builder = this.horizontalBuilder;
-    this.builder.origin = URBGEN.Util.linearInterpolate(p0, p2, r);
-    this.builder.poly = poly;
-    this.builder.angles = [URBGEN.Util.getGridAngle(p0, p2)];
-  } else if (random < 2) {
-    this.builder = this.verticalBuilder;
-    this.builder.origin = URBGEN.Util.linearInterpolate(p0, p1, r);
-    this.builder.poly = poly;
-    this.builder.angles = [URBGEN.Util.getGridAngle(p0, p1)];
-  } else {
-    this.builder = this.gridBuilder;
-    this.builder.origin = URBGEN.Util.getPopCenter(poly);
-    this.builder.poly = poly;
-    this.builder.angles = [
-      URBGEN.Util.getGridAngle(p0, p1),
-      URBGEN.Util.getGridAngle(p0, p2),
-      URBGEN.Util.getGridAngle(p2, p3),
-      URBGEN.Util.getGridAngle(p1, p3)
-    ];
-  }
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // URBGEN.Builder
 ////////////////////////////////////////////////////////////////////////////////
 URBGEN.Builder = function() {
-  /** The poly being processed */
-  this.poly;
-  /** The origin point for new lines */
-  this.origin;
-  /** The edges this builder will divide */
-  this.edges = [];
-  /** The angles used for dividing edges */
-  this.angles = [];
-  /** The new points to be used for division */
-  this.newPoints;
+  
 };
 URBGEN.Builder.prototype.setValues = function(poly) {
   
@@ -208,14 +129,14 @@ URBGEN.Builder.prototype.setValues = function(poly) {
 /**
  * Abstract
  */
-URBGEN.Builder.prototype.setNewPoints = function() {};
+URBGEN.Builder.prototype.getNewPoints = function(data) {};
 /**
  * Returns an array of new polys created from this builder's current points.
  */
-URBGEN.Builder.prototype.buildPolys = function() {
+URBGEN.Builder.prototype.buildPolys = function(newPoints) {
   var polys = [];
-  for (var i = 0; i < this.newPoints.length; i++) {
-    var points = this.newPoints[i];
+  for (var i = 0; i < newPoints.length; i++) {
+    var points = newPoints[i];
     polys.push(new URBGEN.Poly(points[0], points[1], points[2], points[3]));
   }
   return polys;
@@ -239,41 +160,8 @@ URBGEN.Builder.GridBuilder.prototype.constructor = URBGEN.Builder.GridBuilder;
  * the poly's grid angle cannot be used, sets the poly's grid angle to an angle
  * as close to the original as possible and uses this new angle to find points.
  */
-URBGEN.Builder.GridBuilder.prototype.setNewPoints = function() {
-  var center = this.origin;
-  var points = [0, 0, 0, 0];
-  var edges = [
-    new URBGEN.Edge([this.poly.corners[0], this.poly.corners[1]], 3),
-    new URBGEN.Edge([this.poly.corners[0], this.poly.corners[2]], 2),
-    new URBGEN.Edge([this.poly.corners[2], this.poly.corners[3]], 3),
-    new URBGEN.Edge([this.poly.corners[1], this.poly.corners[3]], 2)
-  ];
-  for (var i = 0; i < edges.length; i++) {
-    var edge = edges[i];
-    var intersect = URBGEN.Util.getIntersect(edge.points[0], edge.angle, center, this.angles[i]);
-    var r = URBGEN.Util.getPointAsRatio(intersect, edge.points[0], edge.points[edge.points.length - 1]);
-    if (r > 0.9) {
-      r = 0.9;
-    }
-    if (r < 0.1) {
-      r = 0.1;
-    }
-    intersect = URBGEN.Util.linearInterpolate(edge.points[0], edge.points[edge.points.length - 1], r);
-    intersect = URBGEN.Util.checkNearPoints(edge, intersect, 50, false);
-    points[i] = intersect;
-    center.neighbors[i] = points[i];
-    points[i].neighbors[(i + 2) % 4] = center;
-  }
-  URBGEN.Util.insertPoint(points[0], poly.corners[0], 3);
-  URBGEN.Util.insertPoint(points[1], poly.corners[0], 2);
-  URBGEN.Util.insertPoint(points[2], poly.corners[2], 3);
-  URBGEN.Util.insertPoint(points[3], poly.corners[1], 2);
-  this.newPoints = [
-    [poly.corners[0], points[0], points[1], center],
-    [points[0], poly.corners[1], center, points[3]],
-    [points[1], center, poly.corners[2], points[2]],
-    [center, points[3], points[2], poly.corners[3]]
-  ];
+URBGEN.Builder.GridBuilder.prototype.getNewPoints = function(data) {
+  
 };
 /**
  * Consructs a HorizontalBuilder
@@ -294,33 +182,26 @@ URBGEN.Builder.HorizontalBuilder.prototype.constructor
 /**
  * Returns n {2, 4} points using the specified poly's targets and center.
  */
-URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function() {
-  var p0 = poly.corners[0];
-  var p1 = poly.corners[1];
-  var p2 = poly.corners[2];
-  var p3 = poly.corners[3];
-  var edge = new URBGEN.Edge([p0, p2], 2);
-  var p = this.origin;
-  var pAngle = this.angles[0];
-  var p1Angle = URBGEN.Util.getAngle(p1, p3);
-  var q = URBGEN.Util.getIntersect(p, pAngle, p1, p1Angle);
-  var r = URBGEN.Util.getPointAsRatio(q, p1, p3);
-  if (r > 0.9) {
-    r = 0.9;
-  }
-  if (r < 0.1) {
-    r = 0.1;
-  }
-  q = URBGEN.Util.linearInterpolate(p1, p3, r);
-  q = URBGEN.Util.checkNearPoints(edge, q, 50, false);
-  URBGEN.Util.insertPoint(p, p0, 2);
-  URBGEN.Util.insertPoint(q, p1, 2);
-  p.neighbors[3] = q;
-  q.neighbors[2] = p;
-  this.newPoints = [
-    [p0, p1, p, q],
-    [p, q, p2, p3]
+URBGEN.Builder.HorizontalBuilder.prototype.getNewPoints = function(data) {
+  var start = data.origin;
+  var angle = data.angle;
+  var edge0 = data.edges[0];
+  var edge1 = data.edges[1];
+  var originalPoints = data.originalPoints;
+  var end = URBGEN.Util.getIntersect(start, angle, edge1.points[0], edge1.angle);
+  console.debug("end point on line: " + URBGEN.Util.onLineSegment(end, edge1.points[0], edge1.points[1]));
+  var endR = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
+  console.debug(URBGEN.Util.addPointToEdge(start, edge0));
+  console.debug(URBGEN.Util.addPointToEdge(end, edge1));
+  start.neighbors[3] = end;
+  end.neighbors[1] = start;
+  //THIS IS ONE PROBLEM: END IS SOMETIMES ON TOP OF TOP RIGHT POINT OF POLY
+  console.debug("end = topright: " + (end === originalPoints[1]));
+  var newPoints = [
+    [originalPoints[0], originalPoints[1], start, end],
+    [start, end, originalPoints[2], originalPoints[3]]
   ];
+  return newPoints;
 };
 /**
  * Constructs a VerticalBuilder
@@ -341,33 +222,39 @@ URBGEN.Builder.VerticalBuilder.prototype.constructor
 /**
  *
  */
-URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function() {
-  var p0 = poly.corners[0];
-  var p1 = poly.corners[1];
-  var p2 = poly.corners[2];
-  var p3 = poly.corners[3];
-  var edge = new URBGEN.Edge([p0, p1], 3);
-  var p = this.origin;
-  var pAngle = this.angles[0];
-  var p2Angle = URBGEN.Util.getAngle(p2, p3);
-  var q = URBGEN.Util.getIntersect(p, pAngle, p2, p2Angle);
-  var r = URBGEN.Util.getPointAsRatio(q, p2, p3);
-  if (r > 0.9) {
-    r = 0.9;
-  }
-  if (r < 0.1) {
-    r = 0.1;
-  }
-  q = URBGEN.Util.linearInterpolate(p2, p3, r);
-  q = URBGEN.Util.checkNearPoints(edge, q, 50, false);
-  URBGEN.Util.insertPoint(p, p0, 3);
-  URBGEN.Util.insertPoint(q, p2, 3);
-  p.neighbors[2] = q;
-  q.neighbors[0] = p;
-  this.newPoints = [
-    [p0, p, p2, q],
-    [p, p1, q, p3]
+URBGEN.Builder.VerticalBuilder.prototype.getNewPoints = function(data) {
+  var start = data.origin;
+  var angle = data.angle;
+  var edge0 = data.edges[0];
+  var edge1 = data.edges[1];
+  var originalPoints = data.originalPoints;
+  var end = URBGEN.Util.getIntersect(start, angle, edge1.points[0], edge1.angle);
+  var endR = URBGEN.Util.getPointAsRatio(end, edge1.points[0], edge1.points[1]);
+  console.debug(URBGEN.Util.addPointToEdge(start, edge0));
+  console.debug(URBGEN.Util.addPointToEdge(end, edge1));
+  start.neighbors[2] = end;
+  end.neighbors[0] = start;
+  console.debug("start = end: " + (start === end));
+  var newPoints = [
+    [originalPoints[0], start, originalPoints[2], end],
+    [start, originalPoints[1], end, originalPoints[3]]
   ];
+  return newPoints;
+};
+/**
+ * Constructs a director
+ */
+URBGEN.Builder.Director = function() {
+  
+};
+/**
+ * Invokes the builder
+ */
+URBGEN.Builder.Director.prototype.execute = function(bundle) {
+  var builder = bundle.builder;
+  var data = bundle.data;
+  var polys = builder.buildPolys(builder.getNewPoints(values));
+  return polys;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -512,6 +399,9 @@ URBGEN.Util.getNewPoint = function(point, direction, r) {
 URBGEN.Util.getPointAsRatio = function(point, p0, p1) {
   var d1 = point.x - p0.x;
   var d2 = p1.x - p0.x;
+  if (d2 === 0) {
+    return 0;
+  }
   return d1 / d2;
 };
 /**
@@ -758,13 +648,25 @@ URBGEN.Util.insertPointUsingDir = function(newPoint, p0, direction) {
       console.debug(newPoint);
     }
     var r = URBGEN.Util.getPointAsRatio(newPoint, p0, p0.neighbors[direction]);
-    if (r < 1) {
+    if (r <= 1) {
       return URBGEN.Util.insertPointUsingPoints(newPoint, p0, p0.neighbors[direction])
     }
-    p0 = p0.neighbors[direction];
+    if (p0.neighbors[direction] !== 0) {
+      p0 = p0.neighbors[direction];
+    }
   }
   return false;
-}
+};
+URBGEN.Util.addPointToEdge = function(point, edge) {
+  var closestPoint = URBGEN.Util.checkNearPoints(edge, point, 20, false);
+  if (closestPoint === point) {
+    return URBGEN.Util.insertPointUsingDir(point, edge.points[0], edge.direction);
+  } else {
+    point = closestPoint;
+    return true;
+  }
+  return false;
+};
 /**
  * Returns a point on the specified edge that is within the specified distance
  * of the specified point. If includeEnds is true, then the start and end points
@@ -775,9 +677,8 @@ URBGEN.Util.checkNearPoints = function(edge, point, distance, includeEnds) {
   // Find the point as a ratio of the line
   var pointR = URBGEN.Util.getPointAsRatio(point, edge.points[0],
     edge.points[edge.points.length - 1]);
-  // Use the line length to get the distance as a ration
-  var length = URBGEN.Util.getLength(edge.points[0],
-    edge.points[edge.points.length - 1]);
+  // Use the line length to get the distance as a ratio
+  var length = URBGEN.Util.getPathLength(edge);
   var distanceR = distance / length;
   // Get the range in which points must be found
   var minR = Math.max(0, pointR - distanceR);
