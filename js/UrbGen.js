@@ -115,7 +115,7 @@ URBGEN.Builder.HorizontalBuilder.prototype.getNewPoints = function(data) {
   if (r < 0.3) r = 0.3; // if (r < 0) end = edge1.points[0];
   if (r > 0.7) r = 0.7; // if (r > 1) end = edge1.points[edge1.points.length - 1];
   end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], r);
-  end = URBGEN.Util.checkNearPoints(end, edge1, 20, false);
+  end = URBGEN.Util.checkNearPoints(end, edge1.points, 20, false);
   URBGEN.Util.addPointToEdge(start, edge0);
   URBGEN.Util.addPointToEdge(end, edge1);
   start.neighbors[3] = end;
@@ -157,7 +157,7 @@ URBGEN.Builder.VerticalBuilder.prototype.getNewPoints = function(data) {
   if (r < 0.3) r = 0.3; // if (r < 0) end = edge1.points[0];
   if (r > 0.7) r = 0.7; // if (r > 1) end = edge1.points[edge1.points.length - 1];
   end = URBGEN.Util.linearInterpolate(edge1.points[0], edge1.points[1], r);
-  end = URBGEN.Util.checkNearPoints(end, edge1, 20, false);
+  end = URBGEN.Util.checkNearPoints(end, edge1.points, 20, false);
   URBGEN.Util.addPointToEdge(start, edge0);
   URBGEN.Util.addPointToEdge(end, edge1);
   start.neighbors[2] = end;
@@ -191,20 +191,6 @@ URBGEN.Builder.Director.prototype.execute = function(bundle) {
 ////////////////////////////////////////////////////////////////////////////////
 URBGEN.Util = {};
 /**
- * Returns the length of a line segment(s) between the two specified points
- */
-URBGEN.Util.getLength = function(p0, p1) {
-  if (p0.neighbors.indexOf(p1) === -1) {
-    var direction = URBGEN.Util.getDirection(p0, p1);
-    if (direction === false) {
-      return NaN;
-    }
-    var path = URBGEN.Util.getDirectedPath(p0, p1, direction);
-    return URBGEN.Util.getPathLength(path);
-  }
-  return URBGEN.Util.getLineSegmentLength(p0, p1);
-};
-/**
  * Returns the length of the line segment p0p1.
  */
 URBGEN.Util.getLineSegmentLength = function(p0, p1) {
@@ -213,7 +199,7 @@ URBGEN.Util.getLineSegmentLength = function(p0, p1) {
     return length;
 };
 /**
- * Returns the total length of the line segments described by path.
+ * Returns the total length of the line segments described by the path.
  */
 URBGEN.Util.getPathLength = function(path) {
   var length = 0;
@@ -269,14 +255,14 @@ URBGEN.Util.getAngle = function(p0, p1) {
  */
 URBGEN.Util.getGridAngle = function(p0, p1) {
   // Get the angle as a multiple of Pi adjusted to standard x y axes
-  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - globalCityGridX;
+  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - URBGEN.Variables.globalCityGridX;
   // Find which axis a line at this angle is closest to (0 or 4, 1, 2, 3)
   var axis = Math.round(angle * 2);
   // If even, the line is closest to x axis, so return the y axis of the grid
   if (axis % 2 === 0) {
-    return Math.PI * (globalCityGridX + 0.5);
+    return Math.PI * (URBGEN.Variables.globalCityGridX + 0.5);
   } else {
-    return Math.PI * globalCityGridX;
+    return Math.PI * URBGEN.Variables.globalCityGridX;
   }
 };
 /**
@@ -285,6 +271,9 @@ URBGEN.Util.getGridAngle = function(p0, p1) {
  */
 URBGEN.Util.addAngle = function(angle, dA) {
   var newAngle = (angle + dA * Math.PI) % (2 * Math.PI);
+  if (newAngle < 0) {
+    newAngle += 2 * Math.PI;
+  }
   return newAngle;
   
 };
@@ -293,10 +282,15 @@ URBGEN.Util.addAngle = function(angle, dA) {
  * through p0 and p1, relative to the line segment p0p1.
  */
 URBGEN.Util.getPointAsRatio = function(point, p0, p1) {
-  var d1 = point.x - p0.x;
-  var d2 = p1.x - p0.x;
-  if (d2 === 0) {
-    return 0;
+  var d1;
+  var d2;
+  // If the line is parallel with the y-axis, use the difference in y values
+  if (p0.x === p1.x) {
+    d1 = point.y - p0.y;
+    d2 = p1.y - p0.y;
+  } else { // otherwise, use the difference in x values
+    d1 = point.x - p0.x;
+    d2 = p1.x - p0.x;
   }
   return d1 / d2;
 };
@@ -314,20 +308,19 @@ URBGEN.Util.areaPoly = function(poly) {
 /**
  * Returns an array of points representing a path from p0 to p1 in the specified
  * direction. If p1 is not found in maxSteps iterations, returns false. If
- * maxSteps is not specified, defaults to 100.
+ * maxSteps is not specified, defaults to 1000.
  */
 URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
   var points = [p0];
   if (maxSteps === undefined) {
-    maxSteps = 100;
+    maxSteps = 1000;
   }
   for (var i = 0; i < maxSteps; i++) {
     if (points[i].neighbors[direction] !== 0) {
       var point = points[i].neighbors[direction];
       points.push(point);
       if (point === p1) {
-        var path = new URBGEN.Edge(points, direction);
-        return path;
+        return points;
       }
     } else {
       return false;
@@ -337,6 +330,7 @@ URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
 /**
  * Returns the direction (0 - 3) in which you must travel from p0 to reach p1.
  * If p1 is not found in maxSteps (defaults to 100) iterations, returns false.
+ * NOT TESTED AND NOT CURRENTLY USED
  */
 URBGEN.Util.getDirection = function(p0, p1, maxSteps) {
   var points = [p0, p0, p0, p0];
@@ -391,6 +385,7 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
 URBGEN.Util.insertPoint = function(newPoint, p0, p1) {
   var direction = p0.neighbors.indexOf(p1);
   if (2 > direction || direction > 3) {
+    console.debug("point not inserted");
     return false;
   }
   var p = p0;
@@ -403,36 +398,42 @@ URBGEN.Util.insertPoint = function(newPoint, p0, p1) {
 }
 /**
  * Adds the specified point to the specified edge
+ * NOT TESTED, MAY NOT USE
  */
 URBGEN.Util.addPointToEdge = function(point, edge) {
-  var neighbors = URBGEN.Util.getNeighbors(point, edge);
+  var neighbors = URBGEN.Util.getNeighbors(point, edge.points);
   var index = edge.points.indexOf(neighbors.next);
   edge.points.splice(index, 0, point);
   return URBGEN.Util.insertPoint(point, neighbors.prev, neighbors.next);
 };
 /**
- * Returns the specified point's neighbors on the edge
+ * Returns the specified point's neighbors among the specified points.
  */
-URBGEN.Util.getNeighbors = function(point, edge) {
+URBGEN.Util.getNeighbors = function(point, points) {
   var neighbors = {
     prev: undefined,
     next: undefined
   };
-  if (edge.points.length === 2) {
-    neighbors.prev = edge.points[0];
-    neighbors.next = edge.points[1];
+  if (points.length === 2) {
+    neighbors.prev = points[0];
+    neighbors.next = points[1];
     return neighbors;
   }
   // Find the point as a ratio of the line
-  var pointR = URBGEN.Util.getPointAsRatio(point, edge.points[0],
-    edge.points[edge.points.length - 1]);
-  for (var i = 1; i < edge.points.length; i++) {
-    var currPoint = edge.points[i];
-    var r = URBGEN.Util.getPointAsRatio(currPoint, edge.points[0],
-      edge.points[edge.points.length - 1]);
+  var pointR = URBGEN.Util.getPointAsRatio(point, points[0],
+    points[points.length - 1]);
+  // if the point lies beyond either end of the path, throw error
+  if (pointR <= 0 || pointR >= 1) {
+    throw new Error("Can't determine neighbors. Point's r value = " + pointR);
+  }
+  for (var i = 1; i < points.length; i++) {
+    var currPoint = points[i];
+    var r = URBGEN.Util.getPointAsRatio(currPoint, points[0],
+      points[points.length - 1]);
+    //TODO what if r === pointR? ie, the point is identical to one on the path?
     if (r > pointR) {
-      neighbors.prev = edge.points[i - 1];
-      neighbors.next = edge.points[i];
+      neighbors.prev = points[i - 1];
+      neighbors.next = points[i];
       return neighbors;
     }
   }
@@ -444,22 +445,22 @@ URBGEN.Util.getNeighbors = function(point, edge) {
  * of the edge will be included in the search. If no such point exists, returns
  * the original point.
  */
-URBGEN.Util.checkNearPoints = function(point, edge, distance, includeEnds) {
-  var neighbors = URBGEN.Util.getNeighbors(point, edge);
+URBGEN.Util.checkNearPoints = function(point, points, distance, includeEnds) {
+  var neighbors = URBGEN.Util.getNeighbors(point, points);
   var d0 = Math.abs(URBGEN.Util.getLineSegmentLength(neighbors.prev, point));
   var d1 = Math.abs(URBGEN.Util.getLineSegmentLength(point, neighbors.next));
   if (d0 < distance && d0 <= d1) {
-    if (neighbors.prev === edge.points[0]) {
+    if (neighbors.prev === points[0]) {
       if (includeEnds) {
-        return edge.points[0];
+        return points[0];
       }
     } else {
       return neighbors.prev;
     }
   } else if (d1 < distance) {
-    if (neighbors.next === edge.points[edge.points.length - 1]) {
+    if (neighbors.next === points[points.length - 1]) {
       if (includeEnds) {
-        return edge.points[edge.points.length - 1];
+        return points[points.length - 1];
       }
     } else {
       return neighbors.next;
@@ -485,23 +486,23 @@ URBGEN.Util.nearest = function(points, target) {
   return points[index];
 }
 /**
- * Finds the population center of the specified quad, depending on the location
+ * Finds the population center of the specified poly, depending on the location
  * of the global city center and the city's denisty.
  */
-URBGEN.Util.getPopCenter = function(quad) {
-  var nearestCorner = URBGEN.Util.nearest(quad.corners, globalCityCenter);
+URBGEN.Util.getPopCenter = function(poly) {
+  var nearestCorner = URBGEN.Util.nearest(poly.corners, URBGEN.Variables.globalCityCenter);
   var oppositeCorner;
-  for (var i = 0; i < quad.corners.length; i++) {
-    if (quad.corners[i] === nearestCorner) {
+  for (var i = 0; i < poly.corners.length; i++) {
+    if (poly.corners[i] === nearestCorner) {
       continue;
     }
-    if (nearestCorner.neighbors.indexOf(quad.corners[i]) === -1) {
-      oppositeCorner = quad.corners[i];
+    if (nearestCorner.neighbors.indexOf(poly.corners[i]) === -1) {
+      oppositeCorner = poly.corners[i];
       break;
     }
   }
   var center = URBGEN.Util.linearInterpolate(nearestCorner,
-    oppositeCorner, globalCityDensity);
+    oppositeCorner, URBGEN.Variables.globalCityDensity);
   return center;
 };
 
@@ -511,18 +512,19 @@ URBGEN.Util.getPopCenter = function(quad) {
 ////////////////////////////////////////////////////////////////////////////////
 // USER CONTROLLED VARIABLES
 ////////////////////////////////////////////////////////////////////////////////
+URBGEN.Variables = {};
 /**
  * CITY CENTER
  */
-var globalCityCenter = new URBGEN.Point(800, 300, 0);
+URBGEN.Variables.globalCityCenter = new URBGEN.Point(800, 300, 0);
 /**
  * CITY DENISTY - HIGHER NUMBER IS LOWER DENSITY
  */
 var density = 0.3; // this is the number that will come from the slider
-var globalCityDensity = 1 - density; // convert it for use
+URBGEN.Variables.globalCityDensity = 1 - density; // convert it for use
 /**
  * ANGLE OF GRID'S X AXIS
  */
-var globalCityGridX = 0.225;
+URBGEN.Variables.globalCityGridX = 0.225;
 
 ////////////////////////////////////////////////////////////////////////////////

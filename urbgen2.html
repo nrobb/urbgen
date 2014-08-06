@@ -2,9 +2,12 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script src="js/three.min.js"></script>
+    <script src="js/OrbitControls.js"></script>
     <script src="js/UrbGen.js"></script>
   </head>
   <body>
+  
     <canvas id="canvas" width="1300" height="700">
     </canvas>
     <script>
@@ -36,11 +39,11 @@
       // DRAWS TOP AND LEFT EDGES OF A QUAD
       //////////////////////////////////////////////////////////////////////////
       function drawTopLeft(poly) {
-        var point = poly.corners[0];
-        for (var i = 2; i < 4; i++) {
-          var q = point.neighbors[i];
-          drawLine(point, q);
-        }
+        var tl = poly.corners[0];
+        var tr = poly.corners[1];
+        var bl = poly.corners[2];
+        drawLine(tl, bl);
+        drawLine(tl, tr);
       };
       function drawPoly(poly) {
         var p0 = poly.corners[0];
@@ -70,67 +73,105 @@
       //////////////////////////////////////////////////////////////////////////
       // INITIALIZE CANVAS AND CONTEXT
       //////////////////////////////////////////////////////////////////////////
+      /*
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
       context.lineWidth = 0.5;
       context.strokeStyle = "#000000";
-      //////////////////////////////////////////////////////////////////////////
-      // TESTING
-      //////////////////////////////////////////////////////////////////////////
-      // Set up the points
-      var topLeft = new URBGEN.Point(10, 15, 0);
-      var topRight = new URBGEN.Point(1250, 5, 0);
-      var bottomLeft = new URBGEN.Point(40, 580, 0);
-      var bottomRight = new URBGEN.Point(1100, 600, 0);
-      // Set each point's neighbors correctly
-      var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
-      var polys = [poly];
-      initNeighbors();
-      var points = [topLeft, topRight, bottomLeft, bottomRight];
-      /************************************************************************/
-function pathTest(p0, p1, direction) {
-  for (var i = 0; i < 200; i++) {
-    if (p0.neighbors[direction] === p1) return true;
-    if (p0.neighbors[direction] !== 0) {
-      p0 = p0.neighbors[direction];
-    }
+      */
+
+function getPolys() {
+  var topLeft = new URBGEN.Point(10, 15, 0);
+  var topRight = new URBGEN.Point(1250, 5, 0);
+  var bottomLeft = new URBGEN.Point(40, 580, 0);
+  var bottomRight = new URBGEN.Point(1200, 600, 0);
+  // Set each point's neighbors correctly
+  topLeft.neighbors[3] = topRight;
+  topLeft.neighbors[2] = bottomLeft;
+  topRight.neighbors[1] = topLeft;
+  topRight.neighbors[2] = bottomRight;
+  bottomLeft.neighbors[0] = topLeft;
+  bottomLeft.neighbors[3] = bottomRight;
+  bottomRight.neighbors[0] = topRight;
+  bottomRight.neighbors[1] = bottomLeft;
+  var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
+  var polys = [poly];
+  var n = 1;
+  for (var i = 0; i < 10; i++) {
+    polys = run(polys, n++ % 2)
   }
-  return false;
+  return polys
 }
-function polyTest(poly) {
-  return pathTest(poly.corners[0], poly.corners[1], 3) &&
-  pathTest(poly.corners[0], poly.corners[2], 2) &&
-  pathTest(poly.corners[1], poly.corners[0], 1) &&
-  pathTest(poly.corners[1], poly.corners[3], 2) &&
-  pathTest(poly.corners[2], poly.corners[0], 0) &&
-  pathTest(poly.corners[2], poly.corners[3], 3) &&
-  pathTest(poly.corners[3], poly.corners[1], 0) &&
-  pathTest(poly.corners[3], poly.corners[2], 1);
+function insetPoly(poly) {
+  var length = 0.3 * Math.min(
+    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
+  var newTopLeft = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(poly.corners[0], poly.corners[1], length),
+    URBGEN.Util.getAngle(poly.corners[0], poly.corners[2]),
+    URBGEN.Util.linearInterpolateByLength(poly.corners[0], poly.corners[2], length),
+    URBGEN.Util.getAngle(poly.corners[0], poly.corners[1]));
+  var newTopRight = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(poly.corners[0], poly.corners[1],
+      URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]) - length),
+    URBGEN.Util.getAngle(poly.corners[1], poly.corners[3]),
+    URBGEN.Util.linearInterpolateByLength(poly.corners[1], poly.corners[3], length),
+    URBGEN.Util.getAngle(poly.corners[0], poly.corners[1]));
+  var newBottomLeft = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(poly.corners[0], poly.corners[2],
+      URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]) - length),
+    URBGEN.Util.getAngle(poly.corners[2], poly.corners[3]),
+    URBGEN.Util.linearInterpolateByLength(poly.corners[2], poly.corners[3], length),
+    URBGEN.Util.getAngle(poly.corners[0], poly.corners[2]));
+  var newBottomRight = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(poly.corners[2], poly.corners[3],
+      URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]) - length),
+    URBGEN.Util.getAngle(poly.corners[1], poly.corners[3]),
+    URBGEN.Util.linearInterpolateByLength(poly.corners[1], poly.corners[3],
+      URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]) - length),
+    URBGEN.Util.getAngle(poly.corners[2], poly.corners[3]));
+  return new URBGEN.Poly(newTopLeft, newTopRight, newBottomLeft, newBottomRight);
 }
-      /************************************************************************/
-var testVertical = function(polygon) {
+function convertPoly(poly) {
+  var block = new THREE.Shape();
+  block.moveTo(poly.corners[0].x, poly.corners[0].y);
+  block.lineTo(poly.corners[1].x, poly.corners[1].y);
+  block.lineTo(poly.corners[3].x, poly.corners[3].y);
+  block.lineTo(poly.corners[2].x, poly.corners[2].y);
+  block.lineTo(poly.corners[0].x, poly.corners[0].y);
+  var extrusionSettings = {
+    size: 30, height: 4, curveSegments: 3,
+    bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
+    material: 0, extrudeMaterial: 1, amount: Math.random() * 40 + 50
+  };
+  var geom = new THREE.ExtrudeGeometry(block, extrusionSettings);
+  return geom;
+}
+function testVertical(polygon) {
   var builder = new URBGEN.Builder.VerticalBuilder();
   var data = {
-    origin: URBGEN.Util.linearInterpolate(polygon.corners[0], polygon.corners[1], Math.random() * 0.2 + 0.4),
+    origin: URBGEN.Util.linearInterpolate(polygon.corners[0], polygon.corners[1], 0.5),
     angle: Math.PI / 2,
     edges: [new URBGEN.Edge([polygon.corners[0], polygon.corners[1]], 3), new URBGEN.Edge([polygon.corners[2], polygon.corners[3]], 3)],
     originalPoints: [polygon.corners[0], polygon.corners[1], polygon.corners[2], polygon.corners[3]]
   };
   return builder.buildPolys(builder.getNewPoints(data));
 }
-var testHorizontal = function(polygon) {
+function testHorizontal(polygon) {
   var builder = new URBGEN.Builder.HorizontalBuilder();
   var data = {
-    origin: URBGEN.Util.linearInterpolate(polygon.corners[0], polygon.corners[2], Math.random() * 0.2 + 0.4),
+    origin: URBGEN.Util.linearInterpolate(polygon.corners[0], polygon.corners[2], 0.5),
     angle: Math.PI,
     edges: [new URBGEN.Edge([polygon.corners[0], polygon.corners[2]], 2), new URBGEN.Edge([polygon.corners[1], polygon.corners[3]], 2)],
     originalPoints: [polygon.corners[0], polygon.corners[1], polygon.corners[2], polygon.corners[3]]
   };
   return builder.buildPolys(builder.getNewPoints(data));
 }
-var run = function(origPolys, r) {
+function run(origPolys, r) {
   var ret = [];
-  for (var i = 0; i< origPolys.length; i++) {
+  for (var i = 0; i < origPolys.length; i++) {
     if (r === 1) {
       ret = ret.concat(testHorizontal(origPolys[i]));
     } else {
@@ -139,12 +180,64 @@ var run = function(origPolys, r) {
   }
   return ret;
 }
-var n = 1;
-for (var i = 0; i < 8; i++) {
-  polys = run(polys, (n++) % 2);
+function getCity() {
+  var cityGeom = new THREE.Geometry();
+  polys = getPolys();
+  var insetPolys = [];
+  for (var i = 0; i < polys.length; i++) {
+    insetPolys.push(insetPoly(polys[i]));
+  }
+  for (var j = 0; j < insetPolys.length; j++) {
+    var blockGeom = convertPoly(insetPolys[j]);
+    cityGeom.merge(blockGeom);
+  }
+  return cityGeom;
 }
-polys.forEach(drawPoly);
-console.debug(polys.length);
+
+/******************************************************************************/
+var camera, scene, renderer, polys, city;
+
+var material = new THREE.MeshBasicMaterial( { color: 'blue', vertexColors: THREE.FaceColors } );
+initWebGL();
+var cityGeom = getCity();
+city = new THREE.Mesh(cityGeom, material);
+scene.add(city);
+animate();
+
+function initWebGL() {
+
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setClearColor("rgb(255, 255, 255)");
+	document.body.appendChild( renderer.domElement );
+
+	camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.01, 3000 );
+	camera.position.z = 1000;
+	camera.position.x = 500;
+	camera.position.y = 1000;
+	
+
+	scene = new THREE.Scene();
+	scene.fog	= new THREE.FogExp2( 0xd0e0f0, 0.0025 );
+	var light	= new THREE.HemisphereLight( 0xfffff0, 0x101020, 1.25 );
+	light.position.set( 0.75, 1, 0.25 );
+	scene.add( light );
+	//OrbitControls
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	
+
+	
+
+	
+
+
+}
+
+function animate() {
+	requestAnimationFrame( animate );
+	renderer.render( scene, camera );
+
+}
     </script>
   </body>
 </html>
