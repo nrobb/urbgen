@@ -966,11 +966,11 @@ QUnit.test("URBGEN.Util.insertPoint", function(assert) {
   p.neighbors = [0, 0, r, 0];
   q.neighbors = [0, 0, 0, 0];
   r.neighbors = [p, 0, 0, 0];
-  var expected = URBGEN.Util.insertPoint(q, p, r);
+  var actual = URBGEN.Util.insertPoint(q, p, r);
   assert.deepEqual(p.neighbors, [0, 0, q, 0]);
   assert.deepEqual(q.neighbors, [p, 0, r, 0]);
   assert.deepEqual(r.neighbors, [q, 0, 0, 0]);
-  assert.ok(expected);
+  assert.ok(actual);
 });
 QUnit.test("URBGEN.Util.insertPoint", function(assert) {
   var p = {};
@@ -979,21 +979,37 @@ QUnit.test("URBGEN.Util.insertPoint", function(assert) {
   p.neighbors = [0, 0, 0, r];
   q.neighbors = [0, 0, 0, 0];
   r.neighbors = [0, p, 0, 0];
-  var expected = URBGEN.Util.insertPoint(q, p, r);
+  var actual = URBGEN.Util.insertPoint(q, p, r);
   assert.deepEqual(p.neighbors, [0, 0, 0, q]);
   assert.deepEqual(q.neighbors, [0, p, 0, r]);
   assert.deepEqual(r.neighbors, [0, q, 0, 0]);
-  assert.ok(expected);
+  assert.ok(actual);
 });
 QUnit.test("URBGEN.Util.insertPoint", function(assert) {
   var p = {};
   var q = {};
   var r = {};
-  p.neighbors = [0, 0, 0, 0];
+  p.neighbors = [r, 0, 0, 0];
   q.neighbors = [0, 0, 0, 0];
-  r.neighbors = [0, p, 0, 0];
+  r.neighbors = [0, 0, p, 0];
   var actual = URBGEN.Util.insertPoint(q, p, r);
-  assert.ok(actual === false);
+  assert.deepEqual(p.neighbors, [q, 0, 0, 0]);
+  assert.deepEqual(q.neighbors, [r, 0, p, 0]);
+  assert.deepEqual(r.neighbors, [0, 0, q, 0]);
+  assert.ok(actual);
+});
+QUnit.test("URBGEN.Util.insertPoint", function(assert) {
+  var p = {};
+  var q = {};
+  var r = {};
+  p.neighbors = [0, r, 0, 0];
+  q.neighbors = [0, 0, 0, 0];
+  r.neighbors = [0, 0, 0, p];
+  var actual = URBGEN.Util.insertPoint(q, p, r);
+  assert.deepEqual(p.neighbors, [0, q, 0, 0]);
+  assert.deepEqual(q.neighbors, [0, r, 0, p]);
+  assert.deepEqual(r.neighbors, [0, 0, 0, q]);
+  assert.ok(actual);
 });
 /**
  * URBGEN.Util.getNeighbors tests

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+  <head>
+    <script src="js/UrbGen.js"></script>
+    <script src="js/UrbGenDemo.js"></script>
+  </head>
+  <body>
+  <canvas id="canvas" width="1300" height="700"></canvas>
+    <script>
+      // Set up 2d canvas
+      var canvas = document.getElementById("canvas");
+      var context = canvas.getContext("2d");
+      context.lineWidth = 0.5;
+      context.strokeStyle = "#000000";
+      // set up city
+      var city = UGDEMO.getCity2D();
+      function drawLine(p0, p1) {
+        context.beginPath();
+        context.moveTo(p0.x, p0.y);
+        context.lineTo(p1.x, p1.y);
+        context.stroke();
+        context.closePath();
+      };
+      function drawPoly(poly) {
+        var p0 = poly.corners[0];
+        var p1 = poly.corners[1];
+        var p2 = poly.corners[2];
+        var p3 = poly.corners[3];
+        drawLine(p0, p1);
+        drawLine(p0, p2);
+        drawLine(p1, p3);
+        drawLine(p2, p3);
+        //console.debug(p0);
+      }
+      for (var i = 0; i < city.length; i++) {
+        drawPoly(city[i]);
+      }
+    </script>
+  </body>
+</html>
