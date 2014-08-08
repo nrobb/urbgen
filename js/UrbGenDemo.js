@@ -1,19 +1,11 @@
 var UGDEMO = {};
 function getPolys() {
   var topLeft = new URBGEN.Point(10, 15, 0);
-  var topRight = new URBGEN.Point(600, 5, 0);
+  var topRight = new URBGEN.Point(1200, 5, 0);
   var bottomLeft = new URBGEN.Point(40, 500, 0);
-  var bottomRight = new URBGEN.Point(700, 600, 0);
-  // Set each point's neighbors correctly
-  topLeft.neighbors[3] = topRight;
-  topLeft.neighbors[2] = bottomLeft;
-  topRight.neighbors[1] = topLeft;
-  topRight.neighbors[2] = bottomRight;
-  bottomLeft.neighbors[0] = topLeft;
-  bottomLeft.neighbors[3] = bottomRight;
-  bottomRight.neighbors[0] = topRight;
-  bottomRight.neighbors[1] = bottomLeft;
+  var bottomRight = new URBGEN.Point(1300, 600, 0);
   var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
+  poly.makeSimple();
   var polys = [poly];
   var n = 1;
   for (var i = 0; i < 10; i++) {
@@ -71,27 +63,37 @@ function convertPoly(poly) {
   geom.faceVertexUvs[0][2][2].set( 0, 0 );
   return geom;
 }
-function testVertical(polygon) {
+function testVertical(poly) {
+  /////hack
+  var length = Math.min(
+    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
+  if (length < 25) return [poly];
+  ///
+  var director = new URBGEN.Builder.Director();
   var builder = new URBGEN.Builder.VerticalBuilder();
-  var data = {
-    origin: URBGEN.Util.linearInterpolate(polygon.corners[0], polygon.corners[1], 0.4),
-    angle: Math.PI / 2,
-    poly: polygon,
-    illegalZone: 0.3,
-    minPolyWidth: 20
-  };
-  return builder.buildPolys(builder.getNewPoints(data));
+  poly.minEdgeLength = 5;
+  poly.throughRoadStagger = 0;
+  poly.density = 0.3;
+  return director.execute(builder, poly);
 }
-function testHorizontal(polygon) {
+function testHorizontal(poly) {
+  /////hack
+  var length = Math.min(
+    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
+    URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
+  if (length < 50) return [poly];
+  ///
+  var director = new URBGEN.Builder.Director();
   var builder = new URBGEN.Builder.HorizontalBuilder();
-  var data = {
-    origin: URBGEN.Util.linearInterpolate(polygon.corners[0], polygon.corners[2], 0.5),
-    angle: Math.PI,
-    poly: polygon,
-    illegalZone: 0.3,
-    minPolyWidth: 20
-  };
-  return builder.buildPolys(builder.getNewPoints(data));
+  poly.minEdgeLength = 5;
+  poly.throughRoadStagger = 0;
+  poly.density = 0.3;
+  return director.execute(builder, poly);
 }
 function run(origPolys, r) {
   var ret = [];

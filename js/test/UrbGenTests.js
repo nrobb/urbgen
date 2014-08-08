@@ -1,13 +1,14 @@
 /**
  * URBGEN.Point tests.
  */
-QUnit.test("URBGEN.Point.Constructor", function(assert) {
+QUnit.module("URBGEN.Point");
+QUnit.test("tests Constructor", function(assert) {
   var point = new URBGEN.Point(30, 20, 50);
   assert.ok(point.x === 30);
   assert.ok(point.y === 20);
   assert.ok(point.z === 50);
 });
-QUnit.test("URBGEN.Point.neighbors", function(assert) {
+QUnit.test("tests setting neighbors", function(assert) {
   var point = new URBGEN.Point();
   var p1 = {};
   var p2 = {};
@@ -22,13 +23,13 @@ QUnit.test("URBGEN.Point.neighbors", function(assert) {
   assert.deepEqual(point.neighbors[2], p3);
   assert.deepEqual(point.neighbors[3], p4);
 });
-QUnit.test("URBGEN.Point.setValues", function(assert) {
+QUnit.test("tests setValues method", function(assert) {
   var point = new URBGEN.Point();
   var newPoint = new URBGEN.Point(20, 40, 10);
   point.setValues(newPoint);
   assert.deepEqual(point, newPoint);
 });
-QUnit.test("URBGEN.Point.setValues", function(assert) {
+QUnit.test("tests setValues method", function(assert) {
   var point = new URBGEN.Point(50, 20, 60);
   var newPoint = new URBGEN.Point(20, 40, 10);
   point.setValues(newPoint);
@@ -37,21 +38,22 @@ QUnit.test("URBGEN.Point.setValues", function(assert) {
 /**
  * URBGEN.Poly tests.
  */
- QUnit.test("URBGEN.Poly.Constructor", function(assert) {
-   var c1 = {};
-   var c2 = {};
-   var c3 = {};
-   var c4 = {};
-   var poly = new URBGEN.Poly(c1, c2, c3, c4);
-   assert.deepEqual(poly.corners[0], c1);
-   assert.deepEqual(poly.corners[1], c2);
-   assert.deepEqual(poly.corners[2], c3);
-   assert.deepEqual(poly.corners[3], c4);
- });
+QUnit.module("URBGEN.Poly");
+QUnit.test("tests Constructor", function(assert) {
+  var c1 = {};
+  var c2 = {};
+  var c3 = {};
+  var c4 = {};
+  var poly = new URBGEN.Poly(c1, c2, c3, c4);
+  assert.deepEqual(poly.corners[0], c1);
+  assert.deepEqual(poly.corners[1], c2);
+  assert.deepEqual(poly.corners[2], c3);
+  assert.deepEqual(poly.corners[3], c4);
+});
 /**
  * URBGEN.Poly.makeSimple test.
  */
-QUnit.test("URBGEN.Poly.makeSimple", function(assert) {
+QUnit.test("tests makeSimple method", function(assert) {
   var c1 = new URBGEN.Point(10, 10, 0);
   var c2 = new URBGEN.Point(50, 20, 0);
   var c3 = new URBGEN.Point(20, 60, 0);

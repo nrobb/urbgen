@@ -1,6 +1,7 @@
 /**
  * URBGEN.Util.linearInterpolate tests.
  */
+QUnit.module("URBGEN.Util.linearInterpolate");
 QUnit.test("URBGEN.Util.linearInterpolate", function(assert) {
   var x1 = 47; y1 = 122;
   var x2 = 96, y2 = 181;
@@ -173,6 +174,7 @@ QUnit.test("URBGEN.Util.linearInterpolate", function(assert) {
 /**
  * URBGEN.Util.getLineSegmentLength tests.
  */
+QUnit.module("URBGEN.Util.getLineSegmentLength");
 QUnit.test("URBGEN.Util.getLineSegmentLength", function(assert) {
   var x1 = 100, y1 = 100;
   var x2 = 400, y2 = 400;
@@ -239,6 +241,7 @@ QUnit.test("URBGEN.Util.getLineSegmentLength", function(assert) {
 /**
  * URBGEN.Util.getAngle tests.
  */
+QUnit.module("URBGEN.Util.getAngle");
 QUnit.test("URBGEN.Util.getAngle", function(assert) {
   var x1 = 40, y1 = 40;
   var x2 = 400, y2 = 40;
@@ -314,6 +317,7 @@ QUnit.test("URBGEN.Util.getAngle", function(assert) {
 /**
  * URBGEN.Util.getIntersect tests.
  */
+QUnit.module("URBGEN.Util.getIntersect");
 QUnit.test("URBGEN.Util.getIntersect", function(assert) {
   var x1 = 50, y1 = 50;
   var x2 = 500, y2 = 500;
@@ -387,6 +391,7 @@ QUnit.test("URBGEN.Util.getIntersect", function(assert) {
 /**
  * URBGEN.Util.linearInterpolateByLength tests.
  */
+QUnit.module("URBGEN.Util.linearInterpolateByLength");
 QUnit.test("URBGEN.Util.linearInterpolateByLength", function(assert) {
   var x1 = 0; y1 = 0;
   var x2 = 100, y2 = 0;
@@ -469,6 +474,7 @@ QUnit.test("URBGEN.Util.linearInterpolateByLength", function(assert) {
 /**
  * URBGEN.Util.getPathLength tests.
  */
+QUnit.module("URBGEN.Util.getPathLength");
 QUnit.test("URBGEN.Util.getPathLength", function(assert) {
   var x1 = 0, y1 = 0;
   var x2 = 0, y2 = 400;
@@ -578,6 +584,7 @@ QUnit.test("URBGEN.Util.getPathLength", function(assert) {
 /**
  * URBGEN.Util.getGridAngle tests.
  */
+QUnit.module("URBGEN.Util.getGridAngle");
 QUnit.test("URBGEN.Util.getGridAngle", function(assert) {
   URBGEN.Variables.globalCityGridX = 0.3;
   var x1 = 0, y1 = 0;
@@ -621,6 +628,7 @@ QUnit.test("URBGEN.Util.getGridAngle", function(assert) {
 /**
  * URBGEN.Util.addAngle tests.
  */
+QUnit.module("URBGEN.Util.addAngle");
 QUnit.test("URBGEN.Util.addAngle", function(assert) {
   var a1 = 0.4 * Math.PI;
   var dA = 0.4;
@@ -680,7 +688,8 @@ QUnit.test("URBGEN.Util.addAngle", function(assert) {
 /**
  * URBGEN.Util.getPointAsRatio tests.
  */
-QUnit.test("URBGEN.Util.getPointAsRatio", function(assert) {
+QUnit.module("URBGEN.Util.getPointAsRatio");
+QUnit.test("URBGEN.Utl.getPointAsRatio", function(assert) {
   var x1 = 0, y1 = 0;
   var x2 = 400, y2 = 0;
   var x3 = 200, y3 = 0;
@@ -793,6 +802,7 @@ QUnit.test("URBGEN.Util.getPointAsRatio", function(assert) {
 /**
  * URBGEN.Util.areaPoly tests.
  */
+QUnit.module("URBGEN.Util.areaPoly");
 QUnit.test("URBGEN.Util.areaPoly", function(assert) {
   var x1 = 0, y1 = 0;
   var x2 = 100, y2 = 0;
@@ -892,6 +902,7 @@ QUnit.test("URBGEN.Util.areaPoly", function(assert) {
 /**
  * URBGEN.Util.getDirectedPath tests.
  */
+QUnit.module("URBGEN.Util.getDirectedPath");
 QUnit.test("URBGEN.Util.getDirectedPath", function(assert) {
   var p = {};
   var q = {};
@@ -959,6 +970,7 @@ QUnit.test("URBGEN.Util.getDirectedPath", function(assert) {
 /**
  * URBGEN.Util.insertPoint tests.
  */
+QUnit.module("URBGEN.Util.insertPoint");
 QUnit.test("URBGEN.Util.insertPoint", function(assert) {
   var p = {};
   var q = {};
@@ -1005,7 +1017,7 @@ QUnit.test("URBGEN.Util.insertPoint", function(assert) {
   p.neighbors = [0, r, 0, 0];
   q.neighbors = [0, 0, 0, 0];
   r.neighbors = [0, 0, 0, p];
-  var actual = URBGEN.Util.insertPoint(q, p, r);
+  var actual = URBGEN.Util.insertPoint(q, r, p);
   assert.deepEqual(p.neighbors, [0, q, 0, 0]);
   assert.deepEqual(q.neighbors, [0, r, 0, p]);
   assert.deepEqual(r.neighbors, [0, 0, 0, q]);
@@ -1014,6 +1026,7 @@ QUnit.test("URBGEN.Util.insertPoint", function(assert) {
 /**
  * URBGEN.Util.getNeighbors tests
  */
+QUnit.module("URBGEN.Util.getNeighbors");
 QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
   var p = {x: 0, y: 0, z: 0};
   var q = {x: 0, y: 10, z: 0};
@@ -1128,6 +1141,7 @@ QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
 /**
  * URBGEN.Util.checkNearPoints tests.
  */
+QUnit.module("URBGEN.Util.checkNearPoints");
 QUnit.test("URBGEN.Util.checkNearPoints", function(assert) {
   var p = {x: 0, y: 0, z: 0};
   var q = {x: 30, y: 10, z: 0};
@@ -1218,6 +1232,7 @@ QUnit.test("URBGEN.Util.checkNearPoints", function(assert) {
 /**
  * URBGEN.Util.nearest tests
  */
+QUnit.module("URBGEN.Util.nearest");
 QUnit.test("URBGEN.Util.nearest", function(assert) {
   var p = {x: 0, y: 0, z: 0};
   var q = {x: 30, y: 10, z: 0};
@@ -1263,6 +1278,7 @@ QUnit.test("URBGEN.Util.nearest", function(assert) {
 /**
  * URBGEN.Util.getPopCenter tests.
  */
+QUnit.module("URBGEN.Util.getPopCenter");
 QUnit.test("URBGEN.Util.getPopCenter", function(assert) {
   URBGEN.Variables.globalCityCenter = {x: 50, y: 50, z: 0};
   URBGEN.Variables.globalCityDensity = 0.1;

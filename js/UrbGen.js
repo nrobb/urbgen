@@ -27,6 +27,7 @@ URBGEN.Poly = function(p0, p1, p2, p3) {
   this.corners = [p0, p1, p2, p3];
   this.minEdgeLength;
   this.throughRoadStagger;
+  this.denisty;
   this.atomic = false;
 };
 /**
@@ -59,14 +60,17 @@ URBGEN.Edge = function(points, direction) {
 URBGEN.Builder = function() {
   this.poly;
   this.origin;
+  this.endPoints;
+  this.newPoints;
+  this.targets;
 };
 /**
  * Returns an array of new polys created from this builder's current points.
  */
 URBGEN.Builder.prototype.buildPolys = function(newPoints) {
   var polys = [];
-  for (var i = 0; i < newPoints.length; i++) {
-    var points = newPoints[i];
+  for (var i = 0; i < this.newPoints.length; i++) {
+    var points = this.newPoints[i];
     polys.push(new URBGEN.Poly(points[0], points[1], points[2], points[3]));
   }
   return polys;
@@ -126,18 +130,18 @@ URBGEN.Builder.HorizontalBuilder.prototype.setOrigin = function() {
     edgeStart = this.poly.corners[0];
     edgeEnd = this.poly.corners[2];
   }
-  // Get the new origin point based on the density
+  // Get the origin point based on the density
   var origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, this.poly.density);
   // If the origin point is too close to the edge's start, move it
   if (Math.abs(URBGEN.Util.getLineSegmentLength(edgeStart, origin))
-    < this.poly.minPolyWidth) {
+    < this.poly.minEdgeLength) {
       origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
-        this.poly.minPolyWidth);
+        this.poly.minEdgeLength);
   }
   // Get any points that lie on the edge
   var direction = edgeReversed ? 0 : 2;
   var path = URBGEN.Util.getDirectedPath(edgeStart, edgeEnd, direction);
-  // Check if any of these points is close enough to use
+  // Check if any of these points are close enough to use
   var distance = this.poly.throughRoadStagger;
   var nearPoint = URBGEN.Util.checkNearPoints(origin, path, distance, false);
   // Set this builder's origin point, inserting it to the edge if needed
@@ -145,53 +149,66 @@ URBGEN.Builder.HorizontalBuilder.prototype.setOrigin = function() {
     this.origin = nearPoint;
   } else {
     var neighbors = URBGEN.Util.getNeighbors(origin, path);
-    URBGEN.Util.insertPoint(origin, neighbors.prev, neighbors.next);
+    URBGEN.Util.insertPoint(origin, neighbors.prev, neighbors.nxt);
     this.origin = origin;
   }
 };
 /**
- * Returns n {2, 4} points using the specified poly's targets and center.
+ * Sets the end point for the new dividing line
  */
-URBGEN.Builder.HorizontalBuilder.prototype.getNewPoints = function(data) {
-  // Set up the data
-  var poly = data.poly;
-  var illegalZone = data.illegalZone;
-  var minPolyWidth = data.minPolyWidth;
-  var start = data.origin;
-  var startAngle;
-  // If no angle specified, use the appropriate gird angle
-  if (data.angle === undefined) {
-    startAngle = URBGEN.Util.getGridAngle(poly.corners[0], poly.corners[2]);
+URBGEN.Builder.HorizontalBuilder.prototype.setEndPoints = function() {
+  var edgeStart = this.poly.corners[1];
+  var edgeEnd = this.poly.corners[3];
+  // Find the angles of the new line and the intersecting edge
+  var angle;
+  if (this.targets.length === 0) {
+    angle = URBGEN.Util.getGridAngle(edgeStart, edgeEnd);
   } else {
-    startAngle = data.angle;
+    var midPoint = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, 0.5);
+    var target = URBGEN.Util.nearest(this.targets, midPoint);
+    angle = URBGEN.Util.getAngle(this.origin, target);
   }
-  // Find the angle of the opposite edge
-  var oppAngle = URBGEN.Util.getAngle(poly.corners[1], poly.corners[3]);
-  // Find the intersect point
-  var end = URBGEN.Util.getIntersect(start, startAngle, poly.corners[1], oppAngle);
-  // Make sure this point lies in the allowed part of the line
-  var r = URBGEN.Util.getPointAsRatio(end, poly.corners[1], poly.corners[3]);
-  if (r < illegalZone) r = illegalZone;
-  if (r > 1 - illegalZone) r = 1 - illegalZone;
-  // Find the adjusted end point
-  end = URBGEN.Util.linearInterpolate(poly.corners[1], poly.corners[3], r);
-  // Find all points that lie on the opposite edge
-  var path = URBGEN.Util.getDirectedPath(poly.corners[1], poly.corners[3], 2);
-  // Check if any of these points are close enough to be used
-  end = URBGEN.Util.checkNearPoints(end, path, minPolyWidth, false);
-  // Find the points neighbors on the path
-  var neighbors = URBGEN.Util.getNeighbors(end, path);
-  // Insert the point
-  URBGEN.Util.insertPoint(end, neighbors.prev, neighbors.next);
-  // Set the neighbor relations of start and end points
-  start.neighbors[3] = end;
-  end.neighbors[1] = start;
-  // Make the new points array
-  var newPoints = [
-    [poly.corners[0], poly.corners[1], start, end],
-    [start, end, poly.corners[2], poly.corners[3]]
+  var intersectAngle = URBGEN.Util.getAngle(edgeStart, edgeEnd);
+  // Get the end point
+  var endPoint = URBGEN.Util.getIntersect(this.origin, angle, edgeStart,
+    intersectAngle);
+  // Get the min r value
+  var minPoint = URBGEN.Util.linearInterpolateByLength(edgeStart,
+    edgeEnd, this.poly.minEdgeLength);
+  var minR = URBGEN.Util.getPointAsRatio(minPoint, edgeStart, edgeEnd);
+  // Get the end point's r value
+  var endPointR = URBGEN.Util.getPointAsRatio(endPoint, edgeStart, edgeEnd);
+  // If needed, move end point to lie on the allowed part of the line segment
+  if (endPointR < minR) {
+    endPointR = minR;
+  } else if (endPointR > 1 - minR) {
+    endPointR = 1 - minR;
+  }
+  endPoint = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, endPointR);
+  // Get any points that lie on the edge
+  var path = URBGEN.Util.getDirectedPath(edgeStart, edgeEnd, 2);
+  // Check if any of these points are close enough to use
+  var distance = this.poly.throughRoadStagger;
+  var nearPoint = URBGEN.Util.checkNearPoints(endPoint, path, distance, false);
+  // Set this builder's end point, inserting it to the edge if needed
+  if (endPoint !== nearPoint) {
+    this.endPoints = [nearPoint];
+  } else {
+    var neighbors = URBGEN.Util.getNeighbors(endPoint, path);
+    URBGEN.Util.insertPoint(endPoint, neighbors.prev, neighbors.nxt);
+    this.endPoints = [endPoint];
+  }
+};
+/**
+ * Sets this builder's current new points
+ */
+URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function(data) {
+  this.origin.neighbors[3] = this.endPoints[0];
+  this.endPoints[0].neighbors[1] = this.origin;
+  this.newPoints = [
+    [this.poly.corners[0], this.poly.corners[1], this.origin, this.endPoints[0]],
+    [this.origin, this.endPoints[0], this.poly.corners[2], this.poly.corners[3]]
   ];
-  return newPoints;
 };
 /**
  * Constructs a VerticalBuilder
@@ -210,48 +227,101 @@ URBGEN.Builder.VerticalBuilder.prototype
 URBGEN.Builder.VerticalBuilder.prototype.constructor
   = URBGEN.Builder.VerticalBuilder;
 /**
- *
+ * Sets the origin point for the new dividing line
  */
-URBGEN.Builder.VerticalBuilder.prototype.getNewPoints = function(data) {
-  // Set up the data
-  var poly = data.poly;
-  var illegalZone = data.illegalZone;
-  var minPolyWidth = data.minPolyWidth;
-  var start = data.origin;
-  var startAngle;
-  // If no angle specified, use the appropriate gird angle
-  if (data.angle === undefined) {
-    startAngle = URBGEN.Util.getGridAngle(poly.corners[0], poly.corners[1]);
+URBGEN.Builder.VerticalBuilder.prototype.setOrigin = function() {
+  var edgeStart;
+  var edgeEnd;
+  var edgeReversed = false;
+  // Set the start and end points, and a flag if the edge is being used reveresed
+  if (URBGEN.Util.nearest([this.poly.corners[0], this.poly.corners[1]],
+    URBGEN.Variables.globalCityCenter) === this.poly.corners[1]) {
+      edgeStart = this.poly.corners[1];
+      edgeEnd = this.poly.corners[0];
+      edgeReversed = true;
   } else {
-    startAngle = data.angle;
+    edgeStart = this.poly.corners[0];
+    edgeEnd = this.poly.corners[1];
   }
-  // Find the angle of the opposite edge
-  var oppAngle = URBGEN.Util.getAngle(poly.corners[2], poly.corners[3]);
-  // Find the intersect point
-  var end = URBGEN.Util.getIntersect(start, startAngle, poly.corners[2], oppAngle);
-  // Make sure this point lies in the allowed part of the line
-  var r = URBGEN.Util.getPointAsRatio(end, poly.corners[2], poly.corners[3]);
-  if (r < illegalZone) r = illegalZone;
-  if (r > 1 - illegalZone) r = 1 - illegalZone;
-  // Find the adjusted end point
-  end = URBGEN.Util.linearInterpolate(poly.corners[2], poly.corners[3], r);
-  // Find all points that lie on the opposite edge
-  var path = URBGEN.Util.getDirectedPath(poly.corners[2], poly.corners[3], 3);
-  // Check if any of these points are close enough to be used
-  end = URBGEN.Util.checkNearPoints(end, path, minPolyWidth, false);
-  // Find the points neighbors on the path
-  var neighbors = URBGEN.Util.getNeighbors(end, path);
-  // Insert the point
-  URBGEN.Util.insertPoint(end, neighbors.prev, neighbors.next);
-  // Set the neighbor relations of start and end points
-  start.neighbors[2] = end;
-  end.neighbors[0] = start;
-  // Make the new points array
-  var newPoints = [
-    [poly.corners[0], start, poly.corners[2], end],
-    [start, poly.corners[1], end, poly.corners[3]]
+  // Get the origin point based on the density
+  var origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, this.poly.density);
+  // If the origin point is too close to the edge's start, move it
+  if (Math.abs(URBGEN.Util.getLineSegmentLength(edgeStart, origin))
+    < this.poly.minEdgeLength) {
+      origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
+        this.poly.minEdgeLength);
+  }
+  // Get any points that lie on the edge
+  var direction = edgeReversed ? 1 : 3;
+  var path = URBGEN.Util.getDirectedPath(edgeStart, edgeEnd, direction);
+  // Check if any of these points are close enough to use
+  var distance = this.poly.throughRoadStagger;
+  var nearPoint = URBGEN.Util.checkNearPoints(origin, path, distance, false);
+  // Set this builder's origin point, inserting it to the edge if needed
+  if (origin !== nearPoint) {
+    this.origin = nearPoint;
+  } else {
+    var neighbors = URBGEN.Util.getNeighbors(origin, path);
+    URBGEN.Util.insertPoint(origin, neighbors.prev, neighbors.nxt);
+    this.origin = origin;
+  }
+};
+/**
+ * Sets the end point for the new dividing line
+ */
+URBGEN.Builder.VerticalBuilder.prototype.setEndPoints = function() {
+  var edgeStart = this.poly.corners[2];
+  var edgeEnd = this.poly.corners[3];
+  // Find the angles of the new line and the intersecting edge
+  var angle;
+  if (this.targets.length === 0) {
+    angle = URBGEN.Util.getGridAngle(edgeStart, edgeEnd);
+  } else {
+    var midPoint = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, 0.5);
+    var target = URBGEN.Util.nearest(this.targets, midPoint);
+    angle = URBGEN.Util.getAngle(this.origin, target);
+  }
+  var intersectAngle = URBGEN.Util.getAngle(edgeStart, edgeEnd);
+  // Get the end point
+  var endPoint = URBGEN.Util.getIntersect(this.origin, angle, edgeStart,
+    intersectAngle);
+  // Get the min r value
+  var minPoint = URBGEN.Util.linearInterpolateByLength(edgeStart,
+    edgeEnd, this.poly.minEdgeLength);
+  var minR = URBGEN.Util.getPointAsRatio(minPoint, edgeStart, edgeEnd);
+  // Get the end point's r value
+  var endPointR = URBGEN.Util.getPointAsRatio(endPoint, edgeStart, edgeEnd);
+  // If needed, move end point to lie on the allowed part of the line segment
+  if (endPointR < minR) {
+    endPointR = minR;
+  } else if (endPointR > 1 - minR) {
+    endPointR = 1 - minR;
+  }
+  endPoint = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, endPointR);
+  // Get any points that lie on the edge
+  var path = URBGEN.Util.getDirectedPath(edgeStart, edgeEnd, 3);
+  // Check if any of these points are close enough to use
+  var distance = this.poly.throughRoadStagger;
+  var nearPoint = URBGEN.Util.checkNearPoints(endPoint, path, distance, false);
+  // Set this builder's end point, inserting it to the edge if needed
+  if (endPoint !== nearPoint) {
+    this.endPoints = [nearPoint];
+  } else {
+    var neighbors = URBGEN.Util.getNeighbors(endPoint, path);
+    URBGEN.Util.insertPoint(endPoint, neighbors.prev, neighbors.nxt);
+    this.endPoints = [endPoint];
+  }
+};
+/**
+ * Sets this builder's current new points
+ */
+URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function(data) {
+  this.origin.neighbors[2] = this.endPoints[0];
+  this.endPoints[0].neighbors[0] = this.origin;
+  this.newPoints = [
+    [this.poly.corners[0], this.origin, this.poly.corners[2], this.endPoints[0]],
+    [this.origin, this.poly.corners[1], this.endPoints[0], this.poly.corners[3]]
   ];
-  return newPoints;
 };
 /**
  * Constructs a director
@@ -262,11 +332,13 @@ URBGEN.Builder.Director = function() {
 /**
  * Invokes the builder
  */
-URBGEN.Builder.Director.prototype.execute = function(bundle) {
-  var builder = bundle.builder;
-  var data = bundle.data;
-  var polys = builder.buildPolys(builder.getNewPoints(values));
-  return polys;
+URBGEN.Builder.Director.prototype.execute = function(builder, poly, targets) {
+  builder.poly = poly;
+  builder.targets = (targets === undefined) ? [] : targets;
+  builder.setOrigin();
+  builder.setEndPoints();
+  builder.setNewPoints();
+  return builder.buildPolys();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -326,7 +398,6 @@ URBGEN.Util.getAngle = function(p0, p1) {
     if (x2 > x1) {return 0;} else {return Math.PI;}
   }
   var angle = Math.atan2((y2 - y1), (x2 - x1));
-  /* console.debug("the angle in degrees from + x axis = " + angle * (180/Math.PI)); */
   if (y2 > y1) {
     return angle;
     
@@ -397,20 +468,13 @@ URBGEN.Util.areaPoly = function(poly) {
  */
 URBGEN.Util.getDirectedPath = function(p0, p1, direction, maxSteps) {
   var points = [p0];
-  if (maxSteps === undefined) {
-    maxSteps = 1000;
+  var i = 0;
+  while(points[i] !== p1) {
+    points.push(points[i].neighbors[direction]);
+    i++;
+    if (i === 1000) return undefined;
   }
-  for (var i = 0; i < maxSteps; i++) {
-    if (points[i].neighbors[direction] !== 0) {
-      var point = points[i].neighbors[direction];
-      points.push(point);
-      if (point === p1) {
-        return points;
-      }
-    } else {
-      return false;
-    }
-  }
+  return points;
 };
 /**
  * Returns the direction (0 - 3) in which you must travel from p0 to reach p1.
@@ -470,12 +534,10 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
 URBGEN.Util.insertPoint = function(newPoint, p0, p1) {
   var direction = p0.neighbors.indexOf(p1);
   var oppDirection = (direction + 2) % 4;
-  var p = p0;
-  var q = p1;
-  q.neighbors[oppDirection] = newPoint;
-  p.neighbors[direction] = newPoint;
-  newPoint.neighbors[direction] = q;
-  newPoint.neighbors[oppDirection] = p;
+  p1.neighbors[oppDirection] = newPoint;
+  p0.neighbors[direction] = newPoint;
+  newPoint.neighbors[direction] = p1;
+  newPoint.neighbors[oppDirection] = p0;
   return true;
 }
 /**
@@ -484,9 +546,9 @@ URBGEN.Util.insertPoint = function(newPoint, p0, p1) {
  */
 URBGEN.Util.addPointToEdge = function(point, edge) {
   var neighbors = URBGEN.Util.getNeighbors(point, edge.points);
-  var index = edge.points.indexOf(neighbors.next);
+  var index = edge.points.indexOf(neighbors.nxt);
   edge.points.splice(index, 0, point);
-  return URBGEN.Util.insertPoint(point, neighbors.prev, neighbors.next);
+  return URBGEN.Util.insertPoint(point, neighbors.prev, neighbors.nxt);
 };
 /**
  * Returns the specified point's neighbors among the specified points.
@@ -494,11 +556,11 @@ URBGEN.Util.addPointToEdge = function(point, edge) {
 URBGEN.Util.getNeighbors = function(point, points) {
   var neighbors = {
     prev: undefined,
-    next: undefined
+    nxt: undefined
   };
   if (points.length === 2) {
     neighbors.prev = points[0];
-    neighbors.next = points[1];
+    neighbors.nxt = points[1];
     return neighbors;
   }
   // Find the point as a ratio of the line
@@ -515,7 +577,7 @@ URBGEN.Util.getNeighbors = function(point, points) {
     //TODO what if r === pointR? ie, the point is identical to one on the path?
     if (r > pointR) {
       neighbors.prev = points[i - 1];
-      neighbors.next = points[i];
+      neighbors.nxt = points[i];
       return neighbors;
     }
   }
@@ -530,7 +592,7 @@ URBGEN.Util.getNeighbors = function(point, points) {
 URBGEN.Util.checkNearPoints = function(point, points, distance, includeEnds) {
   var neighbors = URBGEN.Util.getNeighbors(point, points);
   var d0 = Math.abs(URBGEN.Util.getLineSegmentLength(neighbors.prev, point));
-  var d1 = Math.abs(URBGEN.Util.getLineSegmentLength(point, neighbors.next));
+  var d1 = Math.abs(URBGEN.Util.getLineSegmentLength(point, neighbors.nxt));
   if (d0 < distance && d0 <= d1) {
     if (neighbors.prev === points[0]) {
       if (includeEnds) {
@@ -540,12 +602,12 @@ URBGEN.Util.checkNearPoints = function(point, points, distance, includeEnds) {
       return neighbors.prev;
     }
   } else if (d1 < distance) {
-    if (neighbors.next === points[points.length - 1]) {
+    if (neighbors.nxt === points[points.length - 1]) {
       if (includeEnds) {
         return points[points.length - 1];
       }
     } else {
-      return neighbors.next;
+      return neighbors.nxt;
     }
   }
   return point;
