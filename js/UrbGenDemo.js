@@ -70,13 +70,13 @@ function testVertical(poly) {
     URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
     URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
     URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
-  if (length < 25) return [poly];
+  if (length < 100) return [poly];
   ///
   var director = new URBGEN.Builder.Director();
   var builder = new URBGEN.Builder.VerticalBuilder();
-  poly.minEdgeLength = 5;
+  poly.minEdgeLength = 50;
   poly.throughRoadStagger = 0;
-  poly.density = 0.3;
+  //poly.density = 0.3;
   return director.execute(builder, poly);
 }
 function testHorizontal(poly) {
@@ -86,7 +86,7 @@ function testHorizontal(poly) {
     URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
     URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
     URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
-  if (length < 50) return [poly];
+  if (length < 10) return [poly];
   ///
   var director = new URBGEN.Builder.Director();
   var builder = new URBGEN.Builder.HorizontalBuilder();

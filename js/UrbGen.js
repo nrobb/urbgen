@@ -117,6 +117,7 @@ URBGEN.Builder.HorizontalBuilder.prototype.constructor
  * Sets the origin point for the new dividing line
  */
 URBGEN.Builder.HorizontalBuilder.prototype.setOrigin = function() {
+  var origin;
   var edgeStart;
   var edgeEnd;
   var edgeReversed = false;
@@ -130,13 +131,19 @@ URBGEN.Builder.HorizontalBuilder.prototype.setOrigin = function() {
     edgeStart = this.poly.corners[0];
     edgeEnd = this.poly.corners[2];
   }
-  // Get the origin point based on the density
-  var origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, this.poly.density);
-  // If the origin point is too close to the edge's start, move it
-  if (Math.abs(URBGEN.Util.getLineSegmentLength(edgeStart, origin))
-    < this.poly.minEdgeLength) {
-      origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
-        this.poly.minEdgeLength);
+  // Get the origin point using either density or minEdgeLength
+  if (this.poly.density === undefined) {
+    origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
+      this.poly.minEdgeLength);
+  } else {
+    origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd,
+      this.poly.density);
+    // If the origin point is too close to the edge's start, move it
+    if (Math.abs(URBGEN.Util.getLineSegmentLength(edgeStart, origin))
+      < this.poly.minEdgeLength) {
+        origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
+          this.poly.minEdgeLength);
+      }
   }
   // Get any points that lie on the edge
   var direction = edgeReversed ? 0 : 2;
@@ -243,13 +250,19 @@ URBGEN.Builder.VerticalBuilder.prototype.setOrigin = function() {
     edgeStart = this.poly.corners[0];
     edgeEnd = this.poly.corners[1];
   }
-  // Get the origin point based on the density
-  var origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, this.poly.density);
-  // If the origin point is too close to the edge's start, move it
-  if (Math.abs(URBGEN.Util.getLineSegmentLength(edgeStart, origin))
-    < this.poly.minEdgeLength) {
-      origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
-        this.poly.minEdgeLength);
+  // Get the origin point using either density or minEdgeLength
+  if (this.poly.density === undefined) {
+    origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
+      this.poly.minEdgeLength);
+  } else {
+    origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd,
+      this.poly.density);
+    // If the origin point is too close to the edge's start, move it
+    if (Math.abs(URBGEN.Util.getLineSegmentLength(edgeStart, origin))
+      < this.poly.minEdgeLength) {
+        origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd,
+          this.poly.minEdgeLength);
+      }
   }
   // Get any points that lie on the edge
   var direction = edgeReversed ? 1 : 3;
