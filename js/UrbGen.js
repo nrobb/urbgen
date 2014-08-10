@@ -721,14 +721,14 @@ URBGEN.Variables = {};
 /**
  * CITY CENTER
  */
-URBGEN.Variables.globalCityCenter = new URBGEN.Point(Math.random() * 500, Math.random() * 500, 0);
+URBGEN.Variables.globalCityCenter = new URBGEN.Point(Math.random() * 100, Math.random() * 100, 0);
 /**
  * CITY DENISTY - HIGHER NUMBER IS LOWER DENSITY
  */
-var density = Math.random() * 0.1 + 0.4; // between 0 (exclusive) and 0.5 (inclusive)
+var density = 0.5; // (0.2 - 0.5 ( inclusive)
 URBGEN.Variables.globalCityDensity = 1 - density; // convert it for use
 /**
  * ANGLE OF GRID'S X AXIS
  */
-URBGEN.Variables.globalCityGridX = Math.random() * 0.5
+URBGEN.Variables.globalCityGridX = 0.25; //(0 - 0.5 (exclusive)
 ////////////////////////////////////////////////////////////////////////////////
