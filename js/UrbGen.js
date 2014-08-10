@@ -25,6 +25,12 @@ URBGEN.Point.prototype.setValues = function(point) {
  */
 URBGEN.Poly = function(p0, p1, p2, p3) {
   this.corners = [p0, p1, p2, p3];
+  this.edgeLengths = [
+    URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[1]),
+    URBGEN.Util.getLineSegmentLength(this.corners[1], this.corners[3]),
+    URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[2]),
+    URBGEN.Util.getLineSegmentLength(this.corners[2], this.corners[3])
+  ];
   this.minEdgeLength;
   this.throughRoadStagger;
   this.denisty;
@@ -51,6 +57,49 @@ URBGEN.Edge = function(points, direction) {
   this.direction = direction;
   this.angle = URBGEN.Util.getAngle(this.points[0],
     this.points[this.points.length - 1]);
+};
+/**
+ * Constructs a city generator.
+ */
+URBGEN.Generator = function() {
+  this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder();
+  this.verticalBuilder = new URBGEN.Builder.VerticalBuilder();
+  this.builder;
+  this.director = new URBGEN.Builder.Director();
+  this.cityPolys = [];
+};
+/**
+ * Generates a city.
+ */
+URBGEN.Generator.prototype.generate = function() {
+  
+};
+/**
+ * Processes a polygon.
+ */
+URBGEN.Generator.prototype.processPoly = function(poly) {
+  this.prepare(poly);
+  var newPolys = this.director.execute(this.builder);
+  return newPolys;
+};
+/**
+ *
+ */
+URBGEN.Generator.prototype.prepare = function(poly) {
+  /*TODO
+    send the polygon to some other method which analyses it. needs to then
+    prepare the polygon (ie set the density and stuff), set the right builder,
+    set the builder's poly to the current poly, and set the builder's targets []
+    (setting targets to empty array forces builder to use grid angle)
+  */
+  var horizontalSides = poly.edgeLengths[0] + poly.edgeLengths[3];
+  var verticalSides = poly.edgeLengths[1] + poly.edgeLengths[2];
+  if (verticalSides > horizontalSides) {
+    this.builder = this.horizontalBuilder;
+  } else {
+    this.builder = this.verticalBuilder;
+  }
+  this.builder.poly = poly;
 };
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -345,8 +394,7 @@ URBGEN.Builder.Director = function() {
 /**
  * Invokes the builder
  */
-URBGEN.Builder.Director.prototype.execute = function(builder, poly, targets) {
-  builder.poly = poly;
+URBGEN.Builder.Director.prototype.execute = function(builder, targets) {
   builder.targets = (targets === undefined) ? [] : targets;
   builder.setOrigin();
   builder.setEndPoints();
@@ -673,15 +721,14 @@ URBGEN.Variables = {};
 /**
  * CITY CENTER
  */
-URBGEN.Variables.globalCityCenter = new URBGEN.Point(800, 300, 0);
+URBGEN.Variables.globalCityCenter = new URBGEN.Point(Math.random() * 500, Math.random() * 500, 0);
 /**
  * CITY DENISTY - HIGHER NUMBER IS LOWER DENSITY
  */
-var density = 0.3; // between 0 (exclusive) and 0.5 (inclusive)
+var density = Math.random() * 0.1 + 0.4; // between 0 (exclusive) and 0.5 (inclusive)
 URBGEN.Variables.globalCityDensity = 1 - density; // convert it for use
 /**
  * ANGLE OF GRID'S X AXIS
  */
-URBGEN.Variables.globalCityGridX = 0.225;
-
+URBGEN.Variables.globalCityGridX = Math.random() * 0.5
 ////////////////////////////////////////////////////////////////////////////////

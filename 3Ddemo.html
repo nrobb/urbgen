@@ -19,8 +19,10 @@
 	//		comment								//
 	//////////////////////////////////////////////////////////////////////////////////
 
-	var camera		= new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.01, 3000)
-	camera.position.y	= 80
+	var camera		= new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.01, 3000);
+	camera.position.y	= 150;
+	camera.position.x = -250;
+	camera.position.z = -270;
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		add an object and make it move					//
@@ -30,9 +32,12 @@
 	scene.add( light );
 
 	var material	= new THREE.MeshBasicMaterial({ color: 0xffffff })
-	var geometry	= new THREE.PlaneGeometry( 3000, 2000 )
+	var geometry	= new THREE.PlaneGeometry( 600, 600 );
 	var plane	= new THREE.Mesh( geometry, material );
-	plane.rotation.x = - 90 * Math.PI / 180;
+	plane.rotation.x = -90 * Math.PI / 180;
+	plane.position.x = 250;
+	plane.position.y = 0;
+	plane.position.z = -270;
 	scene.add( plane );
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -44,11 +49,12 @@
     new THREE.MeshLambertMaterial( { color: 0xffffff} ),
     new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true} )
 ]);
-	city.rotation.x = - 90 * Math.PI / 180;
-	city.position.x = -1500;
-	city.position.z = 1000;
+	city.rotation.x = -90 * Math.PI / 180;
+	city.position.x = 0;
+	city.position.z = 0;
+	city.position.y = 0;
 	scene.add(city)
-	
+
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Camera Controls							//

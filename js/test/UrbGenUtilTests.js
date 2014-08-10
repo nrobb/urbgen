@@ -1044,7 +1044,7 @@ QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
   u.neighbors = [t, 0, v, 0];
   v.neighbors = [u, 0, 0, 0];
   var points = [p, q, r, s, t, u, v];
-  var expected = {prev: r, next: s};
+  var expected = {prev: r, nxt: s};
   var actual = URBGEN.Util.getNeighbors(newPoint, points);
   assert.deepEqual(actual, expected);
 });
@@ -1065,7 +1065,7 @@ QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
   u.neighbors = [t, 0, v, 0];
   v.neighbors = [u, 0, 0, 0];
   var points = [p, q, r, s, t, u, v];
-  var expected = {prev: s, next: t};
+  var expected = {prev: s, nxt: t};
   var actual = URBGEN.Util.getNeighbors(newPoint, points);
   assert.deepEqual(actual, expected);
 });
@@ -1086,7 +1086,7 @@ QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
   u.neighbors = [t, 0, v, 0];
   v.neighbors = [u, 0, 0, 0];
   var points = [p, q, r, s, t, u, v];
-  var expected = {prev: u, next: v};
+  var expected = {prev: u, nxt: v};
   var actual = URBGEN.Util.getNeighbors(newPoint, points);
   assert.deepEqual(actual, expected);
 });

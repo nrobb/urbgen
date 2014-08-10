@@ -1,24 +1,24 @@
 var UGDEMO = {};
+UGDEMO.generator = new URBGEN.Generator();
+UGDEMO.director = new URBGEN.Builder.Director();
+UGDEMO.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder();
+UGDEMO.verticalBuilder = new URBGEN.Builder.VerticalBuilder();
 function getPolys() {
-  var topLeft = new URBGEN.Point(10, 15, 0);
-  var topRight = new URBGEN.Point(1200, 5, 0);
-  var bottomLeft = new URBGEN.Point(40, 500, 0);
-  var bottomRight = new URBGEN.Point(1300, 600, 0);
+  var topLeft = new URBGEN.Point(Math.random() * 50, Math.random() * 50, 0);
+  var topRight = new URBGEN.Point(Math.random() * 50 + 500, Math.random() * 50, 0);
+  var bottomLeft = new URBGEN.Point(Math.random() * 50, Math.random() * 50 + 500, 0);
+  var bottomRight = new URBGEN.Point(Math.random() * 50 + 500, Math.random() * 50 + 500, 0);
   var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
   poly.makeSimple();
   var polys = [poly];
-  var n = 1;
-  for (var i = 0; i < 10; i++) {
-    polys = run(polys, n++ % 2);
+  //var n = 1;
+  for (var i = 0; i < 15; i++) {
+    polys = run(polys, Math.round(Math.random()));
   }
   return polys;
 }
 function insetPoly(poly) {
-  var length = 0.1 * Math.min(
-    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
+  var length = 5;
   var newTopLeft = URBGEN.Util.getIntersect(
     URBGEN.Util.linearInterpolateByLength(poly.corners[0], poly.corners[1], length),
     URBGEN.Util.getAngle(poly.corners[0], poly.corners[2]),
@@ -55,7 +55,7 @@ function convertPoly(poly) {
   var extrusionSettings = {
     size: 30, height: 4, curveSegments: 3,
     bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
-    material: 0, extrudeMaterial: 1, amount: Math.random() * 40 + 50
+    material: 0, extrudeMaterial: 1, amount: 0.5/*Math.random() * 30 + 10*/
   };
   var geom = new THREE.ExtrudeGeometry(block, extrusionSettings);
   geom.faceVertexUvs[0][2][0].set( 0, 0 );
@@ -63,46 +63,25 @@ function convertPoly(poly) {
   geom.faceVertexUvs[0][2][2].set( 0, 0 );
   return geom;
 }
-function testVertical(poly) {
+function test(poly) {
   /////hack
   var length = Math.min(
-    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
-  if (length < 100) return [poly];
+    poly.edgeLengths[0],
+    poly.edgeLengths[1],
+    poly.edgeLengths[2],
+    poly.edgeLengths[3]
+  );
+  if (URBGEN.Util.areaPoly(poly) < 10000) return [poly];
   ///
-  var director = new URBGEN.Builder.Director();
-  var builder = new URBGEN.Builder.VerticalBuilder();
-  poly.minEdgeLength = 50;
-  poly.throughRoadStagger = 0;
-  //poly.density = 0.3;
-  return director.execute(builder, poly);
-}
-function testHorizontal(poly) {
-  /////hack
-  var length = Math.min(
-    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[1]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[0], poly.corners[2]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[1], poly.corners[3]),
-    URBGEN.Util.getLineSegmentLength(poly.corners[2], poly.corners[3]));
-  if (length < 10) return [poly];
-  ///
-  var director = new URBGEN.Builder.Director();
-  var builder = new URBGEN.Builder.HorizontalBuilder();
-  poly.minEdgeLength = 5;
-  poly.throughRoadStagger = 0;
-  poly.density = 0.3;
-  return director.execute(builder, poly);
+  poly.minEdgeLength = length * 0.25;
+  poly.throughRoadStagger = 10;
+  poly.density = URBGEN.Variables.globalCityDensity;
+  return UGDEMO.generator.processPoly(poly);
 }
 function run(origPolys, r) {
   var ret = [];
   for (var i = 0; i < origPolys.length; i++) {
-    if (r === 1) {
-      ret = ret.concat(testHorizontal(origPolys[i]));
-    } else {
-      ret = ret.concat(testVertical(origPolys[i]));
-    }
+    ret = ret.concat(test(origPolys[i]));
   }
   return ret;
 }
