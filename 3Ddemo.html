@@ -45,7 +45,8 @@
   // set up GUI
   window.onLoad = function() {
     var gui = new dat.GUI();
-    gui.add(gen, "density", 0.5, 0.8);
+    gui.add(gen, "var1", 0.5, 0.8);
+    gui.add(gen, "var2", 0.5, 0.8);
     gui.add(gen, "blockSize", 5000, 20000);
     gui.add(gen, "width", 200, 800);
     gui.add(gen, "depth", 200, 800);
