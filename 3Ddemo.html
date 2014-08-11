@@ -1,38 +1,36 @@
 <!DOCTYPE html>
   <head>
     <script src="js/three.min.js"></script>
-    <script src="js/FirstPersonControls.js"></script>
+    <script src="js/OrbitControls.js"></script>
     <script src="js/UrbGen.js"></script>
     <script src="js/UrbGenDemo.js"></script>
+    <script src="js/dat.gui.min.js"></script>
   </head>
 <body>
 <script>
 	var updateFcts	= [];
 	var scene	= new THREE.Scene();
 	scene.fog	= new THREE.FogExp2( 0xd0e0f0, 0.002 );
-
+	// add a renderer
 	var renderer	= new THREE.WebGLRenderer( { antialias: false } );
 	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setClearColor(0xffffff, 1);
 	document.body.appendChild( renderer.domElement );
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
-	//////////////////////////////////////////////////////////////////////////////////
-
-	var camera		= new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.01, 3000);
-	camera.position.y	= 150;
-	camera.position.x = -250;
-	camera.position.z = -270;
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		add an object and make it move					//
-	//////////////////////////////////////////////////////////////////////////////////
+	// add a camera
+	var camera	= new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 2000);
+	function initCamera() {
+	  camera.position.y	= 200;
+	  camera.position.x = 500;
+	  camera.position.z = 500;
+	}
+	initCamera();
+	// add a light
 	var light	= new THREE.HemisphereLight( 0xfffff0, 0x101020, 1.25 );
 	light.position.set( 0.75, 1, 0.25 );
 	scene.add( light );
-
-	var material	= new THREE.MeshBasicMaterial({ color: 0xffffff })
-	var geometry	= new THREE.PlaneGeometry( 600, 600 );
+	// add a plane
+	var material	= new THREE.MeshBasicMaterial({ color: 0xeeeeee })
+	var geometry	= new THREE.PlaneGeometry( 800, 800 );
 	var plane	= new THREE.Mesh( geometry, material );
 	plane.rotation.x = -90 * Math.PI / 180;
 	plane.position.x = 250;
@@ -40,56 +38,86 @@
 	plane.position.z = -270;
 	scene.add( plane );
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//		comment								//
-	//////////////////////////////////////////////////////////////////////////////////
-	var cityGeom = UGDEMO.getCity();
-	//var city	= new THREE.Mesh( cityGeom, wfMat );
-	var city = THREE.SceneUtils.createMultiMaterialObject( cityGeom, [
-    new THREE.MeshLambertMaterial( { color: 0xffffff} ),
-    new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true} )
-]);
-	city.rotation.x = -90 * Math.PI / 180;
-	city.position.x = 0;
-	city.position.z = 0;
-	city.position.y = 0;
-	scene.add(city)
+  // set up city
+  var gen = new URBGEN.Generator();
+  var cityGeom;
+  var city;
+  // set up GUI
+  window.onLoad = function() {
+    var gui = new dat.GUI();
+    gui.add(gen, "density", 0.5, 0.8);
+    gui.add(gen, "blockSize", 5000, 20000);
+    gui.add(gen, "width", 200, 800);
+    gui.add(gen, "depth", 200, 800);
+    gui.add(gen, "minEdgeLength", 40, 50);
+    gui.add(gen, "seedAngle", 0.01, 0.4);
+    gui.add(gen, "throughRoadStagger", 0, 50);
+    gui.add(this, "generateWithParams");
+    gui.add(this, "generateRandom");
+    this.generateWithParams();
+  };
+  
+  window.generateRandom = function() {
+    gen.initRandom();
+    for (var i = 0; i < 10; i++) {
+      gen.generate();
+    }
+    loadCity();
+    //initCamera();
+  };
+  
+  window.generateWithParams = function() {
+    gen.init();
+    for (var i = 0; i < 10; i++) {
+      gen.generate();
+    }
+    loadCity();
+    //initCamera();
+  };
+  window.onLoad();
+  
+  function loadCity() {
+    scene.remove(city);
+    cityGeom = UGDEMO.getCity3D(gen.cityPolys);
+    city = THREE.SceneUtils.createMultiMaterialObject(cityGeom,
+      [new THREE.MeshLambertMaterial({color: 0xffffff}),
+      new THREE.MeshBasicMaterial({color: 0x000000,
+      wireframe: true})]);
+    city.rotation.x = -90 * Math.PI / 180;
+    city.position.x = 0;
+    city.position.z = 0;
+    city.position.y = 0;
+    scene.add(city)
+  }
+
 
 	
-	//////////////////////////////////////////////////////////////////////////////////
-	//		Camera Controls							//
-	//////////////////////////////////////////////////////////////////////////////////
-	var controls	= new THREE.FirstPersonControls( camera );
-	controls.movementSpeed	= 100;
-	controls.lookSpeed	= 0.1;
-	controls.lookVertical	= true;
+	// camera controls
+	var controls	= new THREE.OrbitControls( camera, renderer.domElement);
 	updateFcts.push(function(delta, now){
 		controls.update( delta );
-	})
+	});
+	
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//		render the scene						//
-	//////////////////////////////////////////////////////////////////////////////////
+  // render
 	updateFcts.push(function(){
 		renderer.render( scene, camera );
-	})
+	});
 	
-	//////////////////////////////////////////////////////////////////////////////////
-	//		loop runner							//
-	//////////////////////////////////////////////////////////////////////////////////
-	var lastTimeMsec= null
+	// animation loop
+	var lastTimeMsec = null;
 	requestAnimationFrame(function animate(nowMsec){
 		// keep looping
 		requestAnimationFrame( animate );
 		// measure time
-		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
-		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
-		lastTimeMsec	= nowMsec
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60;
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec);
+		lastTimeMsec	= nowMsec;
 		// call each update function
-		updateFcts.forEach(function(updateFn){
+		updateFcts.forEach(function(updateFn) {
 			updateFn(deltaMsec/1000, nowMsec/1000)
-		})
-	})
+		});
+	});
 </script>
 </body>
 </html>

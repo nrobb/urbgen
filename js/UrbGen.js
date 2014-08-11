@@ -34,6 +34,7 @@ URBGEN.Poly = function(p0, p1, p2, p3) {
   this.minEdgeLength;
   this.throughRoadStagger;
   this.denisty;
+  this.seedAngle;
   this.atomic = false;
 };
 /**
@@ -67,19 +68,82 @@ URBGEN.Generator = function() {
   this.builder;
   this.director = new URBGEN.Builder.Director();
   this.cityPolys = [];
+  this.center;
+  this.initRandom();
+  /*
+  this.density = Math.random() * 0.3 + 0.5;
+  this.blockSize = Math.random() * 15000 + 5000;
+  this.width = Math.random() * 100 + 500;
+  this.depth = Math.random() * 100 + 500;
+  this.seedAngle = Math.random() * 0.3 + 0.1;
+  this.minEdgeLength = Math.random() * 10 + 40;
+  this.throughRoadStagger = Math.random() * 50;
+  */
+};
+/**
+ * Sets up random variables
+ */
+URBGEN.Generator.prototype.initRandom = function() {
+  this.density = Math.random() * 0.3 + 0.5;
+  this.blockSize = Math.random() * 15000 + 5000;
+  this.width = Math.random() * 100 + 500;
+  this.depth = Math.random() * 100 + 500;
+  this.seedAngle = Math.random() * 0.3 + 0.1;
+  this.minEdgeLength = Math.random() * 10 + 40;
+  this.throughRoadStagger = Math.random() * 50;
+  this.init();
+};
+/**
+ * Sets up variables
+ */
+URBGEN.Generator.prototype.init = function() {
+  this.cityPolys = [];
+  var topLeft = new URBGEN.Point(0, 0, 0);
+  var topRight = new URBGEN.Point(this.width, 0, 0);
+  var bottomLeft = new URBGEN.Point(0, this.depth, 0);
+  var bottomRight = new URBGEN.Point(this.width, this.depth, 0);
+  var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
+  this.center = new URBGEN.Point(this.width / 2, this.depth / 2, 0);
+  poly.makeSimple();
+  this.cityPolys.push(poly);
+  var polys = [poly];
 };
 /**
  * Generates a city.
  */
 URBGEN.Generator.prototype.generate = function() {
-  
+  var newPolys = [];
+  var polysDivided = false;
+  for (var i = 0; i < this.cityPolys.length; i++) {
+    if (URBGEN.Util.areaPoly(this.cityPolys[i]) < this.blockSize) {
+      newPolys.push(this.cityPolys[i]);
+    } else {
+      newPolys = newPolys.concat(this.processPoly(this.cityPolys[i]));
+      polysDivided = true;
+    }
+  }
+  this.cityPolys = newPolys;
 };
 /**
  * Processes a polygon.
  */
 URBGEN.Generator.prototype.processPoly = function(poly) {
+  var length = Math.min(poly.edgeLengths[0], poly.edgeLengths[1],
+    poly.edgeLengths[2], poly.edgeLengths[3]
+  );
+  if (length < this.minEdgeLength) {
+    return [poly];
+  }
+  poly.minEdgeLength = this.minEdgeLength;
+  poly.seedAngle = this.seedAngle;
+  poly.throughRoadStagger = this.throughRoadStagger;
+  if (URBGEN.Util.areaPoly < this.blockSize * 2) {
+    poly.density = undefined;
+  } else {
+    poly.density = this.density;
+  }
   this.prepare(poly);
-  var newPolys = this.director.execute(this.builder);
+  var newPolys = this.director.execute(this.builder, this.center);
   return newPolys;
 };
 /**
@@ -165,14 +229,14 @@ URBGEN.Builder.HorizontalBuilder.prototype.constructor
 /**
  * Sets the origin point for the new dividing line
  */
-URBGEN.Builder.HorizontalBuilder.prototype.setOrigin = function() {
+URBGEN.Builder.HorizontalBuilder.prototype.setOrigin = function(globalCenter) {
   var origin;
   var edgeStart;
   var edgeEnd;
   var edgeReversed = false;
   // Set the start and end points, and a flag if the edge is being used reveresed
   if (URBGEN.Util.nearest([this.poly.corners[0], this.poly.corners[2]],
-    URBGEN.Variables.globalCityCenter) === this.poly.corners[2]) {
+    globalCenter) === this.poly.corners[2]) {
       edgeStart = this.poly.corners[2];
       edgeEnd = this.poly.corners[0];
       edgeReversed = true;
@@ -218,7 +282,7 @@ URBGEN.Builder.HorizontalBuilder.prototype.setEndPoints = function() {
   // Find the angles of the new line and the intersecting edge
   var angle;
   if (this.targets.length === 0) {
-    angle = URBGEN.Util.getGridAngle(edgeStart, edgeEnd);
+    angle = URBGEN.Util.getGridAngle(edgeStart, edgeEnd, this.poly.seedAngle);
   } else {
     var midPoint = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, 0.5);
     var target = URBGEN.Util.nearest(this.targets, midPoint);
@@ -232,6 +296,10 @@ URBGEN.Builder.HorizontalBuilder.prototype.setEndPoints = function() {
   var minPoint = URBGEN.Util.linearInterpolateByLength(edgeStart,
     edgeEnd, this.poly.minEdgeLength);
   var minR = URBGEN.Util.getPointAsRatio(minPoint, edgeStart, edgeEnd);
+  if (minR <= 0 || minR >= 1) {
+    console.log("Error setting minR value (minR = " + minR + "). Setting minR to 0.5");
+    minR = 0.5;
+  }
   // Get the end point's r value
   var endPointR = URBGEN.Util.getPointAsRatio(endPoint, edgeStart, edgeEnd);
   // If needed, move end point to lie on the allowed part of the line segment
@@ -285,13 +353,13 @@ URBGEN.Builder.VerticalBuilder.prototype.constructor
 /**
  * Sets the origin point for the new dividing line
  */
-URBGEN.Builder.VerticalBuilder.prototype.setOrigin = function() {
+URBGEN.Builder.VerticalBuilder.prototype.setOrigin = function(globalCenter) {
   var edgeStart;
   var edgeEnd;
   var edgeReversed = false;
   // Set the start and end points, and a flag if the edge is being used reveresed
   if (URBGEN.Util.nearest([this.poly.corners[0], this.poly.corners[1]],
-    URBGEN.Variables.globalCityCenter) === this.poly.corners[1]) {
+    globalCenter) === this.poly.corners[1]) {
       edgeStart = this.poly.corners[1];
       edgeEnd = this.poly.corners[0];
       edgeReversed = true;
@@ -337,7 +405,7 @@ URBGEN.Builder.VerticalBuilder.prototype.setEndPoints = function() {
   // Find the angles of the new line and the intersecting edge
   var angle;
   if (this.targets.length === 0) {
-    angle = URBGEN.Util.getGridAngle(edgeStart, edgeEnd);
+    angle = URBGEN.Util.getGridAngle(edgeStart, edgeEnd, this.poly.seedAngle);
   } else {
     var midPoint = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, 0.5);
     var target = URBGEN.Util.nearest(this.targets, midPoint);
@@ -351,6 +419,10 @@ URBGEN.Builder.VerticalBuilder.prototype.setEndPoints = function() {
   var minPoint = URBGEN.Util.linearInterpolateByLength(edgeStart,
     edgeEnd, this.poly.minEdgeLength);
   var minR = URBGEN.Util.getPointAsRatio(minPoint, edgeStart, edgeEnd);
+  if (minR <= 0 || minR >= 1) {
+    console.log("Error setting minR value (minR = " + minR + "). Setting minR to 0.5");
+    minR = 0.5;
+  }
   // Get the end point's r value
   var endPointR = URBGEN.Util.getPointAsRatio(endPoint, edgeStart, edgeEnd);
   // If needed, move end point to lie on the allowed part of the line segment
@@ -394,9 +466,9 @@ URBGEN.Builder.Director = function() {
 /**
  * Invokes the builder
  */
-URBGEN.Builder.Director.prototype.execute = function(builder, targets) {
+URBGEN.Builder.Director.prototype.execute = function(builder, globalCenter, targets) {
   builder.targets = (targets === undefined) ? [] : targets;
-  builder.setOrigin();
+  builder.setOrigin(globalCenter);
   builder.setEndPoints();
   builder.setNewPoints();
   return builder.buildPolys();
@@ -470,16 +542,16 @@ URBGEN.Util.getAngle = function(p0, p1) {
  * Returns the angle of the grid axis that is closest to being perpendicular to
  * the line through p0 and p1.
  */
-URBGEN.Util.getGridAngle = function(p0, p1) {
+URBGEN.Util.getGridAngle = function(p0, p1, angle) {
   // Get the angle as a multiple of Pi adjusted to standard x y axes
-  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - URBGEN.Variables.globalCityGridX;
+  var angle = URBGEN.Util.getAngle(p0, p1) / Math.PI - angle;
   // Find which axis a line at this angle is closest to (0 or 4, 1, 2, 3)
   var axis = Math.round(angle * 2);
   // If even, the line is closest to x axis, so return the y axis of the grid
   if (axis % 2 === 0) {
-    return Math.PI * (URBGEN.Variables.globalCityGridX + 0.5);
+    return Math.PI * (angle + 0.5);
   } else {
-    return Math.PI * URBGEN.Variables.globalCityGridX;
+    return Math.PI * angle;
   }
 };
 /**
@@ -589,6 +661,37 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
   return point;
 };
 /**
+ * Insets the specified poly
+ */
+URBGEN.Util.insetPoly = function(poly) {
+  var length = 5;
+  var c0 = poly.corners[0];
+  var c1 = poly.corners[1];
+  var c2 = poly.corners[2];
+  var c3 = poly.corners[3];
+  var c0c1Angle = URBGEN.Util.getAngle(c0, c1);
+  var c0c2Angle = URBGEN.Util.getAngle(c0, c2);
+  var c1c3Angle = URBGEN.Util.getAngle(c1, c3);
+  var c2c3Angle = URBGEN.Util.getAngle(c2, c3);
+  var newTopLeft = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(c0, c1, length), c0c2Angle,
+    URBGEN.Util.linearInterpolateByLength(c0, c2, length), c0c1Angle);
+  var newTopRight = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(c0, c1,
+      URBGEN.Util.getLineSegmentLength(c0, c1) - length), c1c3Angle,
+    URBGEN.Util.linearInterpolateByLength(c1, c3, length), c0c1Angle);
+  var newBottomLeft = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(c0, c2,
+      URBGEN.Util.getLineSegmentLength(c0, c2) - length), c2c3Angle,
+    URBGEN.Util.linearInterpolateByLength(c2, c3, length), c0c2Angle);
+  var newBottomRight = URBGEN.Util.getIntersect(
+    URBGEN.Util.linearInterpolateByLength(c2, c3,
+      URBGEN.Util.getLineSegmentLength(c2, c3) - length), c1c3Angle,
+    URBGEN.Util.linearInterpolateByLength(c1, c3,
+      URBGEN.Util.getLineSegmentLength(c1, c3) - length), c2c3Angle);
+  return new URBGEN.Poly(newTopLeft, newTopRight, newBottomLeft, newBottomRight);
+};
+/**
  * Sets the neighbor relations of p0 and p1 with the newPoint. If p0 and p1 are
  * not neighbors, returns false.
  */
@@ -694,8 +797,8 @@ URBGEN.Util.nearest = function(points, target) {
  * Finds the population center of the specified poly, depending on the location
  * of the global city center and the city's denisty.
  */
-URBGEN.Util.getPopCenter = function(poly) {
-  var nearestCorner = URBGEN.Util.nearest(poly.corners, URBGEN.Variables.globalCityCenter);
+URBGEN.Util.getPopCenter = function(poly, globalCenter, density) {
+  var nearestCorner = URBGEN.Util.nearest(poly.corners, globalCenter);
   var oppositeCorner;
   for (var i = 0; i < poly.corners.length; i++) {
     if (poly.corners[i] === nearestCorner) {
@@ -707,28 +810,8 @@ URBGEN.Util.getPopCenter = function(poly) {
     }
   }
   var center = URBGEN.Util.linearInterpolate(nearestCorner,
-    oppositeCorner, URBGEN.Variables.globalCityDensity);
+    oppositeCorner, density);
   return center;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// USER CONTROLLED VARIABLES
-////////////////////////////////////////////////////////////////////////////////
-URBGEN.Variables = {};
-/**
- * CITY CENTER
- */
-URBGEN.Variables.globalCityCenter = new URBGEN.Point(Math.random() * 100, Math.random() * 100, 0);
-/**
- * CITY DENISTY - HIGHER NUMBER IS LOWER DENSITY
- */
-var density = 0.5; // (0.2 - 0.5 ( inclusive)
-URBGEN.Variables.globalCityDensity = 1 - density; // convert it for use
-/**
- * ANGLE OF GRID'S X AXIS
- */
-URBGEN.Variables.globalCityGridX = 0.25; //(0 - 0.5 (exclusive)
 ////////////////////////////////////////////////////////////////////////////////
