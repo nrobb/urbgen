@@ -111,38 +111,31 @@ URBGEN.Generator.prototype.init = function() {
   var polys = [poly];
 };
 /**
- * Generates a city.
+ * somethings a city.
+ */
+URBGEN.Generator.prototype.something = function(polys) {
+  var newPolys = [];
+  for (var i = 0; i < polys.length; i++) {
+    newPolys = newPolys.concat(this.processPoly(polys[i]));
+  }
+  if (polys.length !== newPolys.length) {
+    return this.something(newPolys);
+  }
+  return newPolys;
+};
+/**
+ * something
  */
 URBGEN.Generator.prototype.generate = function() {
-  var newPolys = [];
-  var polysDivided = false;
-  for (var i = 0; i < this.cityPolys.length; i++) {
-    if (URBGEN.Util.areaPoly(this.cityPolys[i]) < this.blockSize) {
-      newPolys.push(this.cityPolys[i]);
-    } else {
-      newPolys = newPolys.concat(this.processPoly(this.cityPolys[i]));
-      polysDivided = true;
-    }
-  }
-  this.cityPolys = newPolys;
+  this.cityPolys = this.something(this.cityPolys);
 };
 /**
  * Processes a polygon.
  */
 URBGEN.Generator.prototype.processPoly = function(poly) {
-  var length = Math.min(poly.edgeLengths[0], poly.edgeLengths[1],
-    poly.edgeLengths[2], poly.edgeLengths[3]
-  );
-  if (length < this.minEdgeLength * 2) {
+  if (URBGEN.Util.areaPoly(poly) < this.blockSize) {
     return [poly];
   }
-  poly.minEdgeLength = this.minEdgeLength;
-  if (URBGEN.Util.areaPoly(poly) < this.gridThreshold * this.cityArea) {
-    poly.setGridAngle();
-  }
-  poly.throughRoadStagger = this.throughRoadStagger;
-  poly.regularity1 = this.regularity1;
-  poly.regularity2 = this.regularity2;
   this.prepare(poly);
   var newPolys = this.director.execute(this.builder, this.center);
   return newPolys;
@@ -151,6 +144,15 @@ URBGEN.Generator.prototype.processPoly = function(poly) {
  *
  */
 URBGEN.Generator.prototype.prepare = function(poly) {
+  // Set the poly's variables
+  poly.minEdgeLength = this.minEdgeLength;
+  poly.throughRoadStagger = this.throughRoadStagger;
+  poly.regularity1 = this.regularity1;
+  poly.regularity2 = this.regularity2;
+  if (URBGEN.Util.areaPoly(poly) < this.gridThreshold * this.cityArea) {
+    poly.setGridAngle();
+  }
+  // Set the correct builder
   var horizontalSides = poly.edgeLengths[0] + poly.edgeLengths[3];
   var verticalSides = poly.edgeLengths[1] + poly.edgeLengths[2];
   if (verticalSides > horizontalSides) {
