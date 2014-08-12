@@ -16,16 +16,17 @@
       
       window.onLoad = function() {
         var gui = new dat.GUI();
-        gui.add(gen, "var1", 0.5, 0.8);
-        gui.add(gen, "var2", 0.5, 0.8);
-        gui.add(gen, "blockSize", 5000, 20000);
-        gui.add(gen, "width", 200, 800);
-        gui.add(gen, "depth", 200, 800);
-        gui.add(gen, "minEdgeLength", 40, 50);
-        gui.add(gen, "seedAngle", 0.01, 0.4);
-        gui.add(gen, "throughRoadStagger", 0, 50);
-        gui.add(this, "generateWithParams");
-        gui.add(this, "generateRandom");
+        gui.width = 300;
+        gui.add(gen, "regularity1", 0.5, 0.8).listen();
+        gui.add(gen, "regularity2", 0.5, 0.8).listen();
+        gui.add(gen, "blockSize", 5000, 20000).listen();
+        gui.add(gen, "width", 200, window.innerWidth * 0.95).listen();
+        gui.add(gen, "depth", 200, window.innerHeight * 0.95).listen();
+        gui.add(gen, "minEdgeLength", 40, 50).listen();
+        gui.add(gen, "gridThreshold", 0, 1).listen();
+        gui.add(gen, "throughRoadStagger", 0, 50).listen();
+        gui.add(this, "generateWithParams").listen();
+        gui.add(this, "generateRandom").listen();
         this.generateWithParams();
       };
       window.generateRandom = function() {
