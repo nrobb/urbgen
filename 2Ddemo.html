@@ -20,7 +20,7 @@
         gui.width = 300;
         gui.add(gen, "regularity1", 0.5, 0.8).listen();
         gui.add(gen, "regularity2", 0.5, 0.8).listen();
-        gui.add(gen, "blockSize", 5000, 20000).listen();
+        gui.add(gen, "blockSize", 10000, 30000).listen();
         gui.add(gen, "buildingSize", 2000, 3000).listen();
         gui.add(gen, "width", 200, window.innerWidth * 0.95).listen();
         gui.add(gen, "depth", 200, window.innerHeight * 0.95).listen();
@@ -40,7 +40,6 @@
         gen.generate()
         for (var i = 0; i < gen.buildings.length; i++) {
           var poly = gen.buildings[i];
-          if (poly.height === 0) continue;
           drawPoly(poly, window.buildingColor);
         }
       }
@@ -51,7 +50,6 @@
         gen.generate();
         for (var i = 0; i < gen.buildings.length; i++) {
           var poly = gen.buildings[i];
-          if (poly.height === 0) continue;
           drawPoly(poly, window.buildingColor);
         }
       };

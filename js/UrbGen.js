@@ -79,7 +79,7 @@ URBGEN.Generator = function() {
 URBGEN.Generator.prototype.initRandom = function() {
   this.regularity1 = Math.random() * 0.2 + 0.4;
   this.regularity2 = Math.random() * 0.2 + 0.4;
-  this.blockSize = Math.random() * 15000 + 5000;
+  this.blockSize = Math.random() * 20000 + 10000;
   this.buildingSize = 2000;
   this.width = window.innerWidth * 0.95;
   this.depth = window.innerHeight * 0.95;
@@ -136,12 +136,8 @@ URBGEN.Generator.prototype.generate = function() {
   }
   // TODO this is a bit hacky
   for (var k = 0; k < this.buildings.length; k++) {
-    if (URBGEN.Util.areaPoly(this.buildings[k]) < 500) {
-      this.buildings[k].height = 0;
-    } else {
-      this.buildings[k] = URBGEN.Util.insetPoly(this.buildings[k], Math.random() * 2 + 1);
-      this.buildings[k].height = Math.random() * 20 + 20;
-    }
+    this.buildings[k] = URBGEN.Util.insetPoly(this.buildings[k], Math.floor(Math.random() * 2 + 1));
+    this.buildings[k].height = Math.random() * 20 + 20;
   }
 };
 /**
@@ -432,6 +428,20 @@ URBGEN.Builder.PlotBuilder.prototype.setNewPoints = function(data) {
     this.outerPaths[1][this.outerPaths[1].length - 1],
       this.outerPaths[3][this.outerPaths[3].length - 1], this.poly.corners[3]]);
   this.newPoints = newPoints;
+};
+/**
+ * Builds the new polys
+ */
+URBGEN.Builder.PlotBuilder.prototype.buildPolys = function() {
+  var polys = [];
+  for (var i = 0; i < this.newPoints.length; i++) {
+    var points = this.newPoints[i];
+    var poly = new URBGEN.Poly(points[0], points[1], points[2], points[3]);
+    if (URBGEN.Util.areaPoly(poly) > 500) {
+      polys.push(poly);
+    }
+  }
+  return polys;
 };
 /**
  * Constructs a director
