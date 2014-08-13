@@ -389,6 +389,90 @@ QUnit.test("URBGEN.Util.getIntersect", function(assert) {
   assert.ok(actual.z === expected.z);
 });
 /**
+ * URBGEN.Util.divideLine tests.
+ */
+QUnit.module("URBGEN.Util.divideLine");
+QUnit.test("tests dividing a line evenly", function(assert) {
+  var x1 = 0; y1 = 0;
+  var x2 = 100, y2 = 0;
+  var l = 20;
+  var p = {x: x1, y: y1, z: 0};
+  var q = {x: x2, y: y2, z: 0};
+  p.neighbors = [0, 0, q, 0];
+  q.neighbors = [p, 0, 0, 0];
+  var expected = [
+    p,
+    {x: 20, y: 0, z: 0},
+    {x: 40, y: 0, z: 0},
+    {x: 60, y: 0, z: 0},
+    {x: 80, y: 0, z: 0},
+    q
+  ];
+  var actual = URBGEN.Util.divideLine(p, q, l);
+  for (var i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
+    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
+    assert.ok(actual[i].z === expected[i].z);
+  }
+});
+QUnit.test("tests dividing a line evenly", function(assert) {
+  var x1 = 0; y1 = 0;
+  var x2 = 100, y2 = 100;
+  var p = {x: x1, y: y1, z: 0};
+  var q = {x: x2, y: y2, z: 0};
+  var l = URBGEN.Util.getLineSegmentLength(p, q) / 5;
+  p.neighbors = [0, 0, q, 0];
+  q.neighbors = [p, 0, 0, 0];
+  var expected = [
+    p,
+    URBGEN.Util.linearInterpolateByLength(p, q, l),
+    URBGEN.Util.linearInterpolateByLength(p, q, l * 2),
+    URBGEN.Util.linearInterpolateByLength(p, q, l * 3),
+    URBGEN.Util.linearInterpolateByLength(p, q, l * 4),
+    q
+  ];
+  var actual = URBGEN.Util.divideLine(p, q, l);
+  for (var i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
+    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
+    assert.ok(actual[i].z === expected[i].z);
+  }
+});
+QUnit.test("tests dividing a line with remainder", function(assert) {
+  var x1 = 0; y1 = 0;
+  var x2 = 100, y2 = 100;
+  var p = {x: x1, y: y1, z: 0};
+  var q = {x: x2, y: y2, z: 0};
+  var l = (URBGEN.Util.getLineSegmentLength(p, q) / 5) * 1.5;
+  p.neighbors = [0, 0, q, 0];
+  q.neighbors = [p, 0, 0, 0];
+  var expected = [
+    p,
+    URBGEN.Util.linearInterpolateByLength(p, q, l),
+    URBGEN.Util.linearInterpolateByLength(p, q, l * 2),
+    q
+  ];
+  var actual = URBGEN.Util.divideLine(p, q, l);
+  for (var i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
+    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
+    assert.ok(actual[i].z === expected[i].z);
+  }
+});
+QUnit.test("tests error thrown", function(assert) {
+  assert.throws(
+    function() {
+      var p = {x: 0, y: 0, z: 0};
+      var q = {x: 100, y: 100, z: 0};
+      p.neighbors = [0, 0, 0, 0];
+      q.neighbors = [0, 0, 0, 0];
+      var l = 10;
+      var actual = URBGEN.Util.divideLine(p, q, l);
+    },
+    /Can't divide line, p0 and p1 are not neighbors/
+  );
+});
+/**
  * URBGEN.Util.linearInterpolateByLength tests.
  */
 QUnit.module("URBGEN.Util.linearInterpolateByLength");

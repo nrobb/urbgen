@@ -13,6 +13,7 @@
       var context = canvas.getContext("2d");
       
       window.mapColor = "#E1DAE3";
+      window.buildingColor = "#ECE1F0";
       
       window.onLoad = function() {
         var gui = new dat.GUI();
@@ -20,6 +21,7 @@
         gui.add(gen, "regularity1", 0.5, 0.8).listen();
         gui.add(gen, "regularity2", 0.5, 0.8).listen();
         gui.add(gen, "blockSize", 5000, 20000).listen();
+        gui.add(gen, "buildingSize", 2000, 3000).listen();
         gui.add(gen, "width", 200, window.innerWidth * 0.95).listen();
         gui.add(gen, "depth", 200, window.innerHeight * 0.95).listen();
         gui.add(gen, "minEdgeLength", 40, 50).listen();
@@ -37,8 +39,12 @@
         gen.initRandom();
         gen.generate()
         for (var i = 0; i < gen.cityPolys.length; i++) {
-          var poly = URBGEN.Util.insetPoly(gen.cityPolys[i]);
-          drawPoly(poly);
+          var poly = gen.cityPolys[i];
+          drawPoly(poly, window.mapColor);
+        }
+        for (var i = 0; i < gen.buildings.length; i++) {
+          var poly = gen.buildings[i];
+          drawPoly(poly, window.buildingColor);
         }
       }
       
@@ -47,12 +53,16 @@
         gen.init();
         gen.generate();
         for (var i = 0; i < gen.cityPolys.length; i++) {
-          var poly = URBGEN.Util.insetPoly(gen.cityPolys[i]);
-          drawPoly(poly);
+          var poly = gen.cityPolys[i];
+          drawPoly(poly, window.mapColor);
+        }
+        for (var i = 0; i < gen.buildings.length; i++) {
+          var poly = gen.buildings[i];
+          drawPoly(poly, window.buildingColor);
         }
       };
       
-      function drawPoly(poly) {
+      function drawPoly(poly, c) {
         var p0 = poly.corners[0];
         var p1 = poly.corners[1];
         var p2 = poly.corners[2];
@@ -63,7 +73,7 @@
         context.lineTo(p3.x, p3.y);
         context.lineTo(p2.x, p2.y);
         context.closePath();
-        context.fillStyle = window.mapColor;
+        context.fillStyle = c;
         context.fill();
       };
       

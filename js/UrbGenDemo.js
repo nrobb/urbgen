@@ -35,14 +35,10 @@ UGDEMO.getCity2D = function() {
 };
 UGDEMO.getCity3D = function(polys) {
   var cityGeom = new THREE.Geometry();
-  var insetPolys = [];
-  for (var i = 0; i < polys.length; i++) {
-    insetPolys.push(URBGEN.Util.insetPoly(polys[i]));
-  }
   var light = new THREE.Color( 0xffffff );
   var shadow    = new THREE.Color( 0xff6666 );
-  for (var j = 0; j < insetPolys.length; j++) {
-    var blockGeom = UGDEMO.convertPoly(insetPolys[j]);
+  for (var j = 0; j < polys.length; j++) {
+    var blockGeom = UGDEMO.convertPoly(polys[j]);
     var value = 1 - Math.random() * Math.random();
     var baseColor   = new THREE.Color().setRGB( value + Math.random() * 0.1, value, value + Math.random() * 0.1 );
     var topColor    = baseColor.clone().multiply( light );
