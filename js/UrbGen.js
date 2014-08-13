@@ -127,13 +127,17 @@ URBGEN.Generator.prototype.generate = function() {
     this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], 5);
     this.cityPolys[i].makeSimple();
   }
+  
+  /*
+  //TODO better way to get buildings (maybe using a new builder?)
   this.builder = this.plotBuilder;
   for (var j = 0; j < this.cityPolys.length; j++) {
     this.builder.poly = this.cityPolys[j];
     this.buildings = this.buildings.concat(this.director.execute(this.builder));
   }
-  //TODO better way to get buildings (maybe using a new builder?)
-  /*
+  */
+
+  
   this.minPolySize = this.buildingSize;
   this.buildings = this.something(this.cityPolys);
   this.regularity1 = 0.5;
@@ -142,7 +146,7 @@ URBGEN.Generator.prototype.generate = function() {
     this.buildings[j] = URBGEN.Util.insetPoly(this.buildings[j], 2);
     this.buildings[j].makeSimple();
   }
-  */
+  
 };
 /**
  * Processes a polygon.
@@ -371,7 +375,7 @@ URBGEN.Builder.PlotBuilder.prototype.constructor
  * set points
  */
 URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
-  this.innerPoly = URBGEN.Util.insetPoly(this.poly, 10);
+  
 };
 /**
  * Sets this builder's current new points
