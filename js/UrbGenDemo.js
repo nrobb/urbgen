@@ -17,7 +17,7 @@ UGDEMO.convertPoly = function(poly) {
   var extrusionSettings = {
     size: 30, height: 4, curveSegments: 3,
     bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
-    material: 0, extrudeMaterial: 1, amount: Math.random() * 30 + 10
+    material: 0, extrudeMaterial: 1, amount: poly.height
   };
   var geom = new THREE.ExtrudeGeometry(block, extrusionSettings);
   geom.faceVertexUvs[0][2][0].set( 0, 0 );
@@ -38,6 +38,7 @@ UGDEMO.getCity3D = function(polys) {
   var light = new THREE.Color( 0xffffff );
   var shadow    = new THREE.Color( 0xff6666 );
   for (var j = 0; j < polys.length; j++) {
+    if (polys[j].height === 0) continue;
     var blockGeom = UGDEMO.convertPoly(polys[j]);
     var value = 1 - Math.random() * Math.random();
     var baseColor   = new THREE.Color().setRGB( value + Math.random() * 0.1, value, value + Math.random() * 0.1 );
