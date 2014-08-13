@@ -1401,3 +1401,50 @@ QUnit.test("URBGEN.Util.getPopCenter", function(assert) {
   assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
   assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
 });
+/**
+ * URBGEN.Util.proxyLineSegment tests.
+ */
+QUnit.module("URBGEN.Util.proxyLineSegment");
+QUnit.test("tests proxy line segment", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 100, y: 0, z: 0};
+  var expected = [{x: 5, y: 0, z: 0}, {x: 95, y: 0, z: 0}];
+  var actual = URBGEN.Util.proxyLineSegment(p, q, 90);
+  for (var i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
+    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
+    assert.ok(Math.abs(actual[i].z - expected[i].z) < 0.00001);
+  }
+});
+QUnit.test("tests proxy line segment", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 100, y: 0, z: 0};
+  var expected = [{x: 25, y: 0, z: 0}, {x: 75, y: 0, z: 0}];
+  var actual = URBGEN.Util.proxyLineSegment(p, q, 50);
+  for (var i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
+    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
+    assert.ok(Math.abs(actual[i].z - expected[i].z) < 0.00001);
+  }
+});
+QUnit.test("tests proxy line segment", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 30, y: 40, z: 0};
+  var expected = [{x: 3, y: 4, z: 0}, {x: 27, y: 36, z: 0}];
+  var actual = URBGEN.Util.proxyLineSegment(p, q, 40);
+  for (var i = 0; i < actual.length; i++) {
+    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
+    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
+    assert.ok(Math.abs(actual[i].z - expected[i].z) < 0.00001);
+  }
+});
+QUnit.test("tests error thrown", function(assert) {
+  assert.throws(
+    function() {
+      var p = {x: 0, y: 0, z: 0};
+      var q = {x: 40, y: 30, z: 0};
+      var actual = URBGEN.Util.proxyLineSegment(p, q, 100);
+    },
+    /Can't make proxy line segment. p0p1Length = /
+  );
+});

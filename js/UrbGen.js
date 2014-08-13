@@ -375,7 +375,26 @@ URBGEN.Builder.PlotBuilder.prototype.constructor
  * set points
  */
 URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
-  
+  var innerPoly = URBGEN.Util.insetPoly(this.poly, 10);
+  var outerPoly = this.poly;
+  var innerEdges = [
+    [innerPoly.corners[0], innerPoly.corners[1]],
+    [innerPoly.corners[1], innerPoly.corners[3]],
+    [innerPoly.corners[0], innerPoly.corners[2]],
+    [innerPoly.corners[2], innerPoly.corners[3]]
+  ];
+  var outerEdges = [
+    [outerPoly.corners[0], outerPoly.corners[1]],
+    [outerPoly.corners[1], outerPoly.corners[3]],
+    [outerPoly.corners[0], outerPoly.corners[2]],
+    [outerPoly.corners[2], outerPoly.corners[3]]
+  ];
+  for (var i = 0; i < outerEdges.length; i++) {
+    var innerEdge = innerEdges[i];
+    var outerEdge = outerEdges[i];
+    var innerLength = innerPoly.edgeLengths[i];
+    outerEdge = URBGEN.Util.proxyLineSegment(outerEdge[0], outerEdge[1], innerLength);
+  }
 };
 /**
  * Sets this builder's current new points
@@ -721,6 +740,20 @@ URBGEN.Util.nearest = function(points, target) {
   }
   return points[index];
 }
+/**
+ * Returns a subsegment of the line segment p0p1, of th specified length
+ */
+URBGEN.Util.proxyLineSegment = function(p0, p1, length) {
+  var p0p1Length = URBGEN.Util.getLineSegmentLength(p0, p1);
+  if (p0p1Length <= length) {
+    throw new Error("Can't make proxy line segment. p0p1Length = "
+      + p0p1Length + ", requested proxy length = " + length);
+  }
+  var dLength = p0p1Length - length;
+  var start = URBGEN.Util.linearInterpolateByLength(p0, p1, dLength / 2);
+  var end = URBGEN.Util.linearInterpolateByLength(p1, p0, dLength / 2);
+  return [start, end];
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
