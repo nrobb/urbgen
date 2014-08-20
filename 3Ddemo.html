@@ -1,6 +1,7 @@
 <!DOCTYPE html>
   <head>
     <script src="js/three.min.js"></script>
+    <script src="js/OBJExporter.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/UrbGen.js"></script>
     <script src="js/UrbGenDemo.js"></script>
@@ -8,6 +9,35 @@
   </head>
 <body>
 <script>
+
+// testing save function
+	function exportGeometry () {
+
+    var city = gen.buildings;
+    var output = "";
+    for (var i = 0; i < city.length; i++) {
+      var building = city[i];
+      for (var j = 0; j < building.corners.length; j++) {
+        var vertex = building.corners[j];
+        output += "v " + vertex.x + " " + vertex.y + " " + vertex.z + '\n';
+      }
+    }
+    for (var i = 1; i < city.length * 4 + 1; i += 4) {
+      output += "f " + i + " " + (i + 1) + " " + (i + 2) + "\n";
+      output += "f " + (i + 2) + " " + (i + 1) + " " + (i + 3) + '\n';
+    }
+
+		
+
+		var blob = new Blob( [ output ], { type: 'text/plain' } );
+		var objectURL = URL.createObjectURL( blob );
+		
+		window.open( objectURL, '_blank' );
+		window.focus();
+
+	};
+// end test save function helper
+
 	var updateFcts	= [];
 	var scene	= new THREE.Scene();
 	scene.fog	= new THREE.FogExp2( 0xd0e0f0, 0.002 );
@@ -41,8 +71,13 @@
         gui.add(gen, "throughRoadStagger", 0, 50).listen();
         gui.add(this, "generateWithParams").listen();
         gui.add(this, "generateRandom").listen();
+        gui.add(this, "exportObj");
         this.generateWithParams();
       };
+  
+  window.exportObj = function() {
+    exportGeometry();
+  };
   
   window.generateRandom = function() {
     gen.initRandom();

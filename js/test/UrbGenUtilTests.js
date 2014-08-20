@@ -1448,3 +1448,91 @@ QUnit.test("tests error thrown", function(assert) {
     /Can't make proxy line segment. p0p1Length = /
   );
 });
+/**
+ * URBGEN.Util.unitVector tests.
+ */
+QUnit.module("URBGEN.Util.unitVector");
+QUnit.test("tests returning unit vector", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 3, y: 4, z: 0};
+  var actual = URBGEN.Util.unitVector(p, q);
+  var expected = {x: 3/5, y: 4/5, z: 0};
+  assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
+  assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
+  assert.ok(Math.abs(actual.z - expected.z) < 0.00001);
+});
+QUnit.test("test using angle", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 3, y: 4, z: 0};
+  var angle = URBGEN.Util.getAngle(p, q);
+  var actual = URBGEN.Util.unitVectorByAngle(p, angle);
+  var expected = {x: 3/5, y: 4/5, z: 0};
+  assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
+  assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
+  assert.ok(Math.abs(actual.z - expected.z) < 0.00001);
+});
+/**
+ * URBGEN.Util.unitNormal tests.
+ */
+QUnit.module("URBGEN.Util.unitNormal");
+QUnit.test("test unit normal", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 3, y: 4, z: 0};
+  var actual = URBGEN.Util.unitNormal(p, q);
+  var expected = {x: 4/5, y: -3/5, z: 0};
+  assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
+  assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
+  assert.ok(Math.abs(actual.z - expected.z) < 0.00001);
+});
+/**
+ * URBGEN.Util.offsetLineSegment tests
+ */
+QUnit.module("URBGEN.Util.offsetLineSegment");
+QUnit.test("test offsetting line seg", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 3, y: 4, z: 0};
+  var actual = URBGEN.Util.offsetLineSegment(p, q, 1);
+  var expected = [
+    {x: -0.8, y: 0.6, z: 0},
+    {x: 2.2, y: 3.4, z: 0}
+  ];
+  assert.ok(Math.abs(actual[0].x - expected[0].x) < 0.00001);
+  assert.ok(Math.abs(actual[0].y - expected[0].y) < 0.00001);
+  assert.ok(Math.abs(actual[0].z - expected[0].z) < 0.00001);
+});
+QUnit.test("test offsetting line seg", function(assert) {
+  var p = {x: 3, y: 4, z: 0};
+  var q = {x: 0, y: 0, z: 0};
+  var actual = URBGEN.Util.offsetLineSegment(p, q, 2);
+  var expected = [
+    {x: 4.6, y: 2.8, z: 0},
+    {x: 1.6, y: -1.2, z: 0}
+  ];
+  assert.ok(Math.abs(actual[0].x - expected[0].x) < 0.00001);
+  assert.ok(Math.abs(actual[0].y - expected[0].y) < 0.00001);
+  assert.ok(Math.abs(actual[0].z - expected[0].z) < 0.00001);
+});
+QUnit.test("test offsetting line seg", function(assert) {
+  var p = {x: 0, y: 0, z: 0};
+  var q = {x: 10, y: 0, z: 0};
+  var actual = URBGEN.Util.offsetLineSegment(p, q, 2);
+  var expected = [
+    {x: 0, y: 2, z: 0},
+    {x: 10, y: 2, z: 0}
+  ];
+  assert.ok(Math.abs(actual[0].x - expected[0].x) < 0.00001);
+  assert.ok(Math.abs(actual[0].y - expected[0].y) < 0.00001);
+  assert.ok(Math.abs(actual[0].z - expected[0].z) < 0.00001);
+});
+QUnit.test("test offsetting line seg", function(assert) {
+  var p = {x: 0, y: 10, z: 0};
+  var q = {x: 0, y: 0, z: 0};
+  var actual = URBGEN.Util.offsetLineSegment(p, q, 4);
+  var expected = [
+    {x: 4, y: 10, z: 0},
+    {x: 4, y: 0, z: 0}
+  ];
+  assert.ok(Math.abs(actual[0].x - expected[0].x) < 0.00001);
+  assert.ok(Math.abs(actual[0].y - expected[0].y) < 0.00001);
+  assert.ok(Math.abs(actual[0].z - expected[0].z) < 0.00001);
+});

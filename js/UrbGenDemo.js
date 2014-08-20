@@ -1,12 +1,4 @@
 var UGDEMO = {};
-UGDEMO.generator = new URBGEN.Generator();
-UGDEMO.run = function() {
-  UGDEMO.generator.init();
-  for (var i = 0; i < 20; i++) {
-    UGDEMO.generator.generate();
-  }
-  return UGDEMO.generator.cityPolys;
-};
 UGDEMO.convertPoly = function(poly) {
   var block = new THREE.Shape();
   block.moveTo(poly.corners[0].x, poly.corners[0].y);
@@ -24,14 +16,6 @@ UGDEMO.convertPoly = function(poly) {
   geom.faceVertexUvs[0][2][1].set( 0, 0 );
   geom.faceVertexUvs[0][2][2].set( 0, 0 );
   return geom;
-};
-UGDEMO.getCity2D = function() {
-  var polys = UGDEMO.run();
-  var insetPolys = [];
-  for (var i = 0; i < polys.length; i++) {
-    insetPolys.push(URBGEN.Util.insetPoly(polys[i]));
-  }
-  return insetPolys;
 };
 UGDEMO.getCity3D = function(polys) {
   var cityGeom = new THREE.Geometry();
