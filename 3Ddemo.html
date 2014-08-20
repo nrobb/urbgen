@@ -12,22 +12,16 @@
 
 // testing save function
 	function exportGeometry () {
-
-    var city = gen.buildings;
+    var geom = gen.geometry;
+    var vertices = geom.vertices;
+    var faces = geom.faces;
     var output = "";
-    for (var i = 0; i < city.length; i++) {
-      var building = city[i];
-      for (var j = 0; j < building.corners.length; j++) {
-        var vertex = building.corners[j];
-        output += "v " + vertex.x + " " + vertex.y + " " + vertex.z + '\n';
-      }
+    for (var v = 0; v < vertices.length; v++) {
+      output += "v " + vertices[v][0] + " " + vertices[v][1] + " " + vertices[v][2] + '\n';
     }
-    for (var i = 1; i < city.length * 4 + 1; i += 4) {
-      output += "f " + i + " " + (i + 1) + " " + (i + 2) + "\n";
-      output += "f " + (i + 2) + " " + (i + 1) + " " + (i + 3) + '\n';
+    for (var f = 0; f < faces.length; f++) {
+      output += "f " + faces[f][0] + " " + faces[f][1] + " " + faces[f][2] + '\n';
     }
-
-		
 
 		var blob = new Blob( [ output ], { type: 'text/plain' } );
 		var objectURL = URL.createObjectURL( blob );

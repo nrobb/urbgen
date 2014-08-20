@@ -70,6 +70,7 @@ URBGEN.Generator = function() {
   this.cityPolys = [];
   this.buildings = [];
   this.nodes = [];
+  this.geometry = {vertices: [], faces: []};
   this.center;
   this.cityArea;
   this.initRandom();
@@ -143,8 +144,39 @@ URBGEN.Generator.prototype.generate = function() {
     //this.buildings[k] = URBGEN.Util.insetPoly(this.buildings[k], 1);
     this.buildings[k].height = Math.random() * 20 + 20;
   }
-
   
+  this.buildGeometry();
+};
+/**
+ * Builds 3D geometry
+ */
+URBGEN.Generator.prototype.buildGeometry = function() {
+  this.geometry.faces = [];
+  this.geometry.vertices = [];
+  var city = this.buildings;
+  for (var i = 0; i < city.length; i++) {
+    var building = city[i];
+    for (var j = 0; j < building.corners.length; j++) {
+      var vertex = building.corners[j];
+      this.geometry.vertices.push([vertex.x, vertex.y, building.height]);
+    }
+    for (var k = 0; k < building.corners.length; k++) {
+      var vertex = building.corners[k];
+      this.geometry.vertices.push([vertex.x, vertex.y, 0]);
+    }
+  }
+  for (var l = 1; l < this.geometry.vertices.length + 1; l += 8) {
+    this.geometry.faces.push([l, l + 1, l + 2]);
+    this.geometry.faces.push([l + 2, l + 1, l + 3]);
+    this.geometry.faces.push([l, l + 1, l + 4]);
+    this.geometry.faces.push([l + 4, l + 1, l + 5]);
+    this.geometry.faces.push([l + 1, l + 3, l + 5]);
+    this.geometry.faces.push([l + 5, l + 3, l + 7]);
+    this.geometry.faces.push([l + 3, l + 2, l + 7]);
+    this.geometry.faces.push([l + 7, l + 2, l + 6]);
+    this.geometry.faces.push([l + 2, l, l + 6]);
+    this.geometry.faces.push([l + 6, l, l + 4]);
+  }
 };
 /**
  * Processes a polygon.
@@ -368,9 +400,10 @@ URBGEN.Builder.PlotBuilder.prototype.constructor
  * set points
  */
 URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
-  var length = 10;
   var minL = Math.min(this.poly.edgeLengths[0], this.poly.edgeLengths[1],
     this.poly.edgeLengths[2], this.poly.edgeLengths[3]);
+  var length = 10;
+  //var minL = Math.min(this.poly.edgeLengths[0], this.poly.edgeLengths[1], this.poly.edgeLengths[2], this.poly.edgeLengths[3]);
   var innerInset = Math.min(Math.floor(minL / 4), 15);
   var innerPoly = URBGEN.Util.insetPoly(this.poly, innerInset);
   innerPoly.makeSimple();
