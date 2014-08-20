@@ -128,7 +128,7 @@ URBGEN.Generator.prototype.generate = function() {
   this.cityPolys = this.something(this.cityPolys);
 
   for (var i = 0; i < this.cityPolys.length; i++) {
-    this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], 5);
+    this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], 10);
     this.cityPolys[i].makeSimple();
   }
   
@@ -403,37 +403,52 @@ URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
   var minL = Math.min(this.poly.edgeLengths[0], this.poly.edgeLengths[1],
     this.poly.edgeLengths[2], this.poly.edgeLengths[3]);
   var length = 10;
-  //var minL = Math.min(this.poly.edgeLengths[0], this.poly.edgeLengths[1], this.poly.edgeLengths[2], this.poly.edgeLengths[3]);
   var innerInset = Math.min(Math.floor(minL / 4), 15);
   var innerPoly = URBGEN.Util.insetPoly(this.poly, innerInset);
   innerPoly.makeSimple();
-  this.outerPoly = new URBGEN.Util.insetPoly(this.poly, 3);
+  this.outerPoly = new URBGEN.Util.insetPoly(this.poly, 15 - length);
   this.outerPoly.makeSimple();
   // Get the inner edges
   var innerEdges = [
-    [innerPoly.corners[0], innerPoly.corners[1]],
-    [innerPoly.corners[1], innerPoly.corners[3]],
+    [innerPoly.corners[1], innerPoly.corners[0]],
+    [innerPoly.corners[3], innerPoly.corners[1]],
     [innerPoly.corners[0], innerPoly.corners[2]],
     [innerPoly.corners[2], innerPoly.corners[3]]
   ];
-  // Get the outer edges as proxies of the original outer edges
-  var outerEdges = [
-    [this.outerPoly.corners[0], this.outerPoly.corners[1]],
-    [this.outerPoly.corners[1], this.outerPoly.corners[3]],
-    [this.outerPoly.corners[0], this.outerPoly.corners[2]],
-    [this.outerPoly.corners[2], this.outerPoly.corners[3]]
-  ];
-  // Get the proxy edges
+  // get the outer edges by offsetting the inner edges
+  var outerEdges = [];
+  for (var i = 0; i < innerEdges.length; i++) {
+    outerEdges.push(URBGEN.Util.offsetLineSegment(innerEdges[i][0], innerEdges[i][1], length));
+  }
+  // swap edges 0 and 1
+  for (var i = 0; i < 2; i++) {
+    var temp = innerEdges[i][0];
+    innerEdges[i][0] = innerEdges[i][1];
+    innerEdges[i][1] = temp;
+    temp = outerEdges[i][0];
+    outerEdges[i][0] = outerEdges[i][1];
+    outerEdges[i][1] = temp;
+  }
+  // set neighbor relations
+  var direction = 2;
+  var oppDirection = (direction + 2) % 4;
   for (var i = 0; i < outerEdges.length; i++) {
-    //var outerEdge = outerEdges[i];
-    var innerLength = innerPoly.edgeLengths[i];
-    outerEdges[i] = URBGEN.Util.proxyLineSegment(outerEdges[i][0], outerEdges[i][1], innerLength);
+    var p = outerEdges[i][0];
+    var q = outerEdges[i][1];
+    p.neighbors[direction] = q;
+    q.neighbors[oppDirection] = p;
+    if (direction === 2) {
+      direction = 3;
+    } else {
+      direction = 2;
+    }
+    oppDirection = (direction + 2) % 4;
   }
   // Get the paths
   var innerPaths = [];
   var outerPaths = [];
   for (var j = 0; j < outerEdges.length; j++) {
-    length = (Math.random() * (length / 2)) + length;
+    //length = (Math.random() * (length / 4)) + length * 0.75;
     innerPaths.push(URBGEN.Util.divideLine(innerEdges[j][0], innerEdges[j][1], length));
     outerPaths.push(URBGEN.Util.divideLine(outerEdges[j][0], outerEdges[j][1], length));
   }
@@ -453,17 +468,21 @@ URBGEN.Builder.PlotBuilder.prototype.setNewPoints = function(data) {
       ]);
     }
   }
+  
+  /*
   // add the corner plots
-  newPoints.push([this.outerPoly.corners[0], this.outerPaths[0][0],
+  newPoints.push([this.poly.corners[0], this.outerPaths[0][0],
     this.outerPaths[2][0], this.innerPaths[0][0]]);
   newPoints.push([this.outerPaths[0][this.outerPaths[0].length - 1],
-    this.outerPoly.corners[1], this.innerPaths[1][0], this.outerPaths[1][0]]);
+    this.poly.corners[1], this.innerPaths[1][0], this.outerPaths[1][0]]);
   newPoints.push([this.outerPaths[2][this.outerPaths[2].length - 1],
-    this.innerPaths[2][this.innerPaths[2].length - 1], this.outerPoly.corners[2],
+    this.innerPaths[2][this.innerPaths[2].length - 1], this.poly.corners[2],
       this.outerPaths[3][0]]);
   newPoints.push([this.innerPaths[1][this.innerPaths[1].length - 1],
     this.outerPaths[1][this.outerPaths[1].length - 1],
-      this.outerPaths[3][this.outerPaths[3].length - 1], this.outerPoly.corners[3]]);
+      this.outerPaths[3][this.outerPaths[3].length - 1], this.poly.corners[3]]);
+  */
+  
   this.newPoints = newPoints;
 };
 /**
