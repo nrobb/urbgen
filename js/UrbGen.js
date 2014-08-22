@@ -142,7 +142,6 @@ URBGEN.Generator.prototype.generate = function() {
   }
   // TODO this is a bit hacky
   for (var k = 0; k < this.buildings.length; k++) {
-    //this.buildings[k] = URBGEN.Util.insetPoly(this.buildings[k], 1);
     this.buildings[k].height = Math.random() * 20 + 20;
   }
   
@@ -413,24 +412,28 @@ URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
   this.outerPoly.makeSimple();
   // Get the inner edges
   var innerEdges = [
-    [innerPoly.corners[1], innerPoly.corners[0]],
-    [innerPoly.corners[3], innerPoly.corners[1]],
+    [innerPoly.corners[0], innerPoly.corners[1]],
+    [innerPoly.corners[1], innerPoly.corners[3]],
     [innerPoly.corners[0], innerPoly.corners[2]],
     [innerPoly.corners[2], innerPoly.corners[3]]
   ];
-  // get the outer edges by offsetting the inner edges
-  var outerEdges = [];
+  // get the outer edges
+  var outerEdges = [
+    [this.poly.corners[0], this.poly.corners[1]],
+    [this.poly.corners[1], this.poly.corners[3]],
+    [this.poly.corners[0], this.poly.corners[2]],
+    [this.poly.corners[2], this.poly.corners[3]],
+  ];
+  console.debug(outerEdges)
   for (var i = 0; i < innerEdges.length; i++) {
-    outerEdges.push(URBGEN.Util.offsetLineSegment(innerEdges[i][0], innerEdges[i][1], length));
-  }
-  // swap edges 0 and 1
-  for (var i = 0; i < 2; i++) {
-    var temp = innerEdges[i][0];
-    innerEdges[i][0] = innerEdges[i][1];
-    innerEdges[i][1] = temp;
-    temp = outerEdges[i][0];
-    outerEdges[i][0] = outerEdges[i][1];
-    outerEdges[i][1] = temp;
+    var angle = URBGEN.Util.getAngle(innerEdges[i][0], innerEdges[i][1]);
+    angle = URBGEN.Util.addAngle(angle, 0.5);
+    var outerAngle = URBGEN.Util.getAngle(outerEdges[i][0], outerEdges[i][1]);
+    var l = URBGEN.Util.getLineSegmentLength(innerEdges[i][0], innerEdges[i][1]);
+    var start = URBGEN.Util.getIntersect(innerEdges[i][0], angle, outerEdges[i][0], outerAngle);
+    var end = URBGEN.Util.linearInterpolateByLength(start, outerEdges[i][1], l);
+    outerEdges[i][0] = start;
+    outerEdges[i][1] = end;
   }
   // set neighbor relations
   var direction = 2;
@@ -451,7 +454,7 @@ URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
   var innerPaths = [];
   var outerPaths = [];
   for (var j = 0; j < outerEdges.length; j++) {
-    //length = (Math.random() * (length / 4)) + length * 0.75;
+    length = (Math.random() * minL / 8) + (minL / 8);
     innerPaths.push(URBGEN.Util.divideLine(innerEdges[j][0], innerEdges[j][1], length));
     outerPaths.push(URBGEN.Util.divideLine(outerEdges[j][0], outerEdges[j][1], length));
   }
@@ -472,7 +475,6 @@ URBGEN.Builder.PlotBuilder.prototype.setNewPoints = function(data) {
     }
   }
   
-  /*
   // add the corner plots
   newPoints.push([this.poly.corners[0], this.outerPaths[0][0],
     this.outerPaths[2][0], this.innerPaths[0][0]]);
@@ -484,7 +486,6 @@ URBGEN.Builder.PlotBuilder.prototype.setNewPoints = function(data) {
   newPoints.push([this.innerPaths[1][this.innerPaths[1].length - 1],
     this.outerPaths[1][this.outerPaths[1].length - 1],
       this.outerPaths[3][this.outerPaths[3].length - 1], this.poly.corners[3]]);
-  */
   
   this.newPoints = newPoints;
 };
