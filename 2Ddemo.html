@@ -12,9 +12,39 @@
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
       
+      gen.regularity1 = 0.4147155081387609;
+      gen.regularity1 = 0.3563098708167672;
+      gen.blockSize = 33376.57121941447;
+      gen.cityWidth = 941.8865801766515;
+      gen.cityDepth = 522.7138635702431;
+      gen.localGrids = 0.7049121570307761;
+      gen.throughRoads = 49.829281750135124;
+      gen.init();
+      gen.generate();
+      var nodes = gen.nodes;
+      console.debug(nodes);
+      for (var i = 0; i < nodes.length; i++) {
+        var p0 = nodes[i];
+        var p1 = p0.neighbors[3];
+        var p2 = p0.neighbors[2];
+        context.moveTo(p0.x, p0.y);
+        context.lineTo(p1.x, p1.y);
+        context.stroke();
+        
+        context.moveTo(p0.x, p0.y);
+        context.lineTo(p2.x, p2.y);
+        context.stroke();
+        
+      }
+      
+      
       window.blockColor = "#E1E1E1";
       window.buildingColor = "#BEADAD";
-      
+        for (var j = 0; j < gen.cityPolys.length; j++) {
+          var poly = gen.cityPolys[j];
+          drawPoly(poly, window.blockColor);
+        }
+      /*
       window.onLoad = function() {
         var gui = new dat.GUI();
         gui.width = 300;
@@ -59,7 +89,7 @@
           drawPoly(poly, window.buildingColor);
         }
       };
-      
+      */
       function drawPoly(poly, c) {
         var p0 = poly.corners[0];
         var p1 = poly.corners[1];
@@ -75,7 +105,7 @@
         context.fill();
       };
       
-      window.onLoad();
+      //window.onLoad();
       
     </script>
   </body>

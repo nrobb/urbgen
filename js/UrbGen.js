@@ -31,7 +31,7 @@ URBGEN.Poly = function(p0, p1, p2, p3) {
     URBGEN.Util.getLineSegmentLength(this.corners[2], this.corners[3])
   ];
   this.minEdgeLength;
-  this.throughRoadStagger;
+  this.throughRoads;
   this.regularity1;
   this.gridAngle;
   this.atomic = false;
@@ -62,9 +62,9 @@ URBGEN.Poly.prototype.makeSimple = function() {
  * Constructs a city generator.
  */
 URBGEN.Generator = function() {
-  this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder();
-  this.verticalBuilder = new URBGEN.Builder.VerticalBuilder();
-  this.plotBuilder = new URBGEN.Builder.PlotBuilder();
+  this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder(this);
+  this.verticalBuilder = new URBGEN.Builder.VerticalBuilder(this);
+  this.plotBuilder = new URBGEN.Builder.PlotBuilder(this);
   this.builder;
   this.director = new URBGEN.Builder.Director();
   this.cityPolys = [];
@@ -79,15 +79,15 @@ URBGEN.Generator = function() {
  * Sets up random variables
  */
 URBGEN.Generator.prototype.initRandom = function() {
-  this.regularity1 = Math.random() * 0.2 + 0.4;
-  this.regularity2 = Math.random() * 0.2 + 0.4;
-  this.blockSize = Math.random() * 20000 + 10000;
+  this.regularity1 = Math.random() * 0.3 + 0.3;
+  this.regularity2 = Math.random() * 0.3 + 0.3;
+  this.blockSize = Math.random() * 20000 + 15000;
   this.buildingSize = 2000;
-  this.width = window.innerWidth * 0.95;
-  this.depth = window.innerHeight * 0.95;
-  this.gridThreshold = Math.random();
-  this.minEdgeLength = Math.random() * 10 + 40;
-  this.throughRoadStagger = Math.random() * 50;
+  this.cityWidth = Math.random() * 200 + 800;
+  this.cityDepth = Math.random() * 200 + 400;
+  this.localGrids = Math.random();
+  this.minEdgeLength = 100;
+  this.throughRoads = Math.random() * 50;
   this.init();
 };
 /**
@@ -97,11 +97,12 @@ URBGEN.Generator.prototype.init = function() {
   this.cityPolys = [];
   this.buildings = [];
   var topLeft = new URBGEN.Point(0, 0, 0);
-  var topRight = new URBGEN.Point(this.width, 0, 0);
-  var bottomLeft = new URBGEN.Point(1, this.depth, 0);
-  var bottomRight = new URBGEN.Point(this.width - 1, this.depth, 0);
+  var topRight = new URBGEN.Point(this.cityWidth, 0, 0);
+  var bottomLeft = new URBGEN.Point(1, this.cityDepth, 0);
+  var bottomRight = new URBGEN.Point(this.cityWidth - 1, this.cityDepth, 0);
+  this.nodes = [topLeft, topRight, bottomLeft, bottomRight];
   var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
-  this.center = new URBGEN.Point(this.width / 2, this.depth / 2, 0);
+  this.center = new URBGEN.Point(this.cityWidth / 2, this.cityDepth / 2, 0);
   this.cityArea = URBGEN.Util.areaPoly(poly);
   this.minPolySize = this.blockSize;
   poly.makeSimple();
@@ -128,7 +129,7 @@ URBGEN.Generator.prototype.generate = function() {
   this.cityPolys = this.something(this.cityPolys);
 
   for (var i = 0; i < this.cityPolys.length; i++) {
-    this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], 10);
+    this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], 7.5);
     this.cityPolys[i].makeSimple();
   }
   
@@ -195,10 +196,10 @@ URBGEN.Generator.prototype.processPoly = function(poly) {
 URBGEN.Generator.prototype.prepare = function(poly) {
   // Set the poly's variables
   poly.minEdgeLength = this.minEdgeLength;
-  poly.throughRoadStagger = this.throughRoadStagger;
+  poly.throughRoads = this.throughRoads;
   poly.regularity1 = this.regularity1;
   poly.regularity2 = this.regularity2;
-  if (URBGEN.Util.areaPoly(poly) < this.gridThreshold * this.cityArea) {
+  if (URBGEN.Util.areaPoly(poly) < this.localGrids * this.cityArea) {
     poly.setGridAngle();
   }
   // Set the correct builder
@@ -219,7 +220,8 @@ URBGEN.Generator.prototype.prepare = function(poly) {
 /**
  * Constructs a builder
  */
-URBGEN.Builder = function() {
+URBGEN.Builder = function(generator) {
+  this.generator = generator;
   this.poly;
   this.origin;
   this.endPoint;
@@ -263,7 +265,7 @@ URBGEN.Builder.prototype.setPoints = function() {
 /**
  * Returns a point using the specified angle
  */
-URBGEN.Builder.prototype.pointByAngle = function(edgeStart, edgeEnd) {
+URBGEN.Builder.prototype.pointByAngle = function(edgeStart, edgeEnd, angle) {
   // Get the edge's length
   var length = URBGEN.Util.getLineSegmentLength(edgeStart, edgeEnd);
   // Throw an error if the edge is too short
@@ -273,7 +275,7 @@ URBGEN.Builder.prototype.pointByAngle = function(edgeStart, edgeEnd) {
   }
   var minR = this.poly.minEdgeLength / length;
   var edgeAngle = URBGEN.Util.getAngle(edgeStart, edgeEnd);
-  var point = URBGEN.Util.getIntersect(edgeStart, edgeAngle, this.origin, this.poly.gridAngle);
+  var point = URBGEN.Util.getIntersect(edgeStart, edgeAngle, this.origin, angle);
   var r = URBGEN.Util.getPointAsRatio(point, edgeStart, edgeEnd);
   if (r < minR) r = minR;
   if (r > 1 - minR) r = 1 - minR;
@@ -305,19 +307,20 @@ URBGEN.Builder.prototype.pointByRValue = function(edgeStart, edgeEnd, r) {
  */
 URBGEN.Builder.prototype.addPointToPath = function(point, edgeStart, edgeEnd) {
   var path = URBGEN.Util.getDirectedPath(edgeStart, edgeEnd, this.direction);
-  var distance = this.poly.throughRoadStagger;
+  var distance = this.poly.throughRoads;
   var nearPoint = URBGEN.Util.checkNearPoints(point, path, distance, false);
   if (nearPoint === point) {
     var neighbors = URBGEN.Util.getNeighbors(point, path);
     URBGEN.Util.insertPoint(point, neighbors.prev, neighbors.nxt);
+    this.generator.nodes.push(point);
   }
   return nearPoint;
 };
 /**
  * Consructs a HorizontalBuilder
  */
-URBGEN.Builder.HorizontalBuilder = function() {
-  URBGEN.Builder.call(this);
+URBGEN.Builder.HorizontalBuilder = function(generator) {
+  URBGEN.Builder.call(this, generator);
   this.corners = [2, 1];
   this.direction = 2;
 };
@@ -345,8 +348,8 @@ URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function(data) {
 /**
  * Constructs a VerticalBuilder
  */
-URBGEN.Builder.VerticalBuilder = function() {
-  URBGEN.Builder.call(this);
+URBGEN.Builder.VerticalBuilder = function(generator) {
+  URBGEN.Builder.call(this, generator);
   this.corners = [1, 2];
   this.direction = 3;
 };

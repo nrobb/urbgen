@@ -1,7 +1,6 @@
 <!DOCTYPE html>
   <head>
     <script src="js/three.min.js"></script>
-    <script src="js/OBJExporter.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/UrbGen.js"></script>
     <script src="js/UrbGenDemo.js"></script>
@@ -12,6 +11,7 @@
 
 // testing save function
 	function exportGeometry () {
+	  //TODO add this into URBGEN
     var geom = gen.geometry;
     var vertices = geom.vertices;
     var faces = geom.faces;
@@ -55,33 +55,40 @@
       window.onLoad = function() {
         var gui = new dat.GUI();
         gui.width = 300;
-        gui.add(gen, "regularity1", 0.5, 0.8).listen();
-        gui.add(gen, "regularity2", 0.5, 0.8).listen();
-        gui.add(gen, "blockSize", 10000, 30000).listen();
-        gui.add(gen, "width", 200, window.innerWidth * 0.95).listen();
-        gui.add(gen, "depth", 200, window.innerHeight * 0.95).listen();
-        gui.add(gen, "minEdgeLength", 40, 50).listen();
-        gui.add(gen, "gridThreshold", 0, 1).listen();
-        gui.add(gen, "throughRoadStagger", 0, 50).listen();
-        gui.add(this, "generateWithParams").listen();
-        gui.add(this, "generateRandom").listen();
-        gui.add(this, "exportObj");
-        this.generateWithParams();
+        gui.add(gen, "regularity1", 0.3, 0.6).listen();
+        gui.add(gen, "regularity2", 0.3, 0.6).listen();
+        gui.add(gen, "blockSize", 15000, 50000).listen();
+        gui.add(gen, "cityWidth", 200, 1500).listen();
+        gui.add(gen, "cityDepth", 200, 1500).listen();
+        //gui.add(gen, "minEdgeLength", 50, 100).listen();
+        gui.add(gen, "localGrids", 0, 1).listen();
+        gui.add(gen, "throughRoads", 0, 50).listen();
+        gui.add(this, "update").listen();
+        gui.add(this, "random").listen();
+        gui.add(this, "export");
+        this.update();
       };
   
-  window.exportObj = function() {
+  window.export = function() {
     exportGeometry();
   };
   
-  window.generateRandom = function() {
+  window.random = function() {
     gen.initRandom();
     gen.generate();
     loadCity();
   };
   
-  window.generateWithParams = function() {
+  window.update = function() {
+    var d = new Date();
+    var start = d.getTime();
     gen.init();
     gen.generate();
+    d = new Date();
+    var end = d.getTime();
+    var elapsed = (end - start) / 1000;
+    console.log("City generated in " + elapsed + " seconds");
+    console.log("City contains " + gen.buildings.length + " plots");
     loadCity();
   };
   window.onLoad();
@@ -100,7 +107,6 @@
       if (cityGeom.vertices[i].x > maxX) maxX = cityGeom.vertices[i].x;
       if (cityGeom.vertices[i].z > maxZ) maxZ = cityGeom.vertices[i].z;
     }
-    console.debug(maxX + ", " + maxZ)
     city.position.x = -maxX / 2;
     city.position.z = maxZ * 7;
     city.position.y = 0;
@@ -139,6 +145,7 @@
 			updateFn(deltaMsec/1000, nowMsec/1000)
 		});
 	});
+	
 </script>
 </body>
 </html>
