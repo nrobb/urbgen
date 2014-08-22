@@ -11,15 +11,11 @@
       
       var canvas = document.getElementById("canvas");
       var context = canvas.getContext("2d");
-      
-      gen.regularity1 = 0.4147155081387609;
-      gen.regularity1 = 0.3563098708167672;
-      gen.blockSize = 33376.57121941447;
-      gen.cityWidth = 941.8865801766515;
-      gen.cityDepth = 522.7138635702431;
-      gen.localGrids = 0.7049121570307761;
-      gen.throughRoads = 49.829281750135124;
-      gen.init();
+      var blockColor = "#E1E1E1";
+      var buildingColor = "#BEADAD";
+      context.strokeStyle = blockColor;
+      context.lineWidth = 2.5;
+      gen.initRandom();
       gen.generate();
       var nodes = gen.nodes;
       console.debug(nodes);
@@ -36,13 +32,13 @@
         context.stroke();
         
       }
-      
-      
-      window.blockColor = "#E1E1E1";
-      window.buildingColor = "#BEADAD";
         for (var j = 0; j < gen.cityPolys.length; j++) {
           var poly = gen.cityPolys[j];
-          drawPoly(poly, window.blockColor);
+          drawPoly(poly, blockColor);
+        }
+        for (var i = 0; i < gen.buildings.length; i++) {
+          var poly = gen.buildings[i];
+          drawPoly(poly, buildingColor);
         }
       /*
       window.onLoad = function() {

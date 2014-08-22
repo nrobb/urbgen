@@ -88,6 +88,7 @@ URBGEN.Generator.prototype.initRandom = function() {
   this.localGrids = Math.random();
   this.minEdgeLength = 100;
   this.throughRoads = Math.random() * 50;
+  this.streetWidth = Math.random() * 20 + 10;
   this.init();
 };
 /**
@@ -129,7 +130,7 @@ URBGEN.Generator.prototype.generate = function() {
   this.cityPolys = this.something(this.cityPolys);
 
   for (var i = 0; i < this.cityPolys.length; i++) {
-    this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], 7.5);
+    this.cityPolys[i] = URBGEN.Util.insetPoly(this.cityPolys[i], this.streetWidth / 2);
     this.cityPolys[i].makeSimple();
   }
   
@@ -386,7 +387,6 @@ URBGEN.Builder.PlotBuilder = function() {
   URBGEN.Builder.call(this);
   this.innerPaths = [];
   this.outerPaths = [];
-  this.outerPoly;
 };
 /**
  * Creates a VerticalBuilder prototype that inherits from Builder.prototype.
@@ -404,12 +404,9 @@ URBGEN.Builder.PlotBuilder.prototype.constructor
 URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
   var minL = Math.min(this.poly.edgeLengths[0], this.poly.edgeLengths[1],
     this.poly.edgeLengths[2], this.poly.edgeLengths[3]);
-  var length = 10;
-  var innerInset = Math.min(Math.floor(minL / 4), 15);
+  var innerInset = Math.min(Math.floor(minL / 3), 15);
   var innerPoly = URBGEN.Util.insetPoly(this.poly, innerInset);
   innerPoly.makeSimple();
-  this.outerPoly = new URBGEN.Util.insetPoly(this.poly, 15 - length);
-  this.outerPoly.makeSimple();
   // Get the inner edges
   var innerEdges = [
     [innerPoly.corners[0], innerPoly.corners[1]],
@@ -424,7 +421,6 @@ URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
     [this.poly.corners[0], this.poly.corners[2]],
     [this.poly.corners[2], this.poly.corners[3]],
   ];
-  console.debug(outerEdges)
   for (var i = 0; i < innerEdges.length; i++) {
     var angle = URBGEN.Util.getAngle(innerEdges[i][0], innerEdges[i][1]);
     angle = URBGEN.Util.addAngle(angle, 0.5);
@@ -454,7 +450,7 @@ URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
   var innerPaths = [];
   var outerPaths = [];
   for (var j = 0; j < outerEdges.length; j++) {
-    length = (Math.random() * minL / 8) + (minL / 8);
+    var length = 10;
     innerPaths.push(URBGEN.Util.divideLine(innerEdges[j][0], innerEdges[j][1], length));
     outerPaths.push(URBGEN.Util.divideLine(outerEdges[j][0], outerEdges[j][1], length));
   }
