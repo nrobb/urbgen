@@ -42,7 +42,7 @@ URBGEN.Poly = function(p0, p1, p2, p3) {
  */
 URBGEN.Poly.prototype.setGridAngle = function() {
   var start = URBGEN.Util.linearInterpolate(this.corners[0], this.corners[2], 0.5);
-  var end = URBGEN.Util.linearInterpolate(this.corners[1], this.corners[3], 0.5);
+  var end = URBGEN.Util.linearInterpolate(this.corners[1], this.corners[3], Math.random() * 0.5 + 0.2);
   this.gridAngle = URBGEN.Util.getAngle(start, end);
 };
 /**
@@ -199,9 +199,6 @@ URBGEN.Generator.prototype.prepare = function(poly) {
   poly.throughRoads = this.throughRoads;
   poly.regularity1 = this.regularity1;
   poly.regularity2 = this.regularity2;
-  if (URBGEN.Util.areaPoly(poly) < this.localGrids * this.cityArea) {
-    poly.setGridAngle();
-  }
   // Set the correct builder
   var horizontalSides = poly.edgeLengths[0] + poly.edgeLengths[3];
   var verticalSides = poly.edgeLengths[1] + poly.edgeLengths[2];
@@ -233,8 +230,20 @@ URBGEN.Builder = function(generator) {
 URBGEN.Builder.prototype.buildPolys = function() {
   var polys = [];
   for (var i = 0; i < this.newPoints.length; i++) {
+    // Build the new polygon
     var points = this.newPoints[i];
-    polys.push(new URBGEN.Poly(points[0], points[1], points[2], points[3]));
+    var poly = new URBGEN.Poly(points[0], points[1], points[2], points[3]);
+    // Set the grid angle of the new polygon, if needed
+    var localGridThreshold = this.generator.localGrids * this.generator.cityArea;
+    if (URBGEN.Util.areaPoly(poly) < localGridThreshold) {
+      if (this.poly.gridAngle === undefined) {
+        poly.setGridAngle();
+      } else {
+        poly.gridAngle = this.poly.gridAngle;
+      }
+    }
+    // Add the polygon
+    polys.push(poly);
   }
   return polys;
 };
@@ -254,7 +263,8 @@ URBGEN.Builder.prototype.setPoints = function() {
     endPoint = this.pointByRValue(edgeStart, edgeEnd, this.poly.regularity2);
     this.endPoint = this.addPointToPath(endPoint, edgeStart, edgeEnd);
   } else {
-    origin = URBGEN.Util.linearInterpolate(edgeStart, edgeEnd, 0.5);
+    origin = URBGEN.Util.linearInterpolateByLength(edgeStart, edgeEnd, this.generator.minEdgeLength);
+    //origin = this.pointByRValue(edgeStart, edgeEnd, this.poly.regularity1);
     this.origin = this.addPointToPath(origin, edgeStart, edgeEnd);
     edgeStart = this.poly.corners[this.corners[1]];
     edgeEnd = this.poly.corners[3];
@@ -383,8 +393,8 @@ URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function(data) {
 /**
  * Constructs a PlotBuilder
  */
-URBGEN.Builder.PlotBuilder = function() {
-  URBGEN.Builder.call(this);
+URBGEN.Builder.PlotBuilder = function(generator) {
+  URBGEN.Builder.call(this, generator);
   this.innerPaths = [];
   this.outerPaths = [];
 };
@@ -404,7 +414,7 @@ URBGEN.Builder.PlotBuilder.prototype.constructor
 URBGEN.Builder.PlotBuilder.prototype.setPoints = function() {
   var minL = Math.min(this.poly.edgeLengths[0], this.poly.edgeLengths[1],
     this.poly.edgeLengths[2], this.poly.edgeLengths[3]);
-  var innerInset = Math.min(Math.floor(minL / 3), 15);
+  var innerInset = 10;
   var innerPoly = URBGEN.Util.insetPoly(this.poly, innerInset);
   innerPoly.makeSimple();
   // Get the inner edges
@@ -524,9 +534,13 @@ URBGEN.Util = {};
  * Returns the length of the line segment p0p1.
  */
 URBGEN.Util.getLineSegmentLength = function(p0, p1) {
-  var length = Math.sqrt(Math.pow((p1.x - p0.x), 2)
-    + Math.pow((p1.y - p0.y), 2));
-    return length;
+  if (!(arguments[0] instanceof URBGEN.Point) ||
+      !(arguments[1] instanceof URBGEN.Point) ||
+      arguments.length !== 2) {
+        throw new Error(URBGEN.Exception.illegalArgumentException);
+  }
+  
+  return Math.sqrt(Math.pow((p1.x - p0.x), 2) + Math.pow((p1.y - p0.y), 2));
 };
 /**
  * Returns the total length of the line segments described by the path.
@@ -919,3 +933,11 @@ URBGEN.Math.random.prototype.next = function() {
   this.seed = (this.seed * 9301 + 49297) % 233280;
   return this.seed / 233280;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// URBGEN.Exception
+////////////////////////////////////////////////////////////////////////////////
+URBGEN.Exception = {};
+URBGEN.Exception.illegalArgumentException = "Illegal Argument Exception";
