@@ -209,6 +209,17 @@ URBGEN.Generator.prototype.prepare = function(poly) {
   }
   this.builder.poly = poly;
 };
+/**
+ * Returns the Three.js Shape with the coordinates of the specified poly
+ */
+URBGEN.Generator.prototype.buildThreeShape = function(poly, shape) {
+  shape.moveTo(poly.corners[0].x, poly.corners[0].y);
+  shape.lineTo(poly.corners[1].x, poly.corners[1].y);
+  shape.lineTo(poly.corners[3].x, poly.corners[3].y);
+  shape.lineTo(poly.corners[2].x, poly.corners[2].y);
+  shape.lineTo(poly.corners[0].x, poly.corners[0].y);
+  return shape;
+};
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////

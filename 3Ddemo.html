@@ -3,14 +3,13 @@
     <script src="js/three.min.js"></script>
     <script src="js/OrbitControls.js"></script>
     <script src="js/UrbGen.js"></script>
-    <script src="js/UrbGenDemo.js"></script>
     <script src="js/dat.gui.min.js"></script>
     <script src="js/FileSaver.js"></script>
   </head>
 <body>
 <script>
 
-// testing save function
+
 	function exportGeometry () {
 	  //TODO add this into URBGEN
     var geom = gen.geometry;
@@ -32,7 +31,6 @@
 		saveAs(blob, fileName);
 
 	};
-// end test save function helper
 
 	var updateFcts	= [];
 	var scene	= new THREE.Scene();
@@ -97,7 +95,7 @@
 
   function loadCity() {
     scene.remove(city);
-    cityGeom = UGDEMO.getCity3D(gen.buildings);
+    cityGeom = getCity3D(gen.buildings);
     city = THREE.SceneUtils.createMultiMaterialObject(cityGeom,
       [new THREE.MeshLambertMaterial({color: 0xffffff}),
       new THREE.MeshBasicMaterial({color: 0x000000,
@@ -113,8 +111,36 @@
     city.position.z = maxZ * 7;
     city.position.y = 0;
     scene.add(city)
-    //camera.lookAt(city);
   }
+  
+  function getCity3D(polys) {
+    var cityGeom = new THREE.Geometry();
+    var light = new THREE.Color( 0xffffff );
+    var shadow    = new THREE.Color( 0xff6666 );
+    for (var j = 0; j < polys.length; j++) {
+      var plot = gen.buildThreeShape(polys[j], new THREE.Shape());
+      // set the extrusion settings
+      var extrusionSettings = {
+        size: 30, height: 4, curveSegments: 3,
+        bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
+        material: 0, extrudeMaterial: 1, amount: polys[j].height
+      };
+      var blockGeom = new THREE.ExtrudeGeometry(plot, extrusionSettings);
+      var value = 1 - Math.random() * Math.random();
+      var baseColor   = new THREE.Color().setRGB( value + Math.random() * 0.1, value, value + Math.random() * 0.1 );
+      var topColor    = baseColor.clone().multiply( light );
+      var bottomColor = baseColor.clone().multiply( shadow );
+      for ( var k = 0, kl = blockGeom.faces.length; k < kl; k ++ ) {
+        if ( j === 2 ) {
+          blockGeom.faces[ k ].vertexColors = [ baseColor, baseColor, baseColor, baseColor ];
+        } else {
+          blockGeom.faces[ k ].vertexColors = [ topColor, bottomColor, bottomColor, topColor ];
+        }
+      }
+      cityGeom.merge(blockGeom);
+    }
+    return cityGeom;
+  };
 
 
 	
