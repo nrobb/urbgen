@@ -238,9 +238,10 @@ URBGEN.Generator.prototype.buildGeometry = function() {
   var plots = this.city.getPlots();
   for (var i = 0; i < plots.length; i++) {
     var building = plots[i].poly;
+    var height = plots[i].height;
     for (var j = 0; j < building.corners.length; j++) {
       var vertex = building.corners[j];
-      vertices.push([vertex.x, vertex.y, building.height]);
+      vertices.push([vertex.x, vertex.y, height]);
     }
     for (var k = 0; k < building.corners.length; k++) {
       var vertex = building.corners[k];

@@ -12,7 +12,7 @@
 
 	function exportGeometry () {
 	  //TODO add this into URBGEN
-    var geom = gen.geometry;
+    var geom = gen.city.geometry;
     var vertices = geom.vertices;
     var faces = geom.faces;
     var output = "";
@@ -39,6 +39,7 @@
 	               "cityDepth: " + gen.cityDepth + ",\n" +
 	               "streetWidth: " + gen.streetWidth + ",\n" +
 	               "localGrids: " + gen.localGrids + ",\n" +
+	               "randomSeed: " + gen.randomSeed + ",\n" +
 	               "throughRoads: " + gen.throughRoads
 	               );
 	
