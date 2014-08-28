@@ -126,6 +126,7 @@ URBGEN.Generator = function() {
   // Decalare the polys for building the city
   this.cityPolys;
   // City generator parameters
+  this.globalAngle;
   this.randomSeed;
   this.regularity1;
   this.regularity2;
@@ -145,10 +146,7 @@ URBGEN.Generator = function() {
 URBGEN.Generator.prototype.initRandom = function() {
   this.localGrids = Math.random();
   this.randomSeed = Math.random();
-  this.regularity1 = Math.random() * (URBGEN.Constants.MAX_REGULARITY
-      - URBGEN.Constants.MIN_REGULARITY) + URBGEN.Constants.MIN_REGULARITY;
-  this.regularity2 = Math.random() * (URBGEN.Constants.MAX_REGULARITY
-      - URBGEN.Constants.MIN_REGULARITY) + URBGEN.Constants.MIN_REGULARITY;
+  this.globalAngle = Math.random();
   this.blockSize = Math.random() * (URBGEN.Constants.MAX_BLOCK_SIZE
       - URBGEN.Constants.MIN_BLOCK_SIZE) + URBGEN.Constants.MIN_BLOCK_SIZE;
   this.cityWidth = Math.random() * (URBGEN.Constants.MAX_CITY_WIDTH
@@ -183,6 +181,11 @@ URBGEN.Generator.prototype.init = function() {
   this.nodes = [topLeft, topRight, bottomLeft, bottomRight];
   // Set the city's area
   this.city.area = URBGEN.Util.areaPoly(poly);
+  // Set the regularity params
+  this.regularity1 = this.globalAngle * (URBGEN.Constants.MAX_REGULARITY
+      - URBGEN.Constants.MIN_REGULARITY) + URBGEN.Constants.MIN_REGULARITY;
+  this.regularity2 = URBGEN.Constants.MAX_REGULARITY - this.globalAngle
+      * (URBGEN.Constants.MAX_REGULARITY - URBGEN.Constants.MIN_REGULARITY);
 };
 /**
  * Recursively processes an array of polygons.
@@ -334,8 +337,7 @@ URBGEN.Generator.prototype.OBJData = function() {
  * @return {string} The parameters used to generate this generator's current city.
  */
 URBGEN.Generator.prototype.paramData = function() {
-  var output = ("regularity1: " + gen.regularity1 + ",\n" +
-	               "regularity2: " + gen.regularity2 + ",\n" +
+  var output = ("globalAngle: " + gen.globalAngle + ",\n" +
 	               "blockSize: " + gen.blockSize + ",\n" +
 	               "cityWidth: " + gen.cityWidth + ",\n" +
 	               "cityDepth: " + gen.cityDepth + ",\n" +
