@@ -11,18 +11,7 @@
 
 
 	function exportGeometry () {
-	  //TODO add this into URBGEN
-    var geom = gen.city.geometry;
-    var vertices = geom.vertices;
-    var faces = geom.faces;
-    var output = "";
-    for (var v = 0; v < vertices.length; v++) {
-      output += "v " + vertices[v][0] + " " + vertices[v][1] + " " + vertices[v][2] + '\n';
-    }
-    for (var f = 0; f < faces.length; f++) {
-      output += "f " + faces[f][0] + " " + faces[f][1] + " " + faces[f][2] + '\n';
-    }
-
+    var output = gen.OBJData();
 		var blob = new Blob( [ output ], { type: 'text/plain' } );
 		var objectURL = URL.createObjectURL( blob );
 		var date = new Date();
@@ -32,17 +21,7 @@
 	};
 	
 	function exportParamaters() {
-	  var output = ("regularity1: " + gen.regularity1 + ",\n" +
-	               "regularity2: " + gen.regularity2 + ",\n" +
-	               "blockSize: " + gen.blockSize + ",\n" +
-	               "cityWidth: " + gen.cityWidth + ",\n" +
-	               "cityDepth: " + gen.cityDepth + ",\n" +
-	               "streetWidth: " + gen.streetWidth + ",\n" +
-	               "localGrids: " + gen.localGrids + ",\n" +
-	               "randomSeed: " + gen.randomSeed + ",\n" +
-	               "throughRoads: " + gen.throughRoads
-	               );
-	
+	  var output = gen.paramData();
 	  var blob = new Blob([output], {type: 'text/plain'});
 		var date = new Date();
 		var timeStamp = date.getTime();
@@ -68,7 +47,8 @@
   // set up city
   var gen = new URBGEN.Generator();
   var cityGeom;
-  var city;
+  var cityMesh;
+  
   // set up GUI
       window.onLoad = function() {
         var gui = new dat.GUI();
@@ -116,51 +96,43 @@
   window.onLoad();
 
   function loadCity() {
-    scene.remove(city);
+    // Remove the current city
+    scene.remove(cityMesh);
+    // Get a geometry representing the buildings
     cityGeom = getCity3D(gen.city.getPlots());
-    city = THREE.SceneUtils.createMultiMaterialObject(cityGeom,
+    // make a mesh from the geometry
+    cityMesh = THREE.SceneUtils.createMultiMaterialObject(cityGeom,
       [new THREE.MeshLambertMaterial({color: 0xffffff}),
       new THREE.MeshBasicMaterial({color: 0x000000,
       wireframe: true})]);
-    city.rotation.x = -90 * Math.PI / 180;
+    // Position the mesh
+    cityMesh.rotation.x = -90 * Math.PI / 180;
     var maxX = 0;
     var maxZ = 0;
     for (var i = 0; i < cityGeom.vertices.length; i++) {
       if (cityGeom.vertices[i].x > maxX) maxX = cityGeom.vertices[i].x;
       if (cityGeom.vertices[i].z > maxZ) maxZ = cityGeom.vertices[i].z;
     }
-    city.position.x = -maxX / 2;
-    city.position.z = maxZ * 7;
-    city.position.y = 0;
-    scene.add(city)
+    cityMesh.position.x = -maxX / 2;
+    cityMesh.position.z = maxZ * 7;
+    cityMesh.position.y = 0;
+    // Add the mesh to the scene
+    scene.add(cityMesh)
   }
   
   function getCity3D(plots) {
     var cityGeom = new THREE.Geometry();
-    var light = new THREE.Color( 0xffffff );
-    var shadow    = new THREE.Color( 0xff6666 );
+    // Add each building to the geometry
     for (var j = 0; j < plots.length; j++) {
+      // get the plot
       var plot = gen.buildThreeShape(plots[j].poly, new THREE.Shape());
       // set the extrusion settings
-      var extrusionSettings = {
-        size: 30, height: 4, curveSegments: 3,
-        bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
-        material: 0, extrudeMaterial: 1, amount: plots[j].height
-      };
-      var blockGeom = new THREE.ExtrudeGeometry(plot, extrusionSettings);
-      var value = 1 - Math.random() * Math.random();
-      var baseColor   = new THREE.Color().setRGB( value + Math.random() * 0.1, value, value + Math.random() * 0.1 );
-      var topColor    = baseColor.clone().multiply( light );
-      var bottomColor = baseColor.clone().multiply( shadow );
-      for ( var k = 0, kl = blockGeom.faces.length; k < kl; k ++ ) {
-        if ( j === 2 ) {
-          blockGeom.faces[ k ].vertexColors = [ baseColor, baseColor, baseColor, baseColor ];
-        } else {
-          blockGeom.faces[ k ].vertexColors = [ topColor, bottomColor, bottomColor, topColor ];
-        }
-      }
-      cityGeom.merge(blockGeom);
+      var extrusionSettings = {bevelEnabled: false, amount: plots[j].height};
+      // get the building geometry
+      var geom = new THREE.ExtrudeGeometry(plot, extrusionSettings);
+      cityGeom.merge(geom);
     }
+    // return the city
     return cityGeom;
   };
 

@@ -309,6 +309,43 @@ URBGEN.Generator.prototype.buildThreeShape = function(poly, shape) {
   shape.lineTo(poly.corners[0].x, poly.corners[0].y);
   return shape;
 };
+/**
+ * Returns a string containing vertex and face data in the Wavefront.OBJ file
+ * format. The geometry returned represents bounding boxes for each plot in
+ * this generator's current city.
+ * @return {string} The OBJ data for this generator's current city.
+ */
+URBGEN.Generator.prototype.OBJData = function() {
+  var geom = this.city.geometry;
+  var vertices = geom.vertices;
+  var faces = geom.faces;
+  var output = "";
+  for (var v = 0; v < vertices.length; v++) {
+    output += "v " + vertices[v][0] + " " + vertices[v][1] + " " + vertices[v][2] + '\n';
+  }
+  for (var f = 0; f < faces.length; f++) {
+    output += "f " + faces[f][0] + " " + faces[f][1] + " " + faces[f][2] + '\n';
+  }
+  return output;
+};
+/**
+ * Returns a string containing the parameters used to generate this generator's
+ * current city.
+ * @return {string} The parameters used to generate this generator's current city.
+ */
+URBGEN.Generator.prototype.paramData = function() {
+  var output = ("regularity1: " + gen.regularity1 + ",\n" +
+	               "regularity2: " + gen.regularity2 + ",\n" +
+	               "blockSize: " + gen.blockSize + ",\n" +
+	               "cityWidth: " + gen.cityWidth + ",\n" +
+	               "cityDepth: " + gen.cityDepth + ",\n" +
+	               "streetWidth: " + gen.streetWidth + ",\n" +
+	               "localGrids: " + gen.localGrids + ",\n" +
+	               "randomSeed: " + gen.randomSeed + ",\n" +
+	               "throughRoads: " + gen.throughRoads
+	               );
+	return output;
+};
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
