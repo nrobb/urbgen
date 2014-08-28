@@ -17,7 +17,7 @@
       context.lineWidth = 2.5;
       gen.initRandom();
       gen.generate();
-      var nodes = gen.nodes;
+      var nodes = gen.city.roads;
       console.debug(nodes);
       for (var i = 0; i < nodes.length; i++) {
         var p0 = nodes[i];
@@ -32,14 +32,11 @@
         context.stroke();
         
       }
-        for (var j = 0; j < gen.cityPolys.length; j++) {
-          var poly = gen.cityPolys[j];
-          drawPoly(poly, blockColor);
-        }
-        for (var i = 0; i < gen.buildings.length; i++) {
-          var poly = gen.buildings[i];
-          drawPoly(poly, buildingColor);
-        }
+      var plots = gen.city.getPlots();
+      for (var i = 0; i < plots.length; i++) {
+        var poly = plots[i].poly;
+        drawPoly(poly, buildingColor);
+      }
       /*
       window.onLoad = function() {
         var gui = new dat.GUI();

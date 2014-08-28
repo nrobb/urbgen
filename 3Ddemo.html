@@ -72,14 +72,15 @@
       window.onLoad = function() {
         var gui = new dat.GUI();
         gui.width = 300;
+        gui.add(gen, "cityWidth", 400, 1500).listen();
+        gui.add(gen, "cityDepth", 400, 1500).listen();
+        gui.add(gen, "blockSize", 15000, 50000).listen();
+        gui.add(gen, "streetWidth", 10, 30).listen();
         gui.add(gen, "regularity1", 0.3, 0.6).listen();
         gui.add(gen, "regularity2", 0.3, 0.6).listen();
-        gui.add(gen, "blockSize", 15000, 50000).listen();
-        gui.add(gen, "cityWidth", 200, 1500).listen();
-        gui.add(gen, "cityDepth", 200, 1500).listen();
-        gui.add(gen, "streetWidth", 10, 30).listen();
         gui.add(gen, "localGrids", 0, 1).listen();
         gui.add(gen, "throughRoads", 0, 50).listen();
+        gui.add(gen, "randomSeed", 0, 1).listen();
         gui.add(this, "update").listen();
         gui.add(this, "random").listen();
         gui.add(this, "exportOBJ");
@@ -108,14 +109,14 @@
     var end = d.getTime();
     var elapsed = (end - start) / 1000;
     console.log("City generated in " + elapsed + " seconds");
-    console.log("City contains " + gen.buildings.length + " plots");
+    console.log("City contains " + gen.city.getPlots().length + " plots");
     loadCity();
   };
   window.onLoad();
 
   function loadCity() {
     scene.remove(city);
-    cityGeom = getCity3D(gen.buildings);
+    cityGeom = getCity3D(gen.city.getPlots());
     city = THREE.SceneUtils.createMultiMaterialObject(cityGeom,
       [new THREE.MeshLambertMaterial({color: 0xffffff}),
       new THREE.MeshBasicMaterial({color: 0x000000,
@@ -133,17 +134,17 @@
     scene.add(city)
   }
   
-  function getCity3D(polys) {
+  function getCity3D(plots) {
     var cityGeom = new THREE.Geometry();
     var light = new THREE.Color( 0xffffff );
     var shadow    = new THREE.Color( 0xff6666 );
-    for (var j = 0; j < polys.length; j++) {
-      var plot = gen.buildThreeShape(polys[j], new THREE.Shape());
+    for (var j = 0; j < plots.length; j++) {
+      var plot = gen.buildThreeShape(plots[j].poly, new THREE.Shape());
       // set the extrusion settings
       var extrusionSettings = {
         size: 30, height: 4, curveSegments: 3,
         bevelThickness: 1, bevelSize: 2, bevelEnabled: false,
-        material: 0, extrudeMaterial: 1, amount: polys[j].height
+        material: 0, extrudeMaterial: 1, amount: plots[j].height
       };
       var blockGeom = new THREE.ExtrudeGeometry(plot, extrusionSettings);
       var value = 1 - Math.random() * Math.random();
