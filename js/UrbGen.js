@@ -56,7 +56,7 @@ URBGEN.Poly.prototype.setGridAngle = function(random) {
   this.gridAngle = URBGEN.Util.getAngle(start, end);
 };
 /**
- * Sets this polygon's corners as neighbors relations so that there are no
+ * Sets this polygon's corners as neighbors so that there are no
  * extra points included on any edge.
  */
 URBGEN.Poly.prototype.makeSimple = function() {
@@ -621,6 +621,7 @@ URBGEN.Builder.PlotBuilder.prototype.setUp = function() {
     [this.poly.corners[0], this.poly.corners[2]],
     [this.poly.corners[2], this.poly.corners[3]],
   ];
+  // shorter the outer edges to match the inner edges
   for (var i = 0; i < innerEdges.length; i++) {
     var angle = URBGEN.Util.getAngle(innerEdges[i][0], innerEdges[i][1]);
     angle = URBGEN.Util.addAngle(angle, 0.5);
@@ -631,7 +632,7 @@ URBGEN.Builder.PlotBuilder.prototype.setUp = function() {
     outerEdges[i][0] = start;
     outerEdges[i][1] = end;
   }
-  // set neighbor relations
+  // set neighbor relations of the edge's start and end points
   var direction = 2;
   var oppDirection = (direction + 2) % 4;
   for (var i = 0; i < outerEdges.length; i++) {
