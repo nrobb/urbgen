@@ -231,6 +231,8 @@ URBGEN.Generator.prototype.generate = function() {
   this.city.roads = this.nodes;
   // Build the 3D geometry
   this.buildGeometry();
+  //return the city
+  return this.city;
 };
 /**
  * Builds a 3D geometry for this generator's current city.
@@ -337,14 +339,14 @@ URBGEN.Generator.prototype.OBJData = function() {
  * @return {string} The parameters used to generate this generator's current city.
  */
 URBGEN.Generator.prototype.paramData = function() {
-  var output = ("globalAngle: " + gen.globalAngle + ",\n" +
-	               "blockSize: " + gen.blockSize + ",\n" +
-	               "cityWidth: " + gen.cityWidth + ",\n" +
-	               "cityDepth: " + gen.cityDepth + ",\n" +
-	               "streetWidth: " + gen.streetWidth + ",\n" +
-	               "localGrids: " + gen.localGrids + ",\n" +
-	               "randomSeed: " + gen.randomSeed + ",\n" +
-	               "throughRoads: " + gen.throughRoads
+  var output = ("globalAngle: " + this.globalAngle + ",\n" +
+	               "blockSize: " + this.blockSize + ",\n" +
+	               "cityWidth: " + this.cityWidth + ",\n" +
+	               "cityDepth: " + this.cityDepth + ",\n" +
+	               "streetWidth: " + this.streetWidth + ",\n" +
+	               "localGrids: " + this.localGrids + ",\n" +
+	               "randomSeed: " + this.randomSeed + ",\n" +
+	               "throughRoads: " + this.throughRoads
 	               );
 	return output;
 };
@@ -1128,7 +1130,7 @@ URBGEN.Math.Random.prototype.next = function() {
 URBGEN.Constants = {};
 URBGEN.Constants.MAX_BLOCK_SIZE = 50000;
 URBGEN.Constants.MIN_BLOCK_SIZE = 15000;
-URBGEN.Constants.MAX_REGULARITY = 0.6;
+URBGEN.Constants.MAX_REGULARITY = 0.7;
 URBGEN.Constants.MIN_REGULARITY = 0.3;
 URBGEN.Constants.MAX_CITY_WIDTH = 1500;
 URBGEN.Constants.MIN_CITY_WIDTH = 400;
