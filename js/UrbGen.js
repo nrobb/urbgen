@@ -154,30 +154,51 @@ URBGEN.Generator = function() {
 	this.cityDepth;
 	this.streetWidth;
 	this.throughRoads;
-	// Initialise with random values
-	//this.initRandom();
 };
 /**
- * Sets this generator's parameters to random values.
+ * Sets this generator's parameters. If any paramaters in the cityParmas object
+ * are undefined, sets those parameters to random values.
+ * @param {Object} cityParams - The paramters this generator should use to
+ *     generate a city.
  */
-URBGEN.Generator.prototype.initRandom = function() {
-	this.localGrids = Math.random();
-	this.randomSeed = Math.random();
-	this.globalAngle = Math.random();
-	this.blockSize = Math.random()
+URBGEN.Generator.prototype.setParams = function(cityParams) {
+  if (cityParams === undefined) {
+    cityParams = {};
+  }
+	this.localGrids = cityParams.localGrids || Math.random();
+	this.randomSeed = cityParams.randomSeed || Math.random();
+	this.globalAngle = cityParams.globalAngle || Math.random();
+	this.blockSize = cityParams.blockSize || Math.random()
 	* (URBGEN.Constants.MAX_BLOCK_SIZE - URBGEN.Constants.MIN_BLOCK_SIZE)
 	+ URBGEN.Constants.MIN_BLOCK_SIZE;
-	this.cityWidth = Math.random()
+	this.cityWidth = cityParams.cityWidth || Math.random()
 	* (URBGEN.Constants.MAX_CITY_WIDTH - URBGEN.Constants.MIN_CITY_WIDTH)
 	+ URBGEN.Constants.MIN_CITY_WIDTH;
-	this.cityDepth = Math.random()
+	this.cityDepth = cityParams.cityDepth || Math.random()
 	* (URBGEN.Constants.MAX_CITY_DEPTH - URBGEN.Constants.MIN_CITY_DEPTH)
 	+ URBGEN.Constants.MIN_CITY_DEPTH;
-	this.throughRoads = Math.random() * URBGEN.Constants.MAX_THROUGH_ROADS;
-	this.streetWidth = Math.random()
+	this.throughRoads = cityParams.throughRoads || Math.random()
+	* URBGEN.Constants.MAX_THROUGH_ROADS;
+	this.streetWidth = cityParams.streetWidth || Math.random()
 	* (URBGEN.Constants.MAX_STREET_WIDTH - URBGEN.Constants.MIN_STREET_WIDTH)
 	+ URBGEN.Constants.MIN_STREET_WIDTH;
-	this.init();
+};
+/**
+ * Returns this generator's current city parameters.
+ * @return {Object} The parameters.
+ */
+URBGEN.Generator.prototype.getParams = function() {
+  var cityParams = {
+    localGrids: this.localGrids,
+    randomSeed: this.randomSeed,
+    globalAngle: this.globalAngle,
+    blockSize: this.blockSize,
+    cityWidth: this.cityWidth,
+    cityDepth: this.cityDepth,
+    throughRoads: this.throughRoads,
+    streetWidth: this.streetWidth
+  };
+  return cityParams;
 };
 /**
  * Initializes this generator.
@@ -234,17 +255,14 @@ URBGEN.Generator.prototype.processPolyRecursively = function(polys) {
 	return newPolys;
 };
 /**
- * Generates a city. If type === "random", uses random parameters, otherwise
- * uses this generator's currently set parameters.
- * @param {string} type - the type of city to generate.
+ * Generates a city.
+ * @param {Object} cityParams - The parameters that should be used to generate
+ *     the city.
  * @return {URBGEN.City} The generated city.
  */
-URBGEN.Generator.prototype.generate = function(type) {
-	if (type === "random") {
-		this.initRandom();
-	} else {
-		this.init();
-	}
+URBGEN.Generator.prototype.generate = function(cityParams) {
+	this.setParams(cityParams);
+	this.init();
 	// Get the initial polygons
 	this.cityPolys = this.processPolyRecursively(this.cityPolys);
 	// Build the city blocks.

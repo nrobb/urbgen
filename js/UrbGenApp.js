@@ -63,15 +63,14 @@ URBGEN_APP.App.prototype.initGui = function() {
 	return gui;
 };
 /**
- * Updates this app's current city with the current generator params, or with
- * random params, if type = "random".
- * @param {string} type - The type passed to the Generator.
+ * Updates this app's current city.
+ * @param {string} cityParams - The parameters passed to the Generator.
  */
-URBGEN_APP.App.prototype.update = function(type) {
+URBGEN_APP.App.prototype.generateCity = function(cityParams) {
 	try {
 		var d = new Date();
 		var start = d.getTime();
-		this.city = this.generator.generate(type);
+		this.city = this.generator.generate(cityParams);
 		d = new Date();
 		var end = d.getTime();
 		this.logCityData(start, end);
@@ -82,10 +81,17 @@ URBGEN_APP.App.prototype.update = function(type) {
 	}
 };
 /**
- * Calls this app's update method with type = "random".
+ * Calls this app's generateCity method with this app's generator's current
+ * params.
+ */
+URBGEN_APP.App.prototype.update = function() {
+  this.generateCity(this.generator.getParams());
+};
+/**
+ * Calls this app's generateCity method with undefined params.
  */
 URBGEN_APP.App.prototype.random = function() {
-	this.update("random");
+	this.generateCity();
 };
 /**
  * Logs to console the time taken to generate a city and the number of plots
