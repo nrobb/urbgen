@@ -7,12 +7,12 @@ URBGEN_APP = {};
  * @constructor
  */
 URBGEN_APP.App = function(scene) {
-	this.generator = new URBGEN.Generator();
-	this.gui = this.initGui();
-	this.city;
 	this.view = new URBGEN_APP.View();
 	this.scene = this.view.scene;
+	this.generator = new URBGEN.Generator();
+	this.city;
 	this.random();
+	this.gui = this.initGui();
 };
 /**
  * Runs this UrbGen Web Application
@@ -40,14 +40,22 @@ URBGEN_APP.App.prototype.run = function() {
 URBGEN_APP.App.prototype.initGui = function() {
 	var gui = new dat.GUI();
 	gui.width = 300;
-	gui.add(this.generator, "cityWidth", 400, 1500).listen();
-	gui.add(this.generator, "cityDepth", 400, 1500).listen();
-	gui.add(this.generator, "blockSize", 15000, 50000).listen();
-	gui.add(this.generator, "streetWidth", 10, 30).listen();
-	gui.add(this.generator, "globalAngle", 0, 1).listen();
-	gui.add(this.generator, "localGrids", 0, 1).listen();
-	gui.add(this.generator, "throughRoads", 0, 50).listen();
-	gui.add(this.generator, "randomSeed", 0, 1).listen();
+	gui.add(this.generator, "cityWidth", URBGEN.Constants.MIN_CITY_WIDTH,
+			URBGEN.Constants.MAX_CITY_WIDTH).listen();
+	gui.add(this.generator, "cityDepth", URBGEN.Constants.MIN_CITY_DEPTH,
+			URBGEN.Constants.MAX_CITY_DEPTH).listen();
+	gui.add(this.generator, "blockSize", URBGEN.Constants.MIN_BLOCK_SIZE,
+			URBGEN.Constants.MAX_BLOCK_SIZE).listen();
+	gui.add(this.generator, "streetWidth", URBGEN.Constants.MIN_STREET_WIDTH,
+			URBGEN.Constants.MAX_STREET_WIDTH).listen();
+	gui.add(this.generator, "globalAngle", URBGEN.Constants.MIN_GLOBAL_ANGLE,
+			URBGEN.Constants.MAX_GLOBAL_ANGLE).listen();
+	gui.add(this.generator, "localGrids", URBGEN.Constants.MIN_LOCAL_GRIDS,
+			URBGEN.Constants.MAX_LOCAL_GRIDS).listen();
+	gui.add(this.generator, "throughRoads", URBGEN.Constants.MIN_THROUGH_ROADS,
+			URBGEN.Constants.MAX_THROUGH_ROADS).listen();
+	gui.add(this.generator, "randomSeed", URBGEN.Constants.MIN_RANDOM_SEED,
+			URBGEN.Constants.MAX_RANDOM_SEED).listen();
 	gui.add(this, "update").listen();
 	gui.add(this, "random").listen();
 	gui.add(this, "exportOBJ");
@@ -55,32 +63,29 @@ URBGEN_APP.App.prototype.initGui = function() {
 	return gui;
 };
 /**
- * Updates this app's current city with the current generator params.
+ * Updates this app's current city with the current generator params, or with
+ * random params, if type = "random".
+ * @param {string} type - The type passed to the Generator.
  */
-URBGEN_APP.App.prototype.update = function() {
-	var d = new Date();
-	var start = d.getTime();
-	this.generator.init();
-	this.city = this.generator.generate();
-	d = new Date();
-	var end = d.getTime();
-	this.logCityData(start, end);
-	var geometry = this.buildGeometry();
-	this.view.addMeshToScene(geometry);
+URBGEN_APP.App.prototype.update = function(type) {
+	try {
+		var d = new Date();
+		var start = d.getTime();
+		this.city = this.generator.generate(type);
+		d = new Date();
+		var end = d.getTime();
+		this.logCityData(start, end);
+		var geometry = this.buildGeometry();
+		this.view.addMeshToScene(geometry);
+	} catch (error) {
+		alert(URBGEN_APP.Constants.CITY_GENERATION_ERROR);
+	}
 };
 /**
- * Update this app's current city with the random generator params.
+ * Calls this app's update method with type = "random".
  */
 URBGEN_APP.App.prototype.random = function() {
-	var d = new Date();
-	var start = d.getTime();
-	this.generator.initRandom();
-	this.city = this.generator.generate();
-	d = new Date();
-	var end = d.getTime();
-	this.logCityData(start, end);
-	var geometry = this.buildGeometry();
-	this.view.addMeshToScene(geometry);
+	this.update("random");
 };
 /**
  * Logs to console the time taken to generate a city and the number of plots
@@ -219,3 +224,8 @@ URBGEN_APP.View.prototype.addMeshToScene = function(geometry) {
 	// Add the mesh to the scene
 	this.scene.add(this.cityMesh);
 };
+
+//Constants
+URBGEN_APP.Constants = {};
+URBGEN_APP.Constants.CITY_GENERATION_ERROR = "Oops, something went wrong. "
+	+ "Please change some paramsters and try again.";

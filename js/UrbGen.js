@@ -38,10 +38,10 @@ URBGEN.Point.prototype.setValues = function(point) {
 URBGEN.Poly = function(p0, p1, p2, p3) {
 	this.corners = [ p0, p1, p2, p3 ];
 	this.edgeLengths = [
-			URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[1]),
-			URBGEN.Util.getLineSegmentLength(this.corners[1], this.corners[3]),
-			URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[2]),
-			URBGEN.Util.getLineSegmentLength(this.corners[2], this.corners[3]) ];
+	                    URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[1]),
+	                    URBGEN.Util.getLineSegmentLength(this.corners[1], this.corners[3]),
+	                    URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[2]),
+	                    URBGEN.Util.getLineSegmentLength(this.corners[2], this.corners[3]) ];
 	this.gridAngle;
 };
 /**
@@ -98,7 +98,7 @@ URBGEN.Block = function(poly, streetWidth) {
  */
 URBGEN.Block.prototype.setInnerPoly = function() {
 	this.innerPoly = URBGEN.Util
-			.insetPoly(this.outerPoly, this.streetWidth / 2);
+	.insetPoly(this.outerPoly, this.streetWidth / 2);
 	this.innerPoly.makeSimple();
 };
 /**
@@ -106,12 +106,13 @@ URBGEN.Block.prototype.setInnerPoly = function() {
  * @constructor
  */
 URBGEN.City = function() {
+	this.poly;
 	this.roads = [];
 	this.blocks = [];
 	this.area;
 	this.geometry = {
-		vertices : [],
-		faces : []
+			vertices : [],
+			faces : []
 	};
 };
 /**
@@ -151,11 +152,10 @@ URBGEN.Generator = function() {
 	this.blockSize;
 	this.cityWidth;
 	this.cityDepth;
-	this.minEdgeLength;
 	this.streetWidth;
 	this.throughRoads;
 	// Initialise with random values
-	this.initRandom();
+	//this.initRandom();
 };
 /**
  * Sets this generator's parameters to random values.
@@ -165,25 +165,31 @@ URBGEN.Generator.prototype.initRandom = function() {
 	this.randomSeed = Math.random();
 	this.globalAngle = Math.random();
 	this.blockSize = Math.random()
-			* (URBGEN.Constants.MAX_BLOCK_SIZE - URBGEN.Constants.MIN_BLOCK_SIZE)
-			+ URBGEN.Constants.MIN_BLOCK_SIZE;
+	* (URBGEN.Constants.MAX_BLOCK_SIZE - URBGEN.Constants.MIN_BLOCK_SIZE)
+	+ URBGEN.Constants.MIN_BLOCK_SIZE;
 	this.cityWidth = Math.random()
-			* (URBGEN.Constants.MAX_CITY_WIDTH - URBGEN.Constants.MIN_CITY_WIDTH)
-			+ URBGEN.Constants.MIN_CITY_WIDTH;
+	* (URBGEN.Constants.MAX_CITY_WIDTH - URBGEN.Constants.MIN_CITY_WIDTH)
+	+ URBGEN.Constants.MIN_CITY_WIDTH;
 	this.cityDepth = Math.random()
-			* (URBGEN.Constants.MAX_CITY_DEPTH - URBGEN.Constants.MIN_CITY_DEPTH)
-			+ URBGEN.Constants.MIN_CITY_DEPTH;
-	this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
-	this.throughRoads = Math.random() * URBGEN.Util.MAX_THROUGH_ROADS;
+	* (URBGEN.Constants.MAX_CITY_DEPTH - URBGEN.Constants.MIN_CITY_DEPTH)
+	+ URBGEN.Constants.MIN_CITY_DEPTH;
+	this.throughRoads = Math.random() * URBGEN.Constants.MAX_THROUGH_ROADS;
 	this.streetWidth = Math.random()
-			* (URBGEN.Constants.MAX_STREET_WIDTH - URBGEN.Constants.MIN_STREET_WIDTH)
-			+ URBGEN.Constants.MIN_STREET_WIDTH;
+	* (URBGEN.Constants.MAX_STREET_WIDTH - URBGEN.Constants.MIN_STREET_WIDTH)
+	+ URBGEN.Constants.MIN_STREET_WIDTH;
 	this.init();
 };
 /**
  * Initializes this generator.
+ * @throws {URBGEN.Exception.InvalidParamException}
  */
 URBGEN.Generator.prototype.init = function() {
+	if (isNaN(this.localGrids) || isNaN(this.randomSeed)
+			|| isNaN(this.globalAngle) || isNaN(this.blockSize)
+			|| isNaN(this.cityWidth) || isNaN(this.cityDepth)
+			|| isNaN(this.throughRoads) || isNaN(this.streetWidth)) {
+		throw new URBGEN.Exception.InvalidParamException();
+	}
 	// Initialise the polygon array
 	this.cityPolys = [];
 	// Seed the random number generator
@@ -200,15 +206,17 @@ URBGEN.Generator.prototype.init = function() {
 	this.cityPolys.push(poly);
 	// Add the corners to the nodes graph
 	this.nodes = [ topLeft, topRight, bottomLeft, bottomRight ];
+	// Set the city's polygon
+	this.city.poly = poly;
 	// Set the city's area
 	this.city.area = URBGEN.Util.areaPoly(poly);
 	// Set the regularity params
 	this.regularity1 = this.globalAngle
-			* (URBGEN.Constants.MAX_REGULARITY - URBGEN.Constants.MIN_REGULARITY)
-			+ URBGEN.Constants.MIN_REGULARITY;
+	* (URBGEN.Constants.MAX_REGULARITY - URBGEN.Constants.MIN_REGULARITY)
+	+ URBGEN.Constants.MIN_REGULARITY;
 	this.regularity2 = URBGEN.Constants.MAX_REGULARITY
-			- this.globalAngle
-			* (URBGEN.Constants.MAX_REGULARITY - URBGEN.Constants.MIN_REGULARITY);
+	- this.globalAngle
+	* (URBGEN.Constants.MAX_REGULARITY - URBGEN.Constants.MIN_REGULARITY);
 };
 /**
  * Recursively processes an array of polygons.
@@ -226,13 +234,23 @@ URBGEN.Generator.prototype.processPolyRecursively = function(polys) {
 	return newPolys;
 };
 /**
- * Generates a city.
+ * Generates a city. If type === "random", uses random parameters, otherwise
+ * uses this generator's currently set parameters.
+ * @param {string} type - the type of city to generate.
+ * @return {URBGEN.City} The generated city.
  */
-URBGEN.Generator.prototype.generate = function() {
+URBGEN.Generator.prototype.generate = function(type) {
+	if (type === "random") {
+		this.initRandom();
+	} else {
+		this.init();
+	}
 	// Get the initial polygons
 	this.cityPolys = this.processPolyRecursively(this.cityPolys);
 	// Build the city blocks.
 	for ( var i = 0; i < this.cityPolys.length; i++) {
+		//TODO this doesn't add every node yet
+		this.city.roads.push(this.cityPolys[i].corners[0]);
 		var poly = this.cityPolys[i];
 		var block = new URBGEN.Block(poly, this.streetWidth);
 		this.city.blocks.push(block);
@@ -249,8 +267,6 @@ URBGEN.Generator.prototype.generate = function() {
 		}
 		this.city.blocks[j].plots = plots;
 	}
-	// Set the city's roads
-	this.city.roads = this.nodes;
 	// Build the 3D geometry
 	this.buildGeometry();
 	//return the city
@@ -302,7 +318,7 @@ URBGEN.Generator.prototype.processPoly = function(poly) {
 		var newPolys = this.director.execute(this.builder, this.center);
 		return newPolys;
 	} catch (error) {
-		if (error.message === URBGEN.Exception.edgeTooShortException) {
+		if (error instanceof URBGEN.Exception.EdgeTooShortException) {
 			return [ poly ];
 		}
 	}
@@ -349,11 +365,11 @@ URBGEN.Generator.prototype.OBJData = function() {
 	var output = "";
 	for ( var v = 0; v < verts.length; v++) {
 		output += "v " + verts[v][0] + " " + verts[v][1] + " " + verts[v][2]
-				+ '\n';
+		+ '\n';
 	}
 	for ( var f = 0; f < faces.length; f++) {
 		output += "f " + faces[f][0] + " " + faces[f][1] + " " + faces[f][2]
-				+ '\n';
+		+ '\n';
 	}
 	return output;
 };
@@ -389,6 +405,7 @@ URBGEN.Builder = function(generator) {
 /**
  * Returns an array of new polygons created from this builder's current points.
  * @return {Array.<URBGEN.Poly>} The new polygons.
+ * @throws {URBGEN.Exception.EdgeTooShortException}
  */
 URBGEN.Builder.prototype.buildPolys = function() {
 	var polys = [];
@@ -398,7 +415,7 @@ URBGEN.Builder.prototype.buildPolys = function() {
 		var poly = new URBGEN.Poly(points[0], points[1], points[2], points[3]);
 		// Set the grid angle of the new polygon, if needed
 		var localGridThreshold = this.generator.localGrids
-				* this.generator.city.area;
+		* this.generator.city.area;
 		if (URBGEN.Util.areaPoly(poly) < localGridThreshold) {
 			if (this.poly.gridAngle === undefined) {
 				poly.setGridAngle(this.generator.random.next());
@@ -409,18 +426,24 @@ URBGEN.Builder.prototype.buildPolys = function() {
 		// Add the polygon
 		polys.push(poly);
 	}
+	for ( var j = 0; j < polys.length; j++) {
+		for ( var k = 0; k < polys[j].edgeLengths.length; k++) {
+			var length = polys[j].edgeLengths[k];
+			if (length < this.minEdgeLength) {
+				throw new URBGEN.Exception.EdgeTooShortException();
+			}
+		}
+	}
 	return polys;
 };
 /**
  * Sets this builder's origin and end points for the new dividing line.
+ * @throws {URBGEN.Exception.EdgeTooShortException}
  */
 URBGEN.Builder.prototype.setUp = function() {
 	var edgeStart = this.poly.corners[0];
 	var edgeEnd = this.poly.corners[this.corners[0]];
 	var edgeLength = URBGEN.Util.getLineSegmentLength(edgeStart, edgeEnd);
-	if (edgeLength < this.generator.minEdgeLength * 2) {
-		throw new Error(URBGEN.Exception.edgeTooShortException);
-	}
 	var origin;
 	var endPoint;
 	if (this.poly.gridAngle === undefined) {
@@ -430,9 +453,6 @@ URBGEN.Builder.prototype.setUp = function() {
 		edgeStart = this.poly.corners[this.corners[1]];
 		edgeEnd = this.poly.corners[3];
 		edgeLength = URBGEN.Util.getLineSegmentLength(edgeStart, edgeEnd);
-		if (edgeLength < this.generator.minEdgeLength * 2) {
-			throw new Error(URBGEN.Exception.edgeTooShortException);
-		}
 		endPoint = this.pointByRValue(edgeStart, edgeEnd,
 				this.generator.regularity2);
 		this.endPoint = this.addPointToPath(endPoint, edgeStart, edgeEnd);
@@ -442,9 +462,6 @@ URBGEN.Builder.prototype.setUp = function() {
 		this.origin = this.addPointToPath(origin, edgeStart, edgeEnd);
 		edgeStart = this.poly.corners[this.corners[1]];
 		edgeEnd = this.poly.corners[3];
-		if (edgeLength < this.generator.minEdgeLength * 2) {
-			throw new Error(URBGEN.Exception.edgeTooShortException);
-		}
 		endPoint = this.pointByAngle(edgeStart, edgeEnd, this.getGridAngle());
 		this.endPoint = this.addPointToPath(endPoint, edgeStart, edgeEnd);
 	}
@@ -460,16 +477,16 @@ URBGEN.Builder.prototype.setUp = function() {
  * @param {number} angle - The angle in radians of the intersecting line.
  * @return {URBGEN.Point} The closest legal point at which the intersecting line
  *     meets the edge.
+ * @throws {URBGEN.Exception.EdgeTooShortException}
  */
 URBGEN.Builder.prototype.pointByAngle = function(edgeStart, edgeEnd, angle) {
 	// Get the edge's length
 	var length = URBGEN.Util.getLineSegmentLength(edgeStart, edgeEnd);
 	// Throw an error if the edge is too short
-	if (length <= this.generator.minEdgeLength) {
-		throw new Error("pointByAngle(): Edge length = " + length + ", "
-				+ "minEdgeLength = " + this.generator.minEdgeLength);
+	if (length <= URBGEN.Constants.MIN_EDGE_LENGTH) {
+		throw new URBGEN.Exception.EdgeTooShortException();
 	}
-	var minR = this.generator.minEdgeLength / length;
+	var minR = URBGEN.Constants.MIN_EDGE_LENGTH / length;
 	var edgeAngle = URBGEN.Util.getAngle(edgeStart, edgeEnd);
 	var point = URBGEN.Util.getIntersect(edgeStart, edgeAngle, this.origin,
 			angle);
@@ -491,17 +508,17 @@ URBGEN.Builder.prototype.pointByAngle = function(edgeStart, edgeEnd, angle) {
  * @param {number} r - The r value of the new point.
  * @return {URBGEN.Point} The closest legal point at which the intersecting line
  *     meets the edge.
+ * @throws {URBGEN.Exception.EdgeTooShortException}
  */
 URBGEN.Builder.prototype.pointByRValue = function(edgeStart, edgeEnd, r) {
 	// Get the edge's length
 	var length = URBGEN.Util.getLineSegmentLength(edgeStart, edgeEnd);
 	// Throw an error if the edge is too short
-	if (length <= this.generator.minEdgeLength) {
-		throw new Error("pointByRValue(): Edge length = " + length + ", "
-				+ "minEdgeLength = " + this.generator.minEdgeLength);
+	if (length <= URBGEN.Constants.MIN_EDGE_LENGTH) {
+		throw new URBGEN.Exception.EdgeTooShortException();
 	}
 	// Work out the legal part of the edge as a range (0 < range < 1)
-	var minR = this.generator.minEdgeLength / length;
+	var minR = URBGEN.Constants.MIN_EDGE_LENGTH / length;
 	var range = 1 - 2 * minR;
 	// Use the regularity1 to find a point on this range
 	var pointR = range * r + minR;
@@ -528,7 +545,6 @@ URBGEN.Builder.prototype.addPointToPath = function(point, edgeStart, edgeEnd) {
 	if (nearPoint === point) {
 		var neighbors = URBGEN.Util.getNeighbors(point, path);
 		URBGEN.Util.insertPoint(point, neighbors.prev, neighbors.nxt);
-		this.generator.nodes.push(point);
 	}
 	return nearPoint;
 };
@@ -541,12 +557,13 @@ URBGEN.Builder.HorizontalBuilder = function(generator) {
 	URBGEN.Builder.call(this, generator);
 	this.corners = [ 2, 1 ];
 	this.direction = 2;
+	this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
 };
 /**
  * Creates a HorizontalBuilder prototype that inherits from Builder.prototype.
  */
 URBGEN.Builder.HorizontalBuilder.prototype = Object
-		.create(URBGEN.Builder.prototype);
+.create(URBGEN.Builder.prototype);
 /**
  * Sets the constructor to refer to HorizontalBuilder
  */
@@ -565,10 +582,10 @@ URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function(data) {
 	this.origin.neighbors[3] = this.endPoint;
 	this.endPoint.neighbors[1] = this.origin;
 	this.newPoints = [
-			[ this.poly.corners[0], this.poly.corners[1], this.origin,
-					this.endPoint ],
-			[ this.origin, this.endPoint, this.poly.corners[2],
-					this.poly.corners[3] ] ];
+	                  [ this.poly.corners[0], this.poly.corners[1], this.origin,
+	                    this.endPoint ],
+	                    [ this.origin, this.endPoint, this.poly.corners[2],
+	                      this.poly.corners[3] ] ];
 };
 /**
  * Represents a vertical builder.
@@ -579,12 +596,13 @@ URBGEN.Builder.VerticalBuilder = function(generator) {
 	URBGEN.Builder.call(this, generator);
 	this.corners = [ 1, 2 ];
 	this.direction = 3;
+	this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
 };
 /**
  * Creates a VerticalBuilder prototype that inherits from Builder.prototype.
  */
 URBGEN.Builder.VerticalBuilder.prototype = Object
-		.create(URBGEN.Builder.prototype);
+.create(URBGEN.Builder.prototype);
 /**
  * Sets the constructor to refer to VerticalBuilder
  */
@@ -603,10 +621,10 @@ URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function(data) {
 	this.origin.neighbors[2] = this.endPoint;
 	this.endPoint.neighbors[0] = this.origin;
 	this.newPoints = [
-			[ this.poly.corners[0], this.origin, this.poly.corners[2],
-					this.endPoint ],
-			[ this.origin, this.poly.corners[1], this.endPoint,
-					this.poly.corners[3] ] ];
+	                  [ this.poly.corners[0], this.origin, this.poly.corners[2],
+	                    this.endPoint ],
+	                    [ this.origin, this.poly.corners[1], this.endPoint,
+	                      this.poly.corners[3] ] ];
 };
 /**
  * Represents a plot builder.
@@ -617,6 +635,7 @@ URBGEN.Builder.PlotBuilder = function(generator) {
 	URBGEN.Builder.call(this, generator);
 	this.innerPaths = [];
 	this.outerPaths = [];
+	this.minEdgeLength = 0;
 };
 /**
  * Creates a PlotBuilder prototype that inherits from Builder.prototype.
@@ -637,14 +656,14 @@ URBGEN.Builder.PlotBuilder.prototype.setUp = function() {
 	innerPoly.makeSimple();
 	// Get the inner edges
 	var innerEdges = [ [ innerPoly.corners[0], innerPoly.corners[1] ],
-			[ innerPoly.corners[1], innerPoly.corners[3] ],
-			[ innerPoly.corners[0], innerPoly.corners[2] ],
-			[ innerPoly.corners[2], innerPoly.corners[3] ] ];
+	                   [ innerPoly.corners[1], innerPoly.corners[3] ],
+	                   [ innerPoly.corners[0], innerPoly.corners[2] ],
+	                   [ innerPoly.corners[2], innerPoly.corners[3] ] ];
 	// get the outer edges
 	var outerEdges = [ [ this.poly.corners[0], this.poly.corners[1] ],
-			[ this.poly.corners[1], this.poly.corners[3] ],
-			[ this.poly.corners[0], this.poly.corners[2] ],
-			[ this.poly.corners[2], this.poly.corners[3] ], ];
+	                   [ this.poly.corners[1], this.poly.corners[3] ],
+	                   [ this.poly.corners[0], this.poly.corners[2] ],
+	                   [ this.poly.corners[2], this.poly.corners[3] ], ];
 	// shorter the outer edges to match the inner edges
 	for ( var i = 0; i < innerEdges.length; i++) {
 		var angle = URBGEN.Util.getAngle(innerEdges[i][0], innerEdges[i][1]);
@@ -696,23 +715,23 @@ URBGEN.Builder.PlotBuilder.prototype.setNewPoints = function(data) {
 	for ( var i = 0; i < this.innerPaths.length; i++) {
 		for ( var j = 0; j < this.innerPaths[i].length - 1; j++) {
 			newPoints.push([ this.outerPaths[i][j], this.outerPaths[i][j + 1],
-					this.innerPaths[i][j], this.innerPaths[i][j + 1] ]);
+			                 this.innerPaths[i][j], this.innerPaths[i][j + 1] ]);
 		}
 	}
 	// add the corner plots
 	newPoints.push([ this.poly.corners[0], this.outerPaths[0][0],
-			this.outerPaths[2][0], this.innerPaths[0][0] ]);
+	                 this.outerPaths[2][0], this.innerPaths[0][0] ]);
 	newPoints
-			.push([ this.outerPaths[0][this.outerPaths[0].length - 1],
-					this.poly.corners[1], this.innerPaths[1][0],
-					this.outerPaths[1][0] ]);
+	.push([ this.outerPaths[0][this.outerPaths[0].length - 1],
+	        this.poly.corners[1], this.innerPaths[1][0],
+	        this.outerPaths[1][0] ]);
 	newPoints.push([ this.outerPaths[2][this.outerPaths[2].length - 1],
-			this.innerPaths[2][this.innerPaths[2].length - 1],
-			this.poly.corners[2], this.outerPaths[3][0] ]);
+	                 this.innerPaths[2][this.innerPaths[2].length - 1],
+	                 this.poly.corners[2], this.outerPaths[3][0] ]);
 	newPoints.push([ this.innerPaths[1][this.innerPaths[1].length - 1],
-			this.outerPaths[1][this.outerPaths[1].length - 1],
-			this.outerPaths[3][this.outerPaths[3].length - 1],
-			this.poly.corners[3] ]);
+	                 this.outerPaths[1][this.outerPaths[1].length - 1],
+	                 this.outerPaths[3][this.outerPaths[3].length - 1],
+	                 this.poly.corners[3] ]);
 
 	this.newPoints = newPoints;
 };
@@ -743,11 +762,6 @@ URBGEN.Util = {};
  * @return {number} The length of the line segment.
  */
 URBGEN.Util.getLineSegmentLength = function(p0, p1) {
-	if (!(arguments[0] instanceof URBGEN.Point)
-			|| !(arguments[1] instanceof URBGEN.Point)
-			|| arguments.length !== 2) {
-		throw new Error(URBGEN.Exception.illegalArgumentException);
-	}
 	return Math.sqrt(Math.pow((p1.x - p0.x), 2) + Math.pow((p1.y - p0.y), 2));
 };
 /**
@@ -917,10 +931,11 @@ URBGEN.Util.getIntersect = function(p0, a0, p1, a1) {
  * @param {URBGEN.Point} p1 - The end point of the line segment.
  * @param {number} length - The distance between each point in the path.
  * @return {Array.<URBGEN.Point>} The path of equidistant points.
+ * @throws {URBGEN.Exception.PointsNotNeighborsException}
  */
 URBGEN.Util.divideLine = function(p0, p1, length) {
 	if (p0.neighbors.indexOf(p1) === -1) {
-		throw new Error("Can't divide line, p0 and p1 are not neighbors");
+		throw new URBGEN.Exception.PointsNotNeighborsException();
 	}
 	var points = [ p0 ];
 	var i = 0;
@@ -999,16 +1014,16 @@ URBGEN.Util.offsetLineSegment = function(p0, p1, distance) {
 URBGEN.Util.insetPoly = function(poly, length) {
 	// Get the edges
 	var edges = [ [ poly.corners[0], poly.corners[1] ],
-			[ poly.corners[1], poly.corners[3] ],
-			[ poly.corners[3], poly.corners[2] ],
-			[ poly.corners[2], poly.corners[0] ] ];
+	              [ poly.corners[1], poly.corners[3] ],
+	              [ poly.corners[3], poly.corners[2] ],
+	              [ poly.corners[2], poly.corners[0] ] ];
 	// Get the offset edges and angles
 	var offsetEdges = [];
 	var angles = [];
 	for ( var i = 0; i < edges.length; i++) {
 		offsetEdges.push(URBGEN.Util.offsetLineSegment(edges[i][0],
 				edges[i][1], length))
-		angles.push(URBGEN.Util.getAngle(offsetEdges[i][0], offsetEdges[i][1]));
+				angles.push(URBGEN.Util.getAngle(offsetEdges[i][0], offsetEdges[i][1]));
 	}
 	// Find the new corners
 	var tl = URBGEN.Util.getIntersect(offsetEdges[0][0], angles[0],
@@ -1044,11 +1059,12 @@ URBGEN.Util.insertPoint = function(newPoint, p0, p1) {
  * @param {URBGEN.Point} point - The point to find neighbors for.
  * @param {Array.<URBGEN.Point>} - The path of potential neighbors.
  * @return {Object} The prev and nxt points to the specified point.
+ * @throws {URBGEN.Exception.PointOutOfRangeException}
  */
 URBGEN.Util.getNeighbors = function(point, points) {
 	var neighbors = {
-		prev : undefined,
-		nxt : undefined
+			prev : undefined,
+			nxt : undefined
 	};
 	if (points.length === 2) {
 		neighbors.prev = points[0];
@@ -1060,8 +1076,7 @@ URBGEN.Util.getNeighbors = function(point, points) {
 			points[points.length - 1]);
 	// if the point lies beyond either end of the path, throw error
 	if (pointR <= 0 || pointR >= 1) {
-		throw new Error("Can't determine neighbors. Point's r value = "
-				+ pointR);
+		throw new URBGEN.Exception.PointOutOfRangeException();
 	}
 	for ( var i = 1; i < points.length; i++) {
 		var currPoint = points[i];
@@ -1159,19 +1174,103 @@ URBGEN.Math.Random.prototype.next = function() {
 URBGEN.Constants = {};
 URBGEN.Constants.MAX_BLOCK_SIZE = 50000;
 URBGEN.Constants.MIN_BLOCK_SIZE = 15000;
-URBGEN.Constants.MAX_REGULARITY = 0.7;
-URBGEN.Constants.MIN_REGULARITY = 0.3;
-URBGEN.Constants.MAX_CITY_WIDTH = 1500;
+URBGEN.Constants.MAX_REGULARITY = 0.6;
+URBGEN.Constants.MIN_REGULARITY = 0.4;
+URBGEN.Constants.MAX_CITY_WIDTH = 2000;
 URBGEN.Constants.MIN_CITY_WIDTH = 400;
-URBGEN.Constants.MAX_CITY_DEPTH = 1500;
+URBGEN.Constants.MAX_CITY_DEPTH = 2000;
 URBGEN.Constants.MIN_CITY_DEPTH = 400;
-URBGEN.Util.MAX_THROUGH_ROADS = 50;
-URBGEN.Constants.MAX_STREET_WIDTH = 10;
-URBGEN.Constants.MIN_STREET_WIDTH = 30;
-URBGEN.Constants.MIN_EDGE_LENGTH = 100;
+URBGEN.Constants.MAX_THROUGH_ROADS = 50;
+URBGEN.Constants.MIN_THROUGH_ROADS = 0;
+URBGEN.Constants.MAX_STREET_WIDTH = 30;
+URBGEN.Constants.MIN_STREET_WIDTH = 10;
+URBGEN.Constants.MAX_RANDOM_SEED = 1;
+URBGEN.Constants.MIN_RANDOM_SEED = 0;
+URBGEN.Constants.MAX_LOCAL_GRIDS = 1;
+URBGEN.Constants.MIN_LOCAL_GRIDS = 0;
+URBGEN.Constants.MAX_GLOBAL_ANGLE = 1;
+URBGEN.Constants.MIN_GLOBAL_ANGLE = 0;
+URBGEN.Constants.MIN_EDGE_LENGTH = 80;
 
 //URBGEN.Exception
-
 URBGEN.Exception = {};
-URBGEN.Exception.illegalArgumentException = "Illegal Argument Exception";
-URBGEN.Exception.edgeTooShortException = "Edge too short to divide";
+/**
+ * Represents an illegal argmument exception.
+ * @constructor
+ */
+URBGEN.Exception.IllegalArgumentException = function(message) {
+	this.name = "IllegalArgumentException";
+	this.message = message || "Illegal Argument Exception";
+};
+/**
+ * Sets IllegalArgumentException's prototype to Error.
+ */
+URBGEN.Exception.IllegalArgumentException.prototype = new Error();
+/**
+ * Sets IllegalArgumentException's constructor.
+ */
+URBGEN.Exception.IllegalArgumentException.prototype.constructor = URBGEN.Exception.IllegalArgumentException;
+/**
+ * Represents an edge too short exception.
+ * @constructor
+ */
+URBGEN.Exception.EdgeTooShortException = function(message) {
+	this.name = "EdgeTooShortException";
+	this.message = message || "Edge too short to divide";
+};
+/**
+ * Sets EdgeTooShortException's prototype to Error.
+ */
+URBGEN.Exception.EdgeTooShortException.prototype = new Error();
+/**
+ * Sets EdgeTooShortException's constructor.
+ */
+URBGEN.Exception.EdgeTooShortException.prototype.constructor = URBGEN.Exception.EdgeTooShortException;
+/**
+ * Represents an InvalidParamException.
+ * @constructor
+ */
+URBGEN.Exception.InvalidParamException = function(message) {
+	this.name = "InvalidParamException";
+	this.message = message || "Invalid parameters";
+};
+/**
+ * Sets InvalidParamException's prototype to Error.
+ */
+URBGEN.Exception.InvalidParamException.prototype = new Error();
+/**
+ * Sets InvalidParamException's constructor.
+ */
+URBGEN.Exception.InvalidParamException.prototype.constructor = URBGEN.Exception.InvalidParamException;
+/**
+ * Represents a Points not neighbors exception.
+ * @constructor
+ */
+URBGEN.Exception.PointsNotNeighborsException = function(message) {
+	this.name = "PointsNotNeighborsException";
+	this.message = message || "Points are not neighbors";
+};
+/**
+ * Sets PointsNotNeighborsException's prototype to Error.
+ */
+URBGEN.Exception.PointsNotNeighborsException.prototype = new Error();
+/**
+ * Sets PointsNotNeighborsException's constructor
+ */
+URBGEN.Exception.PointsNotNeighborsException.prototype.constructor = URBGEN.Exception.PointsNotNeighborsException;
+/**
+ * Represents a Point out of range exception.
+ * @constructor
+ */
+URBGEN.Exception.PointOutOfRangeException = function(message) {
+	this.name = "PointOutOfRangeException";
+	this.message = message || "Points lies outside allowable range";
+};
+/**
+ * Sets PointOutOfRangeException's prototype to Error.
+ */
+URBGEN.Exception.PointOutOfRangeException.prototype = new Error();
+/**
+ * Sets PointOutOfRangeException's constructor
+ */
+URBGEN.Exception.PointOutOfRangeException.prototype.constructor = URBGEN.Exception.PointOutOfRangeException;
