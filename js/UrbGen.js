@@ -165,9 +165,31 @@ URBGEN.Generator.prototype.setParams = function(cityParams) {
   if (cityParams === undefined) {
     cityParams = {};
   }
-	this.localGrids = cityParams.localGrids || Math.random();
-	this.randomSeed = cityParams.randomSeed || Math.random();
-	this.globalAngle = cityParams.globalAngle || Math.random();
+  if ((0 > cityParams.localGrids) || (1 < cityParams.localGrids)
+    ||(cityParams.localGrids === undefined)) {
+      this.localGrids = Math.random();
+  } else {
+    this.localGrids = cityParams.localGrids;
+  }
+  if ((0 > cityParams.randomSeed) || (1 < cityParams.randomSeed)
+    || (cityParams.randomSeed === undefined)) {
+      this.randomSeed = Math.random();
+  } else {
+    this.randomSeed = cityParams.randomSeed;
+  }
+  if ((0 > cityParams.globalAngle) || (1 < cityParams.globalAngle)
+    || (cityParams.globalAngle === undefined)) {
+      this.globalAngle = Math.random();
+  } else {
+    this.globalAngle = cityParams.globalAngle;
+  }
+  if ((0 > cityParams.throughRoads)
+    || (URBGEN.Constants.MAX_THROUGH_ROADS < cityParams.throughRoads)
+    || (cityParams.throughRoads === undefined)) {
+      this.throughRoads = Math.random() * URBGEN.Constants.MAX_THROUGH_ROADS;
+  } else {
+    this.throughRoads = cityParams.throughRoads;
+  }
 	this.blockSize = cityParams.blockSize || Math.random()
 	* (URBGEN.Constants.MAX_BLOCK_SIZE - URBGEN.Constants.MIN_BLOCK_SIZE)
 	+ URBGEN.Constants.MIN_BLOCK_SIZE;
@@ -177,8 +199,6 @@ URBGEN.Generator.prototype.setParams = function(cityParams) {
 	this.cityDepth = cityParams.cityDepth || Math.random()
 	* (URBGEN.Constants.MAX_CITY_DEPTH - URBGEN.Constants.MIN_CITY_DEPTH)
 	+ URBGEN.Constants.MIN_CITY_DEPTH;
-	this.throughRoads = cityParams.throughRoads || Math.random()
-	* URBGEN.Constants.MAX_THROUGH_ROADS;
 	this.streetWidth = cityParams.streetWidth || Math.random()
 	* (URBGEN.Constants.MAX_STREET_WIDTH - URBGEN.Constants.MIN_STREET_WIDTH)
 	+ URBGEN.Constants.MIN_STREET_WIDTH;
