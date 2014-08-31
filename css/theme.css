@@ -1,0 +1,20 @@
+#container {
+  position: absolute;
+}
+
+#instructions {
+  display: none;
+  top: 10px;
+  left: 10px;
+  width: 50vw;
+  height: 90vh;
+  overflow: scroll;
+  background-color: white;
+  position: relative;
+}
+
+#info {
+  top: 10px;
+  left: 10px;
+  position: relative;
+}
