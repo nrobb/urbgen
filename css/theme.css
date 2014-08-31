@@ -7,14 +7,34 @@
   top: 10px;
   left: 10px;
   width: 50vw;
-  height: 90vh;
+  height: 80vh;
+  padding: 25px;
   overflow: scroll;
   background-color: white;
   position: relative;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  background-color: #222;
+  text-decoration: none;
+  color: #fff;
+}
+
+#questionMarkButton {
+  outline: none;
 }
 
 #info {
   top: 10px;
   left: 10px;
   position: relative;
+  outline: none;
+}
+
+#hideButton {
+  background:none;
+  border:none;
+  padding:0;
+  color: #fff;
+  text-decoration: underline;
+  cursor: pointer;
+  outline: none;
 }
