@@ -52,11 +52,11 @@
     currently displayed city by hitting 'exportParams'. This can then be
     used with the UrbGen library (see below) to generate this city in your code.
   </p>
-  <p>Use the right mouse button to rotate the model, the left mouse button
+  <p>Use the left mouse button to rotate the model, the right mouse button
     to move it, and the scroll wheel (or two fingers on a trackpad) to zoom in or
     out.
   </p>
-  <h2>Using the UrbGeb library</h2>
+  <h2>Using the UrbGen library</h2>
   <p>Download the script and include it in your code:</p>
   <code>&lt;script src="path/to/script/UrbGen.js"&gt;</code><br>
   <p>Next, instantiate a generator object:</p>
@@ -82,8 +82,6 @@
   <p>UrbGen also defines constant maximum and minimum values for each parameter:</p>
   <code>URBGEN.Constants.MAX_BLOCK_SIZE = 50000;<br>
   URBGEN.Constants.MIN_BLOCK_SIZE = 15000;<br>
-  URBGEN.Constants.MAX_REGULARITY = 0.6;<br>
-  URBGEN.Constants.MIN_REGULARITY = 0.4;<br>
   URBGEN.Constants.MAX_CITY_WIDTH = 2000;<br>
   URBGEN.Constants.MIN_CITY_WIDTH = 400;<br>
   URBGEN.Constants.MAX_CITY_DEPTH = 2000;<br>
@@ -108,7 +106,7 @@
   </p>
   <code>var city = generator.generate(cityParms)</code>
   <h2>Using UrbGen with Three.js</h2>
-  <p>Three.js is a popular library which makes WebGL much more simple to use.
+  <p>Three.js is a popular library which makes WebGL more simple to use.
   You can obtain a Three.js geometry containing the bounding box for each plot
   (this is what is currently displayed in the web app). This process works by
   obtaining a 2D shape representing the each plot's footprint, then extruding
@@ -139,7 +137,12 @@
 		&nbsp;&nbsp;cityGeom.merge(geom);<br>
 		}
   </code>
-<br><button id="hideButton" onclick="toggleInstructions()">Hide</button>
+  <p>You can now use this geometry (along with any textures you like) to
+    create a <code>Three.Mesh</code>.
+  </p>
+  <p>
+  <button id="hideButton" onclick="toggleInstructions()">Close</button>
+  </p>
 </div>
 </div>
 </div>
