@@ -1,5 +1,5 @@
-#container {
-  position: absolute;
+#info_container {
+  position: fixed;
 }
 
 #instructions {

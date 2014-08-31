@@ -6,7 +6,7 @@ URBGEN_APP = {};
  * Represents an UrbGen Web Application
  * @constructor
  */
-URBGEN_APP.App = function(scene) {
+URBGEN_APP.App = function() {
 	this.view = new URBGEN_APP.View();
 	this.scene = this.view.scene;
 	this.generator = new URBGEN.Generator();
