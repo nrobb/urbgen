@@ -191,11 +191,11 @@ ul.inheritsList
 	
 	<li><i><a href="../symbols/_global_.html">_global_</a></i></li>
 	
+	<li><a href="../symbols/URBGEN.html">URBGEN</a></li>
+	
 	<li><a href="../symbols/URBGEN.Block.html">URBGEN.Block</a></li>
 	
 	<li><a href="../symbols/URBGEN.Builder.html">URBGEN.Builder</a></li>
-	
-	<li><a href="../symbols/URBGEN.Builder.Director.html">URBGEN.Builder.Director</a></li>
 	
 	<li><a href="../symbols/URBGEN.Builder.HorizontalBuilder.html">URBGEN.Builder.HorizontalBuilder</a></li>
 	
@@ -204,6 +204,12 @@ ul.inheritsList
 	<li><a href="../symbols/URBGEN.Builder.VerticalBuilder.html">URBGEN.Builder.VerticalBuilder</a></li>
 	
 	<li><a href="../symbols/URBGEN.City.html">URBGEN.City</a></li>
+	
+	<li><a href="../symbols/URBGEN.Constants.html">URBGEN.Constants</a></li>
+	
+	<li><a href="../symbols/URBGEN.Director.html">URBGEN.Director</a></li>
+	
+	<li><a href="../symbols/URBGEN.Exception.html">URBGEN.Exception</a></li>
 	
 	<li><a href="../symbols/URBGEN.Exception.EdgeTooShortException.html">URBGEN.Exception.EdgeTooShortException</a></li>
 	
@@ -217,6 +223,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.Generator.html">URBGEN.Generator</a></li>
 	
+	<li><a href="../symbols/URBGEN.Math.html">URBGEN.Math</a></li>
+	
 	<li><a href="../symbols/URBGEN.Math.Random.html">URBGEN.Math.Random</a></li>
 	
 	<li><a href="../symbols/URBGEN.Plot.html">URBGEN.Plot</a></li>
@@ -224,6 +232,8 @@ ul.inheritsList
 	<li><a href="../symbols/URBGEN.Point.html">URBGEN.Point</a></li>
 	
 	<li><a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a></li>
+	
+	<li><a href="../symbols/URBGEN.Util.html">URBGEN.Util</a></li>
 	
 </ul>
 <hr />
@@ -240,6 +250,8 @@ ul.inheritsList
 <!-- ============================== class summary ========================== -->			
 			<p class="description">
 				
+				<br />Extends
+					<a href="../symbols/URBGEN.Builder.html">URBGEN.Builder</a>.<br />
 				
 			
 				
@@ -275,34 +287,6 @@ ul.inheritsList
 
 <!-- ============================== properties summary ===================== -->
 			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class URBGEN.Builder.VerticalBuilder.">
-					<caption>Field Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Field Attributes</th>
-							<th scope="col">Field Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Builder.VerticalBuilder.html#constructor">constructor</a></b>
-								</div>
-								<div class="description">Sets the constructor to refer to VerticalBuilder</div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
-			
 
 <!-- ============================== methods summary ======================== -->
 			
@@ -330,7 +314,7 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/URBGEN.Builder.VerticalBuilder.html#setNewPoints">setNewPoints</a></b>(data)
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Builder.VerticalBuilder.html#setNewPoints">setNewPoints</a></b>()
 								</div>
 								<div class="description">Sets this builder's current new points</div>
 							</td>
@@ -340,6 +324,10 @@ ul.inheritsList
 				</table>
 				
 				
+				
+				<dl class="inheritsList">
+				<dt>Methods borrowed from class <a href="../symbols/URBGEN.Builder.html">URBGEN.Builder</a>: </dt><dd><a href="../symbols/URBGEN.Builder.html#addPointToPath">addPointToPath</a>, <a href="../symbols/URBGEN.Builder.html#buildPolys">buildPolys</a>, <a href="../symbols/URBGEN.Builder.html#pointByAngle">pointByAngle</a>, <a href="../symbols/URBGEN.Builder.html#pointByRValue">pointByRValue</a>, <a href="../symbols/URBGEN.Builder.html#setUp">setUp</a></dd>
+				</dl>
 				
 			
 <!-- ============================== events summary ======================== -->
@@ -388,33 +376,6 @@ ul.inheritsList
 
 <!-- ============================== field details ========================== -->		
 			
-				<div class="sectionTitle">
-					Field Detail
-				</div>
-				
-					<a name="constructor"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>constructor</b>
-					
-					</div>
-					<div class="description">
-						Sets the constructor to refer to VerticalBuilder
-						
-						
-					</div>
-					
-					
-
-						
-						
-						
-						
-
-					
-				
-			
 
 <!-- ============================== method details ========================= -->		
 			
@@ -458,7 +419,7 @@ ul.inheritsList
 					<div class="fixedFont">
 					
 					
-					<b>setNewPoints</b>(data)
+					<b>setNewPoints</b>()
 					
 					</div>
 					<div class="description">
@@ -469,17 +430,6 @@ ul.inheritsList
 					
 					
 					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>data</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
 						
 						
 						
@@ -502,7 +452,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Sep 01 2014 10:23:21 GMT+0100 (BST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Sep 01 2014 22:38:24 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

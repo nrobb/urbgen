@@ -140,7 +140,7 @@ URBGEN.Generator = function () {
     this.verticalBuilder = new URBGEN.Builder.VerticalBuilder(this);
     this.plotBuilder = new URBGEN.Builder.PlotBuilder(this);
     this.builder = undefined;
-    this.director = new URBGEN.Builder.Director();
+    this.director = new URBGEN.Director();
     // declare the city
     this.city = undefined;
     // Set up random number generator
@@ -264,7 +264,7 @@ URBGEN.Generator.prototype.init = function () {
 /**
  * Recursively processes an array of polygons.
  * @param {Array.<URBGEN.Point>} - The array of polygons to be processed.
- * @return {Array<URBGEN.Poly>} The new polygons.
+ * @return {Array.<URBGEN.Poly>} The new polygons.
  */
 URBGEN.Generator.prototype.processPolyRecursively = function (polys) {
     var newPolys = [];
@@ -380,7 +380,7 @@ URBGEN.Generator.prototype.prepare = function (poly) {
 };
 /**
  * Returns a THREE.Shape representing the specified poly.
- * @param {URBGEN.Poly) poly - The poly providing the coordinates.
+ * @param {URBGEN.Poly} poly - The poly providing the coordinates.
  * @param {THREE.Shape} shape - The shape to have its coordinates set.
  * @return {THREE.Shape} The shape with coordinates set.
  */
@@ -593,6 +593,7 @@ URBGEN.Builder.prototype.addPointToPath = function (point, edgeStart, edgeEnd) {
 /**
  * Represents a horizontal builder.
  * @constructor
+ * @extends URBGEN.Builder
  * @param {URBGEN.Generator} generator - The generator that owns this builder.
  */
 URBGEN.Builder.HorizontalBuilder = function (generator) {
@@ -601,14 +602,8 @@ URBGEN.Builder.HorizontalBuilder = function (generator) {
     this.direction = 2;
     this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
 };
-/**
- * Creates a HorizontalBuilder prototype that inherits from Builder.prototype.
- */
 URBGEN.Builder.HorizontalBuilder.prototype = Object
     .create(URBGEN.Builder.prototype);
-/**
- * Sets the constructor to refer to HorizontalBuilder
- */
 URBGEN.Builder.HorizontalBuilder.prototype.constructor = URBGEN.Builder.HorizontalBuilder;
 /**
  * Returns this builder's current poly's grid angle.
@@ -635,6 +630,7 @@ URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function () {
 /**
  * Represents a vertical builder.
  * @constructor
+ * @extends URBGEN.Builder
  * @param {URBGEN.Generator} generator - The generator that owns this builder.
  */
 URBGEN.Builder.VerticalBuilder = function (generator) {
@@ -643,14 +639,8 @@ URBGEN.Builder.VerticalBuilder = function (generator) {
     this.direction = 3;
     this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
 };
-/**
- * Creates a VerticalBuilder prototype that inherits from Builder.prototype.
- */
 URBGEN.Builder.VerticalBuilder.prototype = Object
     .create(URBGEN.Builder.prototype);
-/**
- * Sets the constructor to refer to VerticalBuilder
- */
 URBGEN.Builder.VerticalBuilder.prototype.constructor = URBGEN.Builder.VerticalBuilder;
 /**
  * Returns this builder's current poly's grid angle + 0.5 * Math.PI.
@@ -677,6 +667,7 @@ URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function () {
 /**
  * Represents a plot builder.
  * @constructor
+ * @extends URBGEN.Builder
  * @param {URBGEN.Generator} generator - The generator that owns this builder.
  */
 URBGEN.Builder.PlotBuilder = function (generator) {
@@ -685,13 +676,7 @@ URBGEN.Builder.PlotBuilder = function (generator) {
     this.outerPaths = [];
     this.minEdgeLength = 0;
 };
-/**
- * Creates a PlotBuilder prototype that inherits from Builder.prototype.
- */
 URBGEN.Builder.PlotBuilder.prototype = Object.create(URBGEN.Builder.prototype);
-/**
- * Sets the constructor to refer to PlotBuilder
- */
 URBGEN.Builder.PlotBuilder.prototype.constructor = URBGEN.Builder.PlotBuilder;
 /**
  * Sets the inner and outer paths that define this builder's plots.
@@ -794,14 +779,14 @@ URBGEN.Builder.PlotBuilder.prototype.setNewPoints = function () {
  * Represents a director.
  * @constructor
  */
-URBGEN.Builder.Director = function () {
+URBGEN.Director = function () {
 
 };
 /**
  * Invokes the specified builder's build methods.
  * @return {Array.<URBGEN.Poly>} The result of the builder's buildPolys() method.
  */
-URBGEN.Builder.Director.prototype.execute = function (builder) {
+URBGEN.Director.prototype.execute = function (builder) {
     builder.setUp();
     builder.setNewPoints();
     return builder.buildPolys();
@@ -1234,24 +1219,81 @@ URBGEN.Math.Random.prototype.next = function () {
  * @namespace holds constants.
  */
 URBGEN.Constants = {};
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_BLOCK_SIZE = 50000;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_BLOCK_SIZE = 15000;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_REGULARITY = 0.6;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_REGULARITY = 0.4;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_CITY_WIDTH = 2000;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_CITY_WIDTH = 400;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_CITY_DEPTH = 2000;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_CITY_DEPTH = 400;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_THROUGH_ROADS = 50;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_THROUGH_ROADS = 0;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_STREET_WIDTH = 30;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_STREET_WIDTH = 10;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_RANDOM_SEED = 1;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_RANDOM_SEED = 0;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_LOCAL_GRIDS = 1;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_LOCAL_GRIDS = 0;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MAX_GLOBAL_ANGLE = 1;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_GLOBAL_ANGLE = 0;
+/**
+ * @type {number}
+ */
 URBGEN.Constants.MIN_EDGE_LENGTH = 80;
 /**
  * @namespace holds exceptions.
@@ -1265,13 +1307,7 @@ URBGEN.Exception.IllegalArgumentException = function (message) {
     this.name = "IllegalArgumentException";
     this.message = message || "Illegal Argument Exception";
 };
-/**
- * Sets IllegalArgumentException's prototype to Error.
- */
 URBGEN.Exception.IllegalArgumentException.prototype = new Error();
-/**
- * Sets IllegalArgumentException's constructor.
- */
 URBGEN.Exception.IllegalArgumentException.prototype.constructor = URBGEN.Exception
     .IllegalArgumentException;
 /**
@@ -1282,13 +1318,7 @@ URBGEN.Exception.EdgeTooShortException = function (message) {
     this.name = "EdgeTooShortException";
     this.message = message || "Edge too short to divide";
 };
-/**
- * Sets EdgeTooShortException's prototype to Error.
- */
 URBGEN.Exception.EdgeTooShortException.prototype = new Error();
-/**
- * Sets EdgeTooShortException's constructor.
- */
 URBGEN.Exception.EdgeTooShortException.prototype.constructor = URBGEN.Exception
     .EdgeTooShortException;
 /**
@@ -1299,13 +1329,7 @@ URBGEN.Exception.InvalidParamException = function (message) {
     this.name = "InvalidParamException";
     this.message = message || "Invalid parameters";
 };
-/**
- * Sets InvalidParamException's prototype to Error.
- */
 URBGEN.Exception.InvalidParamException.prototype = new Error();
-/**
- * Sets InvalidParamException's constructor.
- */
 URBGEN.Exception.InvalidParamException.prototype.constructor = URBGEN.Exception
     .InvalidParamException;
 /**
@@ -1316,13 +1340,7 @@ URBGEN.Exception.PointsNotNeighborsException = function (message) {
     this.name = "PointsNotNeighborsException";
     this.message = message || "Points are not neighbors";
 };
-/**
- * Sets PointsNotNeighborsException's prototype to Error.
- */
 URBGEN.Exception.PointsNotNeighborsException.prototype = new Error();
-/**
- * Sets PointsNotNeighborsException's constructor
- */
 URBGEN.Exception.PointsNotNeighborsException.prototype.constructor = URBGEN.Exception
     .PointsNotNeighborsException;
 /**
@@ -1333,12 +1351,6 @@ URBGEN.Exception.PointOutOfRangeException = function (message) {
     this.name = "PointOutOfRangeException";
     this.message = message || "Points lies outside allowable range";
 };
-/**
- * Sets PointOutOfRangeException's prototype to Error.
- */
 URBGEN.Exception.PointOutOfRangeException.prototype = new Error();
-/**
- * Sets PointOutOfRangeException's constructor
- */
 URBGEN.Exception.PointOutOfRangeException.prototype.constructor = URBGEN.Exception
     .PointOutOfRangeException;
