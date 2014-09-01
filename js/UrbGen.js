@@ -784,6 +784,7 @@ URBGEN.Director = function () {
 };
 /**
  * Invokes the specified builder's build methods.
+ * @param {URBGEN.Builder} builder - The builder this director should execute on.
  * @return {Array.<URBGEN.Poly>} The result of the builder's buildPolys() method.
  */
 URBGEN.Director.prototype.execute = function (builder) {
