@@ -1,0 +1,869 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="generator" content="JsDoc Toolkit" />
+		
+		<title>JsDoc Reference - URBGEN.Generator</title>
+
+		<style type="text/css">
+			/* default.css */
+body
+{
+	font: 12px "Lucida Grande", Tahoma, Arial, Helvetica, sans-serif;
+	width: 800px;
+}
+
+.header
+{
+	clear: both;
+	background-color: #ccc;
+	padding: 8px;
+}
+
+h1
+{
+	font-size: 150%;
+	font-weight: bold;
+	padding: 0;
+	margin: 1em 0 0 .3em;
+}
+
+hr
+{
+	border: none 0;
+	border-top: 1px solid #7F8FB1;
+	height: 1px;
+}
+
+pre.code
+{
+	display: block;
+	padding: 8px;
+	border: 1px dashed #ccc;
+}
+
+#index
+{
+	margin-top: 24px;
+	float: left;
+	width: 160px;
+	position: absolute;
+	left: 8px;
+	background-color: #F3F3F3;
+	padding: 8px;
+}
+
+#content
+{
+	margin-left: 190px;
+	width: 600px;
+}
+
+.classList
+{
+	list-style-type: none;
+	padding: 0;
+	margin: 0 0 0 8px;
+	font-family: arial, sans-serif;
+	font-size: 1em;
+	overflow: auto;
+}
+
+.classList li
+{
+	padding: 0;
+	margin: 0 0 8px 0;
+}
+
+.summaryTable { width: 100%; }
+
+h1.classTitle
+{
+	font-size:170%;
+	line-height:130%;
+}
+
+h2 { font-size: 110%; }
+caption, div.sectionTitle
+{
+	background-color: #7F8FB1;
+	color: #fff;
+	font-size:130%;
+	text-align: left;
+	padding: 2px 6px 2px 6px;
+	border: 1px #7F8FB1 solid;
+}
+
+div.sectionTitle { margin-bottom: 8px; }
+.summaryTable thead { display: none; }
+
+.summaryTable td
+{
+	vertical-align: top;
+	padding: 4px;
+	border-bottom: 1px #7F8FB1 solid;
+	border-right: 1px #7F8FB1 solid;
+}
+
+/*col#summaryAttributes {}*/
+.summaryTable td.attributes
+{
+	border-left: 1px #7F8FB1 solid;
+	width: 140px;
+	text-align: right;
+}
+
+td.attributes, .fixedFont
+{
+	line-height: 15px;
+	color: #002EBE;
+	font-family: "Courier New",Courier,monospace;
+	font-size: 13px;
+}
+
+.summaryTable td.nameDescription
+{
+	text-align: left;
+	font-size: 13px;
+	line-height: 15px;
+}
+
+.summaryTable td.nameDescription, .description
+{
+	line-height: 15px;
+	padding: 4px;
+	padding-left: 4px;
+}
+
+.summaryTable { margin-bottom: 8px; }
+
+ul.inheritsList
+{
+	list-style: square;
+	margin-left: 20px;
+	padding-left: 0;
+}
+
+.detailList {
+	margin-left: 20px; 
+	line-height: 15px;
+}
+.detailList dt { margin-left: 20px; }
+
+.detailList .heading
+{
+	font-weight: bold;
+	padding-bottom: 6px;
+	margin-left: 0;
+}
+
+.light, td.attributes, .light a:link, .light a:visited
+{
+	color: #777;
+	font-style: italic;
+}
+
+.fineprint
+{
+	text-align: right;
+	font-size: 10px;
+}
+		</style>
+	</head>
+
+	<body>
+<!-- ============================== header ================================= -->	
+		<!-- begin static/header.html -->
+		<div id="header">
+</div>
+		<!-- end static/header.html -->
+
+<!-- ============================== classes index ============================ -->
+		<div id="index">
+			<!-- begin publish.classesIndex -->
+			<div align="center"><a href="../index.html">Class Index</a>
+| <a href="../files.html">File Index</a></div>
+<hr />
+<h2>Classes</h2>
+<ul class="classList">
+	
+	<li><i><a href="../symbols/_global_.html">_global_</a></i></li>
+	
+	<li><a href="../symbols/URBGEN.Block.html">URBGEN.Block</a></li>
+	
+	<li><a href="../symbols/URBGEN.Builder.html">URBGEN.Builder</a></li>
+	
+	<li><a href="../symbols/URBGEN.Builder.Director.html">URBGEN.Builder.Director</a></li>
+	
+	<li><a href="../symbols/URBGEN.Builder.HorizontalBuilder.html">URBGEN.Builder.HorizontalBuilder</a></li>
+	
+	<li><a href="../symbols/URBGEN.Builder.PlotBuilder.html">URBGEN.Builder.PlotBuilder</a></li>
+	
+	<li><a href="../symbols/URBGEN.Builder.VerticalBuilder.html">URBGEN.Builder.VerticalBuilder</a></li>
+	
+	<li><a href="../symbols/URBGEN.City.html">URBGEN.City</a></li>
+	
+	<li><a href="../symbols/URBGEN.Exception.EdgeTooShortException.html">URBGEN.Exception.EdgeTooShortException</a></li>
+	
+	<li><a href="../symbols/URBGEN.Exception.IllegalArgumentException.html">URBGEN.Exception.IllegalArgumentException</a></li>
+	
+	<li><a href="../symbols/URBGEN.Exception.InvalidParamException.html">URBGEN.Exception.InvalidParamException</a></li>
+	
+	<li><a href="../symbols/URBGEN.Exception.PointOutOfRangeException.html">URBGEN.Exception.PointOutOfRangeException</a></li>
+	
+	<li><a href="../symbols/URBGEN.Exception.PointsNotNeighborsException.html">URBGEN.Exception.PointsNotNeighborsException</a></li>
+	
+	<li><a href="../symbols/URBGEN.Generator.html">URBGEN.Generator</a></li>
+	
+	<li><a href="../symbols/URBGEN.Math.Random.html">URBGEN.Math.Random</a></li>
+	
+	<li><a href="../symbols/URBGEN.Plot.html">URBGEN.Plot</a></li>
+	
+	<li><a href="../symbols/URBGEN.Point.html">URBGEN.Point</a></li>
+	
+	<li><a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a></li>
+	
+</ul>
+<hr />
+			<!-- end publish.classesIndex -->
+		</div>
+		
+		<div id="content">
+<!-- ============================== class title ============================ -->
+			<h1 class="classTitle">
+				
+				Class URBGEN.Generator
+			</h1>
+
+<!-- ============================== class summary ========================== -->			
+			<p class="description">
+				
+				
+			
+				
+				
+				
+					<br /><i>Defined in: </i> <a href="../symbols/src/js_UrbGen.js.html">UrbGen.js</a>.
+				
+			</p>
+
+<!-- ============================== constructor summary ==================== -->			
+			
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class URBGEN.Generator.">
+				<caption>Class Summary</caption>
+				<thead>
+					<tr>
+						<th scope="col">Constructor Attributes</th>
+						<th scope="col">Constructor Name and Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="attributes">&nbsp;</td>
+						<td class="nameDescription" >
+							<div class="fixedFont">
+								<b><a href="../symbols/URBGEN.Generator.html#constructor">URBGEN.Generator</a></b>()
+							</div>
+							<div class="description">Represents a generator.</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			
+
+<!-- ============================== properties summary ===================== -->
+			
+
+<!-- ============================== methods summary ======================== -->
+			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class URBGEN.Generator.">
+					<caption>Method Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Method Attributes</th>
+							<th scope="col">Method Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#buildGeometry">buildGeometry</a></b>()
+								</div>
+								<div class="description">Builds a 3D geometry for this generator's current city.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#buildThreeShape">buildThreeShape</a></b>(, shape)
+								</div>
+								<div class="description">Returns a THREE.Shape representing the specified poly.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#generate">generate</a></b>(cityParams)
+								</div>
+								<div class="description">Generates a city.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#getParams">getParams</a></b>()
+								</div>
+								<div class="description">Returns this generator's current city parameters.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#init">init</a></b>()
+								</div>
+								<div class="description">Initializes this generator.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#OBJData">OBJData</a></b>()
+								</div>
+								<div class="description">Returns a string containing vertex and face data in the Wavefront.OBJ file
+format.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#paramData">paramData</a></b>()
+								</div>
+								<div class="description">Returns a string containing the parameters used to generate this generator's
+current city.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#prepare">prepare</a></b>(poly)
+								</div>
+								<div class="description">Prepares to process a polygon by loading the appropriate Builder.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#processPoly">processPoly</a></b>(poly)
+								</div>
+								<div class="description">Processes a polygon.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#processPolyRecursively">processPolyRecursively</a></b>(-)
+								</div>
+								<div class="description">Recursively processes an array of polygons.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#setParams">setParams</a></b>(cityParams)
+								</div>
+								<div class="description">Sets this generator's parameters.</div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+			
+<!-- ============================== events summary ======================== -->
+			
+
+<!-- ============================== constructor details ==================== -->		
+			
+			<div class="details"><a name="constructor"> </a>
+				<div class="sectionTitle">
+					Class Detail
+				</div>
+				
+				<div class="fixedFont">
+						<b>URBGEN.Generator</b>()
+				</div>
+				
+				<div class="description">
+					Represents a generator.
+					
+				</div>
+				
+				
+				
+				
+					
+					
+					
+					
+					
+					
+					
+
+			</div>
+			
+
+<!-- ============================== field details ========================== -->		
+			
+
+<!-- ============================== method details ========================= -->		
+			
+				<div class="sectionTitle">
+					Method Detail
+				</div>
+				
+					<a name="buildGeometry"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>buildGeometry</b>()
+					
+					</div>
+					<div class="description">
+						Builds a 3D geometry for this generator's current city.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="buildThreeShape"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{THREE.Shape}</span>
+					<b>buildThreeShape</b>(, shape)
+					
+					</div>
+					<div class="description">
+						Returns a THREE.Shape representing the specified poly.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b></b>
+									
+								</dt>
+								<dd>{URBGEN.Poly) poly - The poly providing the coordinates.</dd>
+							
+								<dt>
+									<span class="light fixedFont">{THREE.Shape}</span> <b>shape</b>
+									
+								</dt>
+								<dd>- The shape to have its coordinates set.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{THREE.Shape}</span> The shape with coordinates set.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="generate"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/URBGEN.City.html">URBGEN.City</a>}</span>
+					<b>generate</b>(cityParams)
+					
+					</div>
+					<div class="description">
+						Generates a city.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Object}</span> <b>cityParams</b>
+									
+								</dt>
+								<dd>- The parameters that should be used to generate
+    the city.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/URBGEN.City.html">URBGEN.City</a>}</span> The generated city.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getParams"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Object}</span>
+					<b>getParams</b>()
+					
+					</div>
+					<div class="description">
+						Returns this generator's current city parameters.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Object}</span> The parameters.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="init"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>init</b>()
+					
+					</div>
+					<div class="description">
+						Initializes this generator.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Throws:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{<a href="../symbols/URBGEN.Exception.InvalidParamException.html">URBGEN.Exception.InvalidParamException</a>}</span>  <b></b>
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="OBJData"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{string}</span>
+					<b>OBJData</b>()
+					
+					</div>
+					<div class="description">
+						Returns a string containing vertex and face data in the Wavefront.OBJ file
+format. The geometry returned represents bounding boxes for each plot in
+this generator's current city.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{string}</span> The OBJ data for this generator's current city.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="paramData"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{string}</span>
+					<b>paramData</b>()
+					
+					</div>
+					<div class="description">
+						Returns a string containing the parameters used to generate this generator's
+current city.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{string}</span> The parameters used to generate this generator's current city.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="prepare"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>prepare</b>(poly)
+					
+					</div>
+					<div class="description">
+						Prepares to process a polygon by loading the appropriate Builder.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span> <b>poly</b>
+									
+								</dt>
+								<dd>- The polygon being prepared for.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="processPoly"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Array.<URBGEN.Poly>}</span>
+					<b>processPoly</b>(poly)
+					
+					</div>
+					<div class="description">
+						Processes a polygon. If a polygon cannot be processed, it is returned.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span> <b>poly</b>
+									
+								</dt>
+								<dd>- The polygon to process.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Array.<URBGEN.Poly>}</span> The new polygons, or the original poly.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="processPolyRecursively"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Array<URBGEN.Poly>}</span>
+					<b>processPolyRecursively</b>(-)
+					
+					</div>
+					<div class="description">
+						Recursively processes an array of polygons.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array.<URBGEN.Point>}</span> <b>-</b>
+									
+								</dt>
+								<dd>The array of polygons to be processed.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Array<URBGEN.Poly>}</span> The new polygons.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setParams"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setParams</b>(cityParams)
+					
+					</div>
+					<div class="description">
+						Sets this generator's parameters. If any paramaters in the cityParmas object
+are undefined, sets those parameters to random values.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Object}</span> <b>cityParams</b>
+									
+								</dt>
+								<dd>- The paramters this generator should use to
+    generate a city.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					
+				
+			
+			
+<!-- ============================== event details ========================= -->		
+			
+			
+			<hr />
+		</div>
+
+		
+<!-- ============================== footer ================================= -->
+		<div class="fineprint" style="clear:both">
+			
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Sep 01 2014 10:23:21 GMT+0100 (BST)
+		</div>
+	</body>
+</html>
