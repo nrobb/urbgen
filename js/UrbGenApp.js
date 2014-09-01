@@ -11,7 +11,7 @@ URBGEN_APP.App = function() {
 	this.scene = this.view.scene;
 	this.generator = new URBGEN.Generator();
 	this.city;
-	this.random();
+	this.generateCity({cityWidth: window.innerWidth, cityDepth: window.innerHeight});
 	this.gui = this.initGui();
 };
 /**
@@ -60,6 +60,7 @@ URBGEN_APP.App.prototype.initGui = function() {
 	gui.add(this, "random").listen();
 	gui.add(this, "exportOBJ");
 	gui.add(this, "exportParams");
+	gui.closed = true;
 	return gui;
 };
 /**
@@ -202,7 +203,7 @@ URBGEN_APP.View.prototype.setUpCamera = function () {
 			0.01, 2000);
 	this.camera.position.x = 0;
 	this.camera.position.z = 0;
-	this.camera.position.y = 600;
+	this.camera.position.y = 500;
 };
 /**
  * Sets up lighting for this view.
@@ -239,7 +240,6 @@ URBGEN_APP.View.prototype.addMeshToScene = function(geometry) {
 	this.cityMesh = THREE.SceneUtils.createMultiMaterialObject(geometry,
 			materials);
 	// Position the mesh
-	this.cityMesh.rotation.x = -90 * Math.PI / 180;
 	var maxX = 0;
 	var maxZ = 0;
 	for ( var i = 0; i < geometry.vertices.length; i++) {
@@ -251,6 +251,7 @@ URBGEN_APP.View.prototype.addMeshToScene = function(geometry) {
 	this.cityMesh.position.x = -maxX / 2;
 	this.cityMesh.position.z = maxZ * 7;
 	this.cityMesh.position.y = 0;
+	this.cityMesh.rotation.x = -90 * (Math.PI / 180);
 	// Add the mesh to the scene
 	this.scene.add(this.cityMesh);
 };
