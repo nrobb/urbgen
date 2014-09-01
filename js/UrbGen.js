@@ -405,11 +405,11 @@ URBGEN.Generator.prototype.OBJData = function () {
     var output = "";
     for(var v = 0; v < verts.length; v++) {
         output += "v " + verts[v][0] + " " + verts[v][1] + " " + verts[v][2] +
-            '\n';
+            '\r\n';
     }
     for(var f = 0; f < faces.length; f++) {
         output += "f " + faces[f][0] + " " + faces[f][1] + " " + faces[f][2] +
-            '\n';
+            '\r\n';
     }
     return output;
 };
@@ -419,12 +419,12 @@ URBGEN.Generator.prototype.OBJData = function () {
  * @return {string} The parameters used to generate this generator's current city.
  */
 URBGEN.Generator.prototype.paramData = function () {
-    var output = ("globalAngle: " + this.globalAngle + ",\n" +
-        "blockSize: " + this.blockSize + ",\n" + "cityWidth: " + this.cityWidth +
-        ",\n" + "cityDepth: " + this.cityDepth + ",\n" +
-        "streetWidth: " + this.streetWidth + ",\n" + "localGrids: " +
-        this.localGrids + ",\n" + "randomSeed: " + this.randomSeed +
-        ",\n" + "throughRoads: " + this.throughRoads);
+    var output = ("globalAngle: " + this.globalAngle + ",\r\n" +
+        "blockSize: " + this.blockSize + ",\r\n" + "cityWidth: " + this.cityWidth +
+        ",\r\n" + "cityDepth: " + this.cityDepth + ",\r\n" +
+        "streetWidth: " + this.streetWidth + ",\r\n" + "localGrids: " +
+        this.localGrids + ",\r\n" + "randomSeed: " + this.randomSeed +
+        ",\r\n" + "throughRoads: " + this.throughRoads);
     return output;
 };
 

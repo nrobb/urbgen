@@ -109,7 +109,7 @@
   <p>Three.js is a popular library which makes WebGL more simple to use.
   You can obtain a Three.js geometry containing the bounding box for each plot
   (this is what is currently displayed in the web app). This process works by
-  obtaining a 2D shape representing the each plot's footprint, then extruding
+  obtaining a 2D shape representing each plot's footprint, then extruding
   this shape, using the plot's height value.
   </p>
   <p>To do this, first obtain the plots:</p>
@@ -137,8 +137,7 @@
 		&nbsp;&nbsp;cityGeom.merge(geom);<br>
 		}
   </code>
-  <p>You can now use this geometry (along with any textures you like) to
-    create a <code>Three.Mesh</code>.
+  <p>You can now use this geometry to create a <code>Three.Mesh</code>.
   </p>
   <p>
   <button id="hideButton" onclick="toggleInstructions()">Close</button>
