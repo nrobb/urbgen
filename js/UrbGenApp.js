@@ -78,6 +78,7 @@ URBGEN_APP.App.prototype.generateCity = function(cityParams) {
 		this.view.addMeshToScene(geometry);
 	} catch (error) {
 		alert(URBGEN_APP.Constants.CITY_GENERATION_ERROR);
+		console.log(error.message);
 	}
 };
 /**
@@ -127,6 +128,17 @@ URBGEN_APP.App.prototype.buildGeometry = function() {
 		var geom = new THREE.ExtrudeGeometry(plot, extrusionSettings);
 		cityGeom.merge(geom);
 	}
+	/*
+	// Add a ground plane
+	var planeShape = this.generator.buildThreeShape(this.city.poly, new THREE.Shape());
+	// set the extrusion settings
+	var planeExtrusionSettings = {
+	    bevelEnabled : false,
+	    amount : 0
+	};
+	var plane = new THREE.ExtrudeGeometry(planeShape, planeExtrusionSettings);
+	cityGeom.merge(plane);
+	*/
 	// return the city
 	return cityGeom;
 };
@@ -163,30 +175,42 @@ URBGEN_APP.App.prototype.exportParams = function() {
  */
 URBGEN_APP.View = function() {
 	this.renderer = new THREE.WebGLRenderer({
-		antialias : true
+		antialias : true,
+		shadowMapEnabled : true,
+		shadowMapSoft : true
 	});
 	this.width = window.innerWidth;
 	this.height = window.innerHeight;
-	this.camera = new THREE.PerspectiveCamera(50, this.width / this.height,
-			0.01, 2000);
-	this.light = new THREE.HemisphereLight(0xfffff0, 0x101020, 1.25);
+	this.setUpCamera();
 	this.controls = new THREE.OrbitControls(this.camera,
 			this.renderer.domElement);
-	this.lastTime;
+	this.lastTime = undefined;
 	this.scene = new THREE.Scene();
 	// Add a fog to the scene
-	this.scene.fog = new THREE.FogExp2(0xd0e0f0, 0.0025);
+	this.scene.fog = new THREE.FogExp2(0xD9D9D3, 0.0025);
 	// Set up renderer
 	this.renderer.setSize(this.width, this.height);
 	this.renderer.setClearColor(0xffffff, 1);
 	document.body.appendChild(this.renderer.domElement);
-	// Set up camera
+	this.setUpLighting();
+};
+/**
+ * Sets up a camera for this view
+ */
+URBGEN_APP.View.prototype.setUpCamera = function () {
+	this.camera = new THREE.PerspectiveCamera(50, this.width / this.height,
+			0.01, 2000);
 	this.camera.position.x = 0;
 	this.camera.position.z = 0;
 	this.camera.position.y = 600;
-	// Set up light
-	this.light.position.set(0.75, 1, 0.25);
-	this.scene.add(this.light);
+};
+/**
+ * Sets up lighting for this view.
+ */
+URBGEN_APP.View.prototype.setUpLighting = function () {
+  var light = new THREE.HemisphereLight(0xfffff0, 0x101020, 1.25);
+  light.position.set(0.75, 1, 0.25);
+  this.scene.add(light);
 };
 /**
  * Updates this view's renderer and controls.
