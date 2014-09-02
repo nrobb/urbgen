@@ -469,7 +469,7 @@ QUnit.test("tests error thrown", function(assert) {
       var l = 10;
       var actual = URBGEN.Util.divideLine(p, q, l);
     },
-    /Can't divide line, p0 and p1 are not neighbors/
+    /Points are not neighbors/
   );
 });
 /**
@@ -554,160 +554,6 @@ QUnit.test("URBGEN.Util.linearInterpolateByLength", function(assert) {
   assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
   assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
   assert.ok(actual.z === expected.z);
-});
-/**
- * URBGEN.Util.getPathLength tests.
- */
-QUnit.module("URBGEN.Util.getPathLength");
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = 0, y2 = 400;
-  var x3 = 0, y3 = 500;
-  var x4 = 0, y4 = 700;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var r = {x: x3, y: y3, z: 0};
-  var s = {x: x4, y: y4, z: 0};
-  var path = {
-    points: [p, q, r, s]
-  };
-  var expected = 700;
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = 400, y2 = 400;
-  var x3 = 500, y3 = 500;
-  var x4 = 700, y4 = 700;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var r = {x: x3, y: y3, z: 0};
-  var s = {x: x4, y: y4, z: 0};
-  var path = {
-    points: [p, q, r, s]
-  };
-  var expected = Math.sqrt(980000);
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = 400, y2 = 0;
-  var x3 = 500, y3 = 0;
-  var x4 = 1000, y4 = 0;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var r = {x: x3, y: y3, z: 0};
-  var s = {x: x4, y: y4, z: 0};
-  var path = {
-    points: [p, q, r, s]
-  };
-  var expected = 1000;
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = -400, y2 = 400;
-  var x3 = -500, y3 = 500;
-  var x4 = -700, y4 = 700;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var r = {x: x3, y: y3, z: 0};
-  var s = {x: x4, y: y4, z: 0};
-  var path = {
-    points: [p, q, r, s]
-  };
-  var expected = Math.sqrt(980000);
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = 400, y2 = 400;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var path = {
-    points: [p, q]
-  };
-  var expected = Math.sqrt(320000);
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = 0, y2 = 0;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var path = {
-    points: [p, q]
-  };
-  var expected = 0;
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getPathLength", function(assert) {
-  var x1 = 0, y1 = 0;
-  var x2 = 400, y2 = 200;
-  var x3 = 600, y3 = 500;
-  var x4 = 600, y4 = 700;
-  var x5 = 800, y5 = 900;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var r = {x: x3, y: y3, z: 0};
-  var s = {x: x4, y: y4, z: 0};
-  var t = {x: x5, y: y5, z: 0};
-  var path = {
-    points: [p, q, r, s, t]
-  };
-  var expected = Math.sqrt(200000) + Math.sqrt(130000) + 200 + Math.sqrt(80000);
-  var actual = URBGEN.Util.getPathLength(path);
-  assert.ok(actual === expected);
-});
-/**
- * URBGEN.Util.getGridAngle tests.
- */
-QUnit.module("URBGEN.Util.getGridAngle");
-QUnit.test("URBGEN.Util.getGridAngle", function(assert) {
-  URBGEN.Variables.globalCityGridX = 0.3;
-  var x1 = 0, y1 = 0;
-  var x2 = 100, y2 = 100;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var expected = 0.8 * Math.PI; // should return angle perpendicular to gridX
-  var actual = URBGEN.Util.getGridAngle(p, q);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getGridAngle", function(assert) {
-  URBGEN.Variables.globalCityGridX = 0.1;
-  var x1 = 0, y1 = 0;
-  var x2 = 30, y2 = 100;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var expected = 0.1 * Math.PI; // should return gridX angle
-  var actual = URBGEN.Util.getGridAngle(p, q);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getGridAngle", function(assert) {
-  URBGEN.Variables.globalCityGridX = 0.1;
-  var x1 = 0, y1 = 0;
-  var x2 = -300, y2 = -10;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var expected = 0.6 * Math.PI; // should return angle perpendicular to gridX
-  var actual = URBGEN.Util.getGridAngle(p, q);
-  assert.ok(actual === expected);
-});
-QUnit.test("URBGEN.Util.getGridAngle", function(assert) {
-  URBGEN.Variables.globalCityGridX = 0.5;
-  var x1 = 0, y1 = 0;
-  var x2 = -300, y2 = -10;
-  var p = {x: x1, y: y1, z: 0};
-  var q = {x: x2, y: y2, z: 0};
-  var expected = 0.5 * Math.PI; // should return gridX angle
-  var actual = URBGEN.Util.getGridAngle(p, q);
-  assert.ok(actual === expected);
 });
 /**
  * URBGEN.Util.addAngle tests.
@@ -1195,7 +1041,7 @@ QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
       var points = [p, q, r, s, t, u, v];
       URBGEN.Util.getNeighbors(newPoint, points);
     },
-    /Can't determine neighbors. Point's r value = /
+    /Points lies outside allowable range/
   );
 });
 QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
@@ -1219,7 +1065,7 @@ QUnit.test("URBGEN.Util.getNeighbors", function(assert) {
       var points = [p, q, r, s, t, u, v];
       URBGEN.Util.getNeighbors(newPoint, points);
     },
-    /Can't determine neighbors. Point's r value = /
+    /Points lies outside allowable range/
   );
 });
 /**
@@ -1360,95 +1206,6 @@ QUnit.test("URBGEN.Util.nearest", function(assert) {
   assert.ok(actual === expected);
 });
 /**
- * URBGEN.Util.getPopCenter tests.
- */
-QUnit.module("URBGEN.Util.getPopCenter");
-QUnit.test("URBGEN.Util.getPopCenter", function(assert) {
-  URBGEN.Variables.globalCityCenter = {x: 50, y: 50, z: 0};
-  URBGEN.Variables.globalCityDensity = 0.1;
-  var p = {x: 0, y: 0, z: 0};
-  var q = {x: 100, y: 0, z: 0};
-  var r = {x: 0, y: 100, z: 0};
-  var s = {x: 100, y: 100, z: 0};
-  p.neighbors = [0, 0, r, q];
-  q.neighbors = [0, p, s, 0];
-  r.neighbors = [p, 0, 0, s];
-  s.neighbors = [q, r, 0, 0];
-  var poly = {
-    corners: [p, q, r, s]
-  };
-  var expected = {x: 10, y: 10, z: 0};
-  var actual = URBGEN.Util.getPopCenter(poly);
-  assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
-  assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
-});
-QUnit.test("URBGEN.Util.getPopCenter", function(assert) {
-  URBGEN.Variables.globalCityCenter = {x: 120, y: 120, z: 0};
-  URBGEN.Variables.globalCityDensity = 0.6;
-  var p = {x: 0, y: 0, z: 0};
-  var q = {x: 100, y: 0, z: 0};
-  var r = {x: 0, y: 100, z: 0};
-  var s = {x: 100, y: 100, z: 0};
-  p.neighbors = [0, 0, r, q];
-  q.neighbors = [0, p, s, 0];
-  r.neighbors = [p, 0, 0, s];
-  s.neighbors = [q, r, 0, 0];
-  var poly = {
-    corners: [p, q, r, s]
-  };
-  var expected = {x: 40, y: 40, z: 0};
-  var actual = URBGEN.Util.getPopCenter(poly);
-  assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
-  assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
-});
-/**
- * URBGEN.Util.proxyLineSegment tests.
- */
-QUnit.module("URBGEN.Util.proxyLineSegment");
-QUnit.test("tests proxy line segment", function(assert) {
-  var p = {x: 0, y: 0, z: 0};
-  var q = {x: 100, y: 0, z: 0};
-  var expected = [{x: 5, y: 0, z: 0}, {x: 95, y: 0, z: 0}];
-  var actual = URBGEN.Util.proxyLineSegment(p, q, 90);
-  for (var i = 0; i < actual.length; i++) {
-    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
-    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
-    assert.ok(Math.abs(actual[i].z - expected[i].z) < 0.00001);
-  }
-});
-QUnit.test("tests proxy line segment", function(assert) {
-  var p = {x: 0, y: 0, z: 0};
-  var q = {x: 100, y: 0, z: 0};
-  var expected = [{x: 25, y: 0, z: 0}, {x: 75, y: 0, z: 0}];
-  var actual = URBGEN.Util.proxyLineSegment(p, q, 50);
-  for (var i = 0; i < actual.length; i++) {
-    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
-    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
-    assert.ok(Math.abs(actual[i].z - expected[i].z) < 0.00001);
-  }
-});
-QUnit.test("tests proxy line segment", function(assert) {
-  var p = {x: 0, y: 0, z: 0};
-  var q = {x: 30, y: 40, z: 0};
-  var expected = [{x: 3, y: 4, z: 0}, {x: 27, y: 36, z: 0}];
-  var actual = URBGEN.Util.proxyLineSegment(p, q, 40);
-  for (var i = 0; i < actual.length; i++) {
-    assert.ok(Math.abs(actual[i].x - expected[i].x) < 0.00001);
-    assert.ok(Math.abs(actual[i].y - expected[i].y) < 0.00001);
-    assert.ok(Math.abs(actual[i].z - expected[i].z) < 0.00001);
-  }
-});
-QUnit.test("tests error thrown", function(assert) {
-  assert.throws(
-    function() {
-      var p = {x: 0, y: 0, z: 0};
-      var q = {x: 40, y: 30, z: 0};
-      var actual = URBGEN.Util.proxyLineSegment(p, q, 100);
-    },
-    /Can't make proxy line segment. p0p1Length = /
-  );
-});
-/**
  * URBGEN.Util.unitVector tests.
  */
 QUnit.module("URBGEN.Util.unitVector");
@@ -1479,7 +1236,7 @@ QUnit.test("test unit normal", function(assert) {
   var p = {x: 0, y: 0, z: 0};
   var q = {x: 3, y: 4, z: 0};
   var actual = URBGEN.Util.unitNormal(p, q);
-  var expected = {x: 4/5, y: -3/5, z: 0};
+  var expected = {x: -4/5, y: 3/5, z: 0};
   assert.ok(Math.abs(actual.x - expected.x) < 0.00001);
   assert.ok(Math.abs(actual.y - expected.y) < 0.00001);
   assert.ok(Math.abs(actual.z - expected.z) < 0.00001);

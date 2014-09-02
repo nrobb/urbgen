@@ -1,5 +1,5 @@
 /**
- * Defines a global namespace
+ * @namespace
  */
 URBGEN_APP = {};
 /**
@@ -60,7 +60,7 @@ URBGEN_APP.App.prototype.initGui = function() {
 	gui.add(this, "random").listen();
 	gui.add(this, "exportOBJ");
 	gui.add(this, "exportParams");
-	gui.closed = true;
+	//gui.closed = true;
 	return gui;
 };
 /**
@@ -107,6 +107,14 @@ URBGEN_APP.App.prototype.logCityData = function(start, end) {
 	var numPlots = this.city.getPlots().length;
 	console.log("City generated in " + elapsed + " seconds");
 	console.log("City contains " + numPlots + " plots");
+};
+/**
+ * Calls this app's view's onResize method.
+ * @param {number} width - The new window width
+ * @paran {number} height - The new window height.
+ */
+URBGEN_APP.App.prototype.onResize = function (width, height) {
+  this.view.onResize(width, height);
 };
 /**
  * Returs a Three.js Geometry for the this app's current city plots.
@@ -177,6 +185,7 @@ URBGEN_APP.App.prototype.exportParams = function() {
 URBGEN_APP.View = function() {
 	this.renderer = new THREE.WebGLRenderer({
 		antialias : true,
+		alpha: true,
 		shadowMapEnabled : true,
 		shadowMapSoft : true
 	});
@@ -194,6 +203,17 @@ URBGEN_APP.View = function() {
 	this.renderer.setClearColor(0xffffff, 1);
 	document.body.appendChild(this.renderer.domElement);
 	this.setUpLighting();
+};
+/**
+ * Adjusts this view's renderer and camera fot the specified window width and
+ * height.
+ * @param {number} width - The new window width
+ * @paran {number} height - The new window height.
+ */
+URBGEN_APP.View.prototype.onResize = function (width, height) {
+	this.renderer.setSize(width, height);
+  this.camera.aspect = width / height;
+  this.camera.updateProjectionMatrix();
 };
 /**
  * Sets up a camera for this view
@@ -255,8 +275,12 @@ URBGEN_APP.View.prototype.addMeshToScene = function(geometry) {
 	// Add the mesh to the scene
 	this.scene.add(this.cityMesh);
 };
-
-//Constants
+/**
+ * @namespace Holds constant values.
+ */
 URBGEN_APP.Constants = {};
+/**
+ * @type {String}
+ */
 URBGEN_APP.Constants.CITY_GENERATION_ERROR = "Oops, something went wrong. "
 	+ "Please change some paramsters and try again.";

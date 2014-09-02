@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>UrbGen - Procedural Generation of Urban Environments</title>
+<link rel="stylesheet" type="text/css" href="css/theme.css">
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/UrbGen.js"></script>
+<script src="js/dat.gui.min.js"></script>
+<script src="js/FileSaver.js"></script>
+<script src="js/UrbGenApp.js"></script>
+<script type="text/javascript">
+   function toggleInstructions() {
+       var instructions = document.getElementById("instructions");
+       if(instructions.style.display === 'block') {
+          instructions.style.display = 'none';
+       } else {
+          instructions.style.display = 'block';
+       }
+   }
+</script>
+</head>
+<body>
+<div id="main_container">
+<div id="urbgenViewer">
+	<script>
+		// Launch the application
+             try {
+		new URBGEN_APP.App().run();
+             } catch (e) {
+                 console.log(e);
+                 if (window.localStorage === undefined) {
+                     alert("Error: window.localStorage is undefined.\r\n"
+                            + "Sorry, your browser doesn't support local storage. "
+                            + "Try using the latest version of Chrome or Firefox.");
+                 }
+             }
+	</script>
+</div>
+<div id="info_container">
+<div id="info">
+  <img id="logo" alt="UrbGen" src="images/logo.png">
+  <input id="questionMarkButton" alt="info" type="image" src="images/questionmark.png"
+  class="imgAssignUnassign" onclick="toggleInstructions()" />
+</div>
+<div id="instructions">
+  <h1>How to use UrbGen</h1>
+  <p>UrbGen is a JavaScript library for the procedural generation of urban
+  environments. It can be used via this web app or as a standalone library.</p>
+  <h2>Using the UrbGen web app</h2>
+  <p>Use the control panel to set the parameters for your city.</p>
+  <p>Hit 'update' to generate and display a new city.</p>
+  <p>UrbGen is procedural, not random - the same parameters will always
+    generate the same city.
+  </p>
+  <p>'Random' generates a city with random parameters.</p>
+  <p>You can download a Wavefront.obj file of the currently displayed model
+    using 'exportOBJ'.
+  </p>
+  <p>You can also download a text file containing the parameters of the
+    currently displayed city by hitting 'exportParams'. This can then be
+    used with the UrbGen library (see below) to generate this city in your code.
+  </p>
+  <p>Use the left mouse button to rotate the model, the right mouse button
+    to move it, and the scroll wheel (or two fingers on a trackpad) to zoom in or
+    out.
+  </p>
+  <h2>Using the UrbGen library</h2>
+  <p>Download the <a href="js/UrbGen.js" target="blank">script</a> and include it in your code:</p>
+  <code>&lt;script src="path/to/script/UrbGen.js"&gt;</code><br>
+  <p>Next, instantiate a generator object:</p>
+  <code>var generator = new URBGEN.Generator()</code>
+  <p>Create an object to store the parameters for your city:</p>
+  <code>
+  var cityParams = {<br>
+  &nbsp;&nbsp;globalAngle: 0.1,<br>
+  &nbsp;&nbsp;blockSize: 30000,<br>
+  &nbsp;&nbsp;cityWidth: 1000,<br>
+  &nbsp;&nbsp;cityDepth: 500,<br>
+  &nbsp;&nbsp;streetWidth: 25,<br>
+  &nbsp;&nbsp;localGrids: 0.4,<br>
+  &nbsp;&nbsp;randomSeed: 0.6,<br>
+  &nbsp;&nbsp;throughRoads: 27<br>
+  }
+  </code>
+  <p>You can use the web app to see how changing these values affects the
+    layout of a city. As mentioned above, you can also use the web app to save
+    a set of values. If you set any of these values to <code>undefined</code>,
+    the value will be randomised.
+  </p>
+  <p>UrbGen also defines constant maximum and minimum values for each parameter:</p>
+  <code>URBGEN.Constants.MAX_BLOCK_SIZE = 50000;<br>
+  URBGEN.Constants.MIN_BLOCK_SIZE = 15000;<br>
+  URBGEN.Constants.MAX_CITY_WIDTH = 2000;<br>
+  URBGEN.Constants.MIN_CITY_WIDTH = 400;<br>
+  URBGEN.Constants.MAX_CITY_DEPTH = 2000;<br>
+  URBGEN.Constants.MIN_CITY_DEPTH = 400;<br>
+  URBGEN.Constants.MAX_THROUGH_ROADS = 50;<br>
+  URBGEN.Constants.MIN_THROUGH_ROADS = 0;<br>
+  URBGEN.Constants.MAX_STREET_WIDTH = 30;<br>
+  URBGEN.Constants.MIN_STREET_WIDTH = 10;<br>
+  URBGEN.Constants.MAX_RANDOM_SEED = 1;<br>
+  URBGEN.Constants.MIN_RANDOM_SEED = 0;<br>
+  URBGEN.Constants.MAX_LOCAL_GRIDS = 1;<br>
+  URBGEN.Constants.MIN_LOCAL_GRIDS = 0;<br>
+  URBGEN.Constants.MAX_GLOBAL_ANGLE = 1;<br>
+  URBGEN.Constants.MIN_GLOBAL_ANGLE = 0;</code>
+  <p>These are suggested values; UrbGen will not restrict you setting values
+    outside these ranges, but the results will be unpredictable.
+  </p>
+  <p>You're now ready to generate a city. Simply call the <code>generate()</code>
+     method, passing in the parameters object. You can also call the method with
+     no parameter object, which will randomise all the values. Either way, the
+     method returns a city:
+  </p>
+  <code>var city = generator.generate(cityParms)</code>
+  <h2>Using UrbGen with Three.js</h2>
+  <p>Three.js is a popular library which makes WebGL more simple to use.
+  You can obtain a Three.js geometry containing the bounding box for each plot
+  (this is what is currently displayed in the web app). This process works by
+  obtaining a 2D shape representing each plot's footprint, then extruding
+  this shape, using the plot's height value.
+  </p>
+  <p>To do this, first obtain the plots:</p>
+  <code>var plots = city.getPlots()</code>
+  <p>Then iterate through this array, first obtaining a <code>Three.Shape</code>
+  for the footprint, and using this shape to create a
+  <code>Three.ExtrudeGeometry</code>. It's also a good idea to merge these into
+  one large city geometry (for performance reasons):
+  </p>
+  <code>
+  // Create a geometry to store the city<br>
+  var cityGeom = new THREE.Geometry();<br>
+  for(var i = 0; i &lt; plots.length; i++) {<br>
+		&nbsp;&nbsp;// Get the plot<br>
+		&nbsp;&nbsp;var plot = this.generator.buildThreeShape(plots[j].poly,
+		new THREE.Shape());<br>
+		&nbsp;&nbsp;// Set the extrusion settings<br>
+		&nbsp;&nbsp;var extrusionSettings = {<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;bevelEnabled : false,<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;amount : plots[j].height<br>
+		&nbsp;&nbsp;};<br>
+		&nbsp;&nbsp;// Get the building geometry<br>
+		&nbsp;&nbsp;var geom = new THREE.ExtrudeGeometry(plot, extrusionSettings);<br>
+		&nbsp;&nbsp;// Merge the building with the city geometry<br>
+		&nbsp;&nbsp;cityGeom.merge(geom);<br>
+		}
+  </code>
+  <p>You can now use this geometry to create a <code>Three.Mesh</code>. For more
+   information, see the <a href="doc/index.html" target="blank">documentation</a>.
+  </p>
+  <p>
+  <button id="hideButton" onclick="toggleInstructions()">Close</button>
+  </p>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+a:link {
+  color: #fff;
+}
+
+a:visited {
+  color: #fff;
+}
+
+#urbgen_viewer {
+	background-color: #fff;
+}
+
+#info_container {
+  position: fixed;
+}
+
+#instructions {
+  display: none;
+  top: 10px;
+  left: 10px;
+  width: 50vw;
+  height: 70vh;
+  padding: 25px;
+  overflow: scroll;
+  background-color: white;
+  position: relative;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  background-color: #222;
+  text-decoration: none;
+  color: #fff;
+}
+
+#question_mark_button {
+  outline: none;
+  left: 10px;
+  position: relative;
+}
+
+#logo {
+  top: 10px;
+  left: 10px;
+  position: relative;
+  outline: none;
+}
+
+#hide_button {
+  background:none;
+  border:none;
+  padding:0;
+  color: #fff;
+  text-decoration: underline;
+  cursor: pointer;
+  outline: none;
+}
