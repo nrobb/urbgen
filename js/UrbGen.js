@@ -1157,7 +1157,7 @@ URBGEN.Util.getDirectedPath = function (p0, p1, direction, maxSteps) {
 /**
  * Given two lines, defined by a point on the line and the angle of the line,
  * returns the point at which the two lines intersect. If the lines are colinear,
- * returns p1.
+ * returns p0.
  * @param {URBGEN.Point} p0 - The start point of the first line.
  * @param {number} a0 - The angle in radians of the first line.
  * @param {URBGEN.Point} p1 - The start point of the second line.
@@ -1322,7 +1322,7 @@ URBGEN.Util.insertPoint = function (newPoint, p0, p1) {
     return true;
 };
 /**
- * Returns the specified the two points closest in opposite directions to the
+ * Returns the two points closest in opposite directions to the
  * specified point.
  * @param {URBGEN.Point} point - The point to find neighbors for.
  * @param {URBGEN.Point[]} - The path of potential neighbors.
