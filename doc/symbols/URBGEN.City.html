@@ -223,6 +223,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.Generator.html">URBGEN.Generator</a></li>
 	
+	<li><a href="../symbols/URBGEN.Geometry.html">URBGEN.Geometry</a></li>
+	
 	<li><a href="../symbols/URBGEN.Math.html">URBGEN.Math</a></li>
 	
 	<li><a href="../symbols/URBGEN.Math.Random.html">URBGEN.Math.Random</a></li>
@@ -284,6 +286,75 @@ ul.inheritsList
 			
 
 <!-- ============================== properties summary ===================== -->
+			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class URBGEN.City.">
+					<caption>Field Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Field Attributes</th>
+							<th scope="col">Field Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/URBGEN.City.html#area">area</a></b>
+								</div>
+								<div class="description">This city's area.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/URBGEN.City.html#blocks">blocks</a></b>
+								</div>
+								<div class="description">This city's blocks.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/URBGEN.City.html#geometry">geometry</a></b>
+								</div>
+								<div class="description">This city's geometry.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/URBGEN.City.html#poly">poly</a></b>
+								</div>
+								<div class="description">A polygon rerepsenting the limits of this city.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/URBGEN.City.html#roads">roads</a></b>
+								</div>
+								<div class="description">An array of points, each with up to four neighbors, representing this
+city's road network.</div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
 			
 
 <!-- ============================== methods summary ======================== -->
@@ -350,6 +421,122 @@ ul.inheritsList
 
 <!-- ============================== field details ========================== -->		
 			
+				<div class="sectionTitle">
+					Field Detail
+				</div>
+				
+					<a name="area"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>area</b>
+					
+					</div>
+					<div class="description">
+						This city's area.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="blocks"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/URBGEN.Block.html">URBGEN.Block</a>[]}</span>
+					<b>blocks</b>
+					
+					</div>
+					<div class="description">
+						This city's blocks.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="geometry"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/URBGEN.Geometry.html">URBGEN.Geometry</a>}</span>
+					<b>geometry</b>
+					
+					</div>
+					<div class="description">
+						This city's geometry.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="poly"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>
+					<b>poly</b>
+					
+					</div>
+					<div class="description">
+						A polygon rerepsenting the limits of this city.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="roads"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/URBGEN.Point.html">URBGEN.Point</a>[]}</span>
+					<b>roads</b>
+					
+					</div>
+					<div class="description">
+						An array of points, each with up to four neighbors, representing this
+city's road network.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					
+				
+			
 
 <!-- ============================== method details ========================= -->		
 			
@@ -360,7 +547,7 @@ ul.inheritsList
 					<a name="getPlots"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{Array.<URBGEN.Plot>}</span>
+					
 					<b>getPlots</b>()
 					
 					</div>
@@ -380,7 +567,7 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{Array.<URBGEN.Plot>}</span> The plots of this city.</dd>
+								<dd>URBGEN.Plot[] The plots of this city.</dd>
 							
 							</dl>
 						
@@ -401,7 +588,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Sep 01 2014 22:53:20 GMT+0100 (BST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Thu Sep 04 2014 00:38:16 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

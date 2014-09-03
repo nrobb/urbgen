@@ -11,9 +11,27 @@ var URBGEN = URBGEN || {};
  * @param {number} y - The y coordinate of the point.
  */
 URBGEN.Point = function (x, y, z) {
+    /**
+     * This Point's x coordinate.
+     * @type number
+     */
     this.x = x || 0;
+    /**
+     * This Point's y coordinate.
+     * @type number
+     */
     this.y = y || 0;
+    /**
+     * This Point's z coordinate.
+     * @type number
+     */
     this.z = z || 0;
+    /**
+     * This point's adjacent points in the order: above, left, right, below. A
+     * value of 0 indicates that this point has no adjacent point in that
+     * direction.
+     * @type URBGEN.Point[]
+     */
     this.neighbors = [0, 0, 0, 0];
 };
 /**
@@ -34,7 +52,17 @@ URBGEN.Point.prototype.setValues = function (point) {
  * @param {URBGEN.Point} p3 - the bottom right corner of the polygon.
  */
 URBGEN.Poly = function (p0, p1, p2, p3) {
+    /**
+     * This polygon's corners, in the order: topleft, topright, bottomleft,
+     * bottomright.
+     * @type URBGEN.Point[]
+     */
     this.corners = [p0, p1, p2, p3];
+    /**
+     * The lengths of this polygon's edges, in the order: top, right, left,
+     * bottom.
+     * @type number[]
+     */
     this.edgeLengths = [
         URBGEN.Util.getLineSegmentLength(this.corners[0], this.corners[
             1]),
@@ -45,6 +73,10 @@ URBGEN.Poly = function (p0, p1, p2, p3) {
         URBGEN.Util.getLineSegmentLength(this.corners[2], this.corners[
             3])
     ];
+    /**
+     * The vertical angle of this polygon's grid.
+     * @type number
+     */
     this.gridAngle = undefined;
 };
 /**
@@ -79,21 +111,47 @@ URBGEN.Poly.prototype.makeSimple = function () {
  * @param {URBGEN.Poly} poly - This plot's polygon.
  */
 URBGEN.Plot = function (poly) {
+    /**
+     * This plot's polygon, that is, the maximum footprint of a building on this
+     * plot.
+     * @type URBGEN.Poly
+     */
     this.poly = poly;
+    /**
+     * The maximum height of a building on this plot.
+     * @type number
+     */
     this.height = 0;
 };
 /**
  * Represents a block.
  * @constructor
  * @param {URBGEN.Poly} outerPoly - This block's outer polygon, including any
- *     space for roads and sidewalks.
+ *     space for streets and sidewalks.
  * @param {number} streetWidth - The width of the streets surrounding this block.
  */
 URBGEN.Block = function (poly, streetWidth) {
+    /**
+     * This block's street width.
+     * @type number
+     */
     this.streetWidth = streetWidth;
+    /**
+     * This block's outer polygon, including space for streets and sidewalks.
+     * @type URBGEN.Poly
+     */
     this.outerPoly = poly;
+    /**
+     * This block's inner polygon, exluding space for streets and sidewalks.
+     * @type URBGEN.Poly
+     */
     this.innerPoly = undefined;
+    /**
+     * This block's plots.
+     * @type URBGEN.Plot[]
+     */
     this.plots = [];
+    // Sets this block's inner polygon.
     this.setInnerPoly(streetWidth);
 };
 /**
@@ -106,22 +164,60 @@ URBGEN.Block.prototype.setInnerPoly = function () {
     this.innerPoly.makeSimple();
 };
 /**
+ * Represents a 3D geometry.
+ * @constructor
+ */
+URBGEN.Geometry = function () {
+  /**
+   * This geometry's vertices, stored as a 2D array. Each element is an array
+   * of type [x, y, z]. For example, [[2, 2, 5], [4, 6, 7]] represents two
+   * vertices with coords (2, 2, 5) and (4, 6, 7) respectively.
+   * @type number[][]
+   */
+  this.vertices = [];
+  /**
+   * This geometry's faces, stored as a 2D array. Each element is an array of
+   * type [i, j, k], where i, j and k are the indices of three vertices that
+   * define a 3 sided face.
+   * @type number[][]
+   */
+  this.faces = [];
+};
+/**
  * Represents a city.
  * @constructor
  */
 URBGEN.City = function () {
+    /**
+     * A polygon rerepsenting the limits of this city.
+     * @type URBGEN.Poly
+     */
     this.poly = undefined;
+    /**
+     * An array of points, each with up to four neighbors, representing this
+     * city's road network.
+     * @type URBGEN.Point[]
+     */
     this.roads = [];
+    /**
+     * This city's blocks.
+     * @type URBGEN.Block[]
+     */
     this.blocks = [];
+    /**
+     * This city's area.
+     * @type number
+     */
     this.area = undefined;
-    this.geometry = {
-        vertices: [],
-        faces: []
-    };
+    /**
+     * This city's geometry.
+     * @type URBGEN.Geometry
+     */
+    this.geometry = new URBGEN.Geometry();
 };
 /**
  * Returns an array of the plots of this city.
- * @return {Array.<URBGEN.Plot>} The plots of this city.
+ * @return URBGEN.Plot[] The plots of this city.
  */
 URBGEN.City.prototype.getPlots = function () {
     var plots = [];
@@ -135,28 +231,95 @@ URBGEN.City.prototype.getPlots = function () {
  * @constructor
  */
 URBGEN.Generator = function () {
-    // Set up the builders and director
+    /**
+     * This generator's horizontal builder.
+     * @type URBGEN.HorizontalBuilder
+     */
     this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder(this);
+    /**
+     * This generator's vertical builder.
+     * @type URBGEN.VerticalBuilder
+     */
     this.verticalBuilder = new URBGEN.Builder.VerticalBuilder(this);
+    /**
+     * This generator's plot builder.
+     * @type URBGEN.PlotBuilder
+     */
     this.plotBuilder = new URBGEN.Builder.PlotBuilder(this);
+    /**
+     * This generator's current builder.
+     * @type URBGEN.Builder
+     */
     this.builder = undefined;
+    /**
+     * This generator's director.
+     * @type URBGEN.Director
+     */
     this.director = new URBGEN.Director();
-    // declare the city
+    /**
+     * This generator's current city.
+     * @type URBGEN.Ciy
+     */
     this.city = undefined;
-    // Set up random number generator
+    /**
+     * This generator's random number generator.
+     * @type URBGEN.Math.Random
+     */
     this.random = new URBGEN.Math.Random();
-    // Decalare the polys for building the city
+    /**
+     * The polygon's of this generator's current city.
+     * @type URBGEN.Poly[]
+     */
     this.cityPolys = [];
-    // City generator parameters
+    /**
+     * This generator's global angle.
+     * @type number
+     */
     this.globalAngle = undefined;
+    /**
+     * This generator's random number seed.
+     * @type number
+     */
     this.randomSeed = undefined;
+    /**
+     * This generator's regularity1, used to determine start point of new roads.
+     * @type number
+     */
     this.regularity1 = undefined;
+    /**
+     * This generator's regularity2, used to determine end point of new roads.
+     * @type number
+     */
     this.regularity2 = undefined;
+    /**
+     * This generator's local grid threshold.
+     * @type number
+     */
     this.localGrids = undefined;
+    /**
+     * This generator's minimum block size.
+     * @type number
+     */
     this.blockSize = undefined;
+    /**
+     * This generator's city's width.
+     * @type number
+     */
     this.cityWidth = undefined;
+    /**
+     * This generator's city's depth.
+     * @type number
+     */
     this.cityDepth = undefined;
+    /**
+     * This generator's city's street width.
+     * @type number
+     */
     this.streetWidth = undefined;
+    /**
+     * This generator's through road snap distance.
+     * @type number
+     */
     this.throughRoads = undefined;
 };
 /**
@@ -263,8 +426,8 @@ URBGEN.Generator.prototype.init = function () {
 };
 /**
  * Recursively processes an array of polygons.
- * @param {Array.<URBGEN.Point>} - The array of polygons to be processed.
- * @return {Array.<URBGEN.Poly>} The new polygons.
+ * @param {URBGEN.Point[]} polys - The array of polygons to be processed.
+ * @return {URBGEN.Poly[]} The new polygons.
  */
 URBGEN.Generator.prototype.processPolyRecursively = function (polys) {
     var newPolys = [];
@@ -347,7 +510,7 @@ URBGEN.Generator.prototype.buildGeometry = function () {
 /**
  * Processes a polygon. If a polygon cannot be processed, it is returned.
  * @param {URBGEN.Poly} poly - The polygon to process.
- * @return {Array.<URBGEN.Poly>} The new polygons, or the original poly.
+ * @return {URBGEN.Poly[]} The new polygons, or the original poly.
  */
 URBGEN.Generator.prototype.processPoly = function (poly) {
     if(URBGEN.Util.areaPoly(poly) < this.blockSize) {
@@ -436,15 +599,35 @@ URBGEN.Generator.prototype.paramData = function () {
  * @param {URBGEN.Generator} generator - The generator that owns this builder.
  */
 URBGEN.Builder = function (generator) {
+    /**
+     * The generator that owns this builder.
+     * @type URBGEN.Generator
+     */
     this.generator = generator;
+    /**
+     * The current polygon this builder is operating on.
+     * @type URBGEN.Poly
+     */
     this.poly = undefined;
+    /**
+     * Ths origin point for this builder's dividing line.
+     * @type URBGEN.Point
+     */
     this.origin = undefined;
+    /**
+     * Ths end point for this builder's dividing line.
+     * @type URBGEN.Point
+     */
     this.endPoint = undefined;
+    /**
+     * The points this builder will use to build new polygons.
+     * @type URBGEN.Point[]
+     */
     this.newPoints = [];
 };
 /**
  * Returns an array of new polygons created from this builder's current points.
- * @return {Array.<URBGEN.Poly>} The new polygons.
+ * @return {URBGEN.Poly[]} The new polygons.
  * @throws {URBGEN.Exception.EdgeTooShortException}
  */
 URBGEN.Builder.prototype.buildPolys = function () {
@@ -598,8 +781,20 @@ URBGEN.Builder.prototype.addPointToPath = function (point, edgeStart, edgeEnd) {
  */
 URBGEN.Builder.HorizontalBuilder = function (generator) {
     URBGEN.Builder.call(this, generator);
+    /**
+     * The corner indices this builder uses to select edges.
+     * @type number[]
+     */
     this.corners = [2, 1];
+    /**
+     * This builder's direction index.
+     * @type number
+     */
     this.direction = 2;
+    /**
+     * The minimum length of an edge produced by this builder.
+     * @type number
+     */
     this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
 };
 URBGEN.Builder.HorizontalBuilder.prototype = Object
@@ -635,8 +830,20 @@ URBGEN.Builder.HorizontalBuilder.prototype.setNewPoints = function () {
  */
 URBGEN.Builder.VerticalBuilder = function (generator) {
     URBGEN.Builder.call(this, generator);
+    /**
+     * The corner indices this builder uses to select edges.
+     * @type number[]
+     */
     this.corners = [1, 2];
+    /**
+     * This builder's direction index.
+     * @type number
+     */
     this.direction = 3;
+    /**
+     * The minimum length of an edge produced by this builder.
+     * @type number
+     */
     this.minEdgeLength = URBGEN.Constants.MIN_EDGE_LENGTH;
 };
 URBGEN.Builder.VerticalBuilder.prototype = Object
@@ -672,8 +879,22 @@ URBGEN.Builder.VerticalBuilder.prototype.setNewPoints = function () {
  */
 URBGEN.Builder.PlotBuilder = function (generator) {
     URBGEN.Builder.call(this, generator);
+    /**
+     * The paths representing the inner edges of the plots produced by this
+     * builder.
+     * @type URBGEN.Point[][]
+     */
     this.innerPaths = [];
+    /**
+     * The paths representing the outer edges of the plots produced by this
+     * builder.
+     * @type URBGEN.Point[][]
+     */
     this.outerPaths = [];
+    /**
+     * The minimum length of an edge produced by this builder.
+     * @type number
+     */
     this.minEdgeLength = 0;
 };
 URBGEN.Builder.PlotBuilder.prototype = Object.create(URBGEN.Builder.prototype);
@@ -785,7 +1006,7 @@ URBGEN.Director = function () {
 /**
  * Invokes the specified builder's build methods.
  * @param {URBGEN.Builder} builder - The builder this director should execute on.
- * @return {Array.<URBGEN.Poly>} The result of the builder's buildPolys() method.
+ * @return {URBGEN.Poly[]} The result of the builder's buildPolys() method.
  */
 URBGEN.Director.prototype.execute = function (builder) {
     builder.setUp();
@@ -917,7 +1138,7 @@ URBGEN.Util.areaPoly = function (poly) {
  * @param {URBGEN.Point} p1 - The end point of the path.
  * @param {number} direction - The direction of the path.
  * @param {number} maxSteps - The maximum number of iterations.
- * @return {Array.<URBGEN.Point>} The path from p0 t0 p1.
+ * @return {URBGEN.Point[]} The path from p0 t0 p1.
  */
 URBGEN.Util.getDirectedPath = function (p0, p1, direction, maxSteps) {
     if (maxSteps === undefined) {
@@ -974,7 +1195,7 @@ URBGEN.Util.getIntersect = function (p0, a0, p1, a1) {
  * @param {URBGEN.Point} p0 - The start point of the line segment.
  * @param {URBGEN.Point} p1 - The end point of the line segment.
  * @param {number} length - The distance between each point in the path.
- * @return {Array.<URBGEN.Point>} The path of equidistant points.
+ * @return {URBGEN.Point[]} The path of equidistant points.
  * @throws {URBGEN.Exception.PointsNotNeighborsException}
  */
 URBGEN.Util.divideLine = function (p0, p1, length) {
@@ -1032,7 +1253,7 @@ URBGEN.Util.unitNormal = function (p0, p1) {
  * @param {URBGEN.Point} p0 - The start point of the line segment.
  * @param {URBGEN.Point} p1 - The end point of the line segment.
  * @param {number} distance - The distance to offset the line to the right.
- * @return {Array.<URBGEN.Point>} Array containing the start and end points of
+ * @return {URBGEN.Point[]} Array containing the start and end points of
  *     the offset line segment.
  */
 URBGEN.Util.offsetLineSegment = function (p0, p1, distance) {
@@ -1104,7 +1325,7 @@ URBGEN.Util.insertPoint = function (newPoint, p0, p1) {
  * Returns the specified the two points closest in opposite directions to the
  * specified point.
  * @param {URBGEN.Point} point - The point to find neighbors for.
- * @param {Array.<URBGEN.Point>} - The path of potential neighbors.
+ * @param {URBGEN.Point[]} - The path of potential neighbors.
  * @return {Object} The prev and nxt points to the specified point.
  * @throws {URBGEN.Exception.PointOutOfRangeException}
  */
@@ -1144,7 +1365,7 @@ URBGEN.Util.getNeighbors = function (point, points) {
  * of the edge will be included in the search. If no such point exists, returns
  * the original point.
  * @param {URBGEN.Point} point - The point to find near points for.
- * @param {Array.<URBGEN.Point>} - The path of potential near points.
+ * @param {URBGEN.Point[]} - The path of potential near points.
  * @param {number} distance - The distance within which near points can be found.
  * @param {boolean} includeEnds - true if the start and end points should be
  *     included, false if not.
@@ -1179,7 +1400,7 @@ URBGEN.Util.checkNearPoints = function (point, points, distance, includeEnds) {
  * Returns the point in points that has the shortest straight line distance to
  * target. If any points have equal distances to target, returns the point which
  * comse first in points.
- * @param {Array.<URBGEN.Point>} points - The points in which to look for the
+ * @param {URBGEN.Point[]} points - The points in which to look for the
  *     closest point.
  * @param {URBGEN.Point} target - The target point.
  * @return {URBGEN.Point} The point that is closest to the target.
@@ -1203,8 +1424,13 @@ URBGEN.Math = {};
 /**
  * Represents a psuedorandom number generator with the specified seed.
  * @constructor
+ * @param {number} seed - This random number generator's seed value.
  */
 URBGEN.Math.Random = function (seed) {
+    /**
+     * This random number generator's seed value.
+     * @type number
+     */
     this.seed = seed || Math.random();
 };
 /**
@@ -1221,79 +1447,79 @@ URBGEN.Math.Random.prototype.next = function () {
  */
 URBGEN.Constants = {};
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_BLOCK_SIZE = 50000;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_BLOCK_SIZE = 15000;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_REGULARITY = 0.6;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_REGULARITY = 0.4;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_CITY_WIDTH = 2000;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_CITY_WIDTH = 400;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_CITY_DEPTH = 2000;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_CITY_DEPTH = 400;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_THROUGH_ROADS = 50;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_THROUGH_ROADS = 0;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_STREET_WIDTH = 30;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_STREET_WIDTH = 10;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_RANDOM_SEED = 1;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_RANDOM_SEED = 0;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_LOCAL_GRIDS = 1;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_LOCAL_GRIDS = 0;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MAX_GLOBAL_ANGLE = 1;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_GLOBAL_ANGLE = 0;
 /**
- * @type {number}
+ * @type number
  */
 URBGEN.Constants.MIN_EDGE_LENGTH = 80;
 /**
@@ -1303,9 +1529,18 @@ URBGEN.Exception = {};
 /**
  * Represents an illegal argmument exception.
  * @constructor
+ * @param {string} message This exceptions's message.
  */
 URBGEN.Exception.IllegalArgumentException = function (message) {
+    /**
+     * This exception's name.
+     * @type string
+     */
     this.name = "IllegalArgumentException";
+    /**
+     * This exception's message.
+     * @type string
+     */
     this.message = message || "Illegal Argument Exception";
 };
 URBGEN.Exception.IllegalArgumentException.prototype = new Error();
@@ -1314,9 +1549,18 @@ URBGEN.Exception.IllegalArgumentException.prototype.constructor = URBGEN.Excepti
 /**
  * Represents an edge too short exception.
  * @constructor
+ * @param {string} message This exceptions's message.
  */
 URBGEN.Exception.EdgeTooShortException = function (message) {
+    /**
+     * This exception's name.
+     * @type string
+     */
     this.name = "EdgeTooShortException";
+    /**
+     * This exception's message.
+     * @type string
+     */
     this.message = message || "Edge too short to divide";
 };
 URBGEN.Exception.EdgeTooShortException.prototype = new Error();
@@ -1325,9 +1569,18 @@ URBGEN.Exception.EdgeTooShortException.prototype.constructor = URBGEN.Exception
 /**
  * Represents an InvalidParamException.
  * @constructor
+ * @param {string} message This exceptions's message.
  */
 URBGEN.Exception.InvalidParamException = function (message) {
+    /**
+     * This exception's name.
+     * @type string
+     */
     this.name = "InvalidParamException";
+    /**
+     * This exception's message.
+     * @type string
+     */
     this.message = message || "Invalid parameters";
 };
 URBGEN.Exception.InvalidParamException.prototype = new Error();
@@ -1336,9 +1589,18 @@ URBGEN.Exception.InvalidParamException.prototype.constructor = URBGEN.Exception
 /**
  * Represents a Points not neighbors exception.
  * @constructor
+ * @param {string} message This exceptions's message.
  */
 URBGEN.Exception.PointsNotNeighborsException = function (message) {
+    /**
+     * This exception's name.
+     * @type string
+     */
     this.name = "PointsNotNeighborsException";
+    /**
+     * This exception's message.
+     * @type string
+     */
     this.message = message || "Points are not neighbors";
 };
 URBGEN.Exception.PointsNotNeighborsException.prototype = new Error();
@@ -1347,9 +1609,18 @@ URBGEN.Exception.PointsNotNeighborsException.prototype.constructor = URBGEN.Exce
 /**
  * Represents a Point out of range exception.
  * @constructor
+ * @param {string} message This exceptions's message.
  */
 URBGEN.Exception.PointOutOfRangeException = function (message) {
+    /**
+     * This exception's name.
+     * @type string
+     */
     this.name = "PointOutOfRangeException";
+    /**
+     * This exception's message.
+     * @type string
+     */
     this.message = message || "Points lies outside allowable range";
 };
 URBGEN.Exception.PointOutOfRangeException.prototype = new Error();
