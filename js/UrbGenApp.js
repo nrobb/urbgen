@@ -60,7 +60,7 @@ URBGEN_APP.App.prototype.initGui = function() {
 	gui.add(this, "random").listen();
 	gui.add(this, "exportOBJ");
 	gui.add(this, "exportParams");
-	//gui.closed = true;
+	gui.closed = true;
 	return gui;
 };
 /**
