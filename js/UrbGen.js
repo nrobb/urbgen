@@ -130,13 +130,19 @@ URBGEN.Geometry = function () {
  * @constructor
  * @param {URBGEN.Poly} poly - The polygon representing this city element's
  *     footprint.
+ * @param {number} height - The height of this city element.
  */
-URBGEN.CityElement = function (poly) {
+URBGEN.CityElement = function (poly, height) {
     /**
      * The footprint of this city element.
      * @type URBGEN.Poly
      */
     this.poly = poly;
+    /**
+     * This city element's height. Defaults to 0.
+     * @type number
+     */
+    this.height = height || 0;
     /**
      * This city element's area.
      * @type number
@@ -151,11 +157,6 @@ URBGEN.CityElement = function (poly) {
  */
 URBGEN.CityElement.Plot = function (poly) {
     URBGEN.CityElement.call(this, poly);
-    /**
-     * The maximum height of a building on this plot.
-     * @type number
-     */
-    this.height = 0;
 };
 URBGEN.CityElement.Plot.prototype = Object
     .create(URBGEN.CityElement.prototype);
