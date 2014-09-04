@@ -71,15 +71,16 @@ URBGEN_APP.App.prototype.generateCity = function(cityParams) {
 	try {
 		var d = new Date();
 		var start = d.getTime();
+		// get the city
 		this.city = this.generator.generate(cityParams);
 		d = new Date();
 		var end = d.getTime();
 		this.logCityData(start, end);
-		var geometry = this.buildGeometry();
-		this.view.addMeshToScene(geometry);
+		// update the view with the new city
+		this.view.addMeshToScene(this.generator.getThreeJSGeometry(this.city.getPlots()));
 	} catch (error) {
 		alert(URBGEN_APP.Constants.CITY_GENERATION_ERROR);
-		console.log(error.message);
+		console.log(error);
 	}
 };
 /**
@@ -115,41 +116,6 @@ URBGEN_APP.App.prototype.logCityData = function(start, end) {
  */
 URBGEN_APP.App.prototype.onResize = function (width, height) {
   this.view.onResize(width, height);
-};
-/**
- * Returs a Three.js Geometry for the this app's current city plots.
- * @return {THREE.ExtrudeGeometry} This app's current city's geometry.
- */
-URBGEN_APP.App.prototype.buildGeometry = function() {
-	var cityGeom = new THREE.Geometry();
-	var plots = this.city.getPlots();
-	// Add each building to the geometry
-	for ( var j = 0; j < plots.length; j++) {
-		// get the plot
-		var plot = this.generator.buildThreeShape(plots[j].poly,
-				new THREE.Shape());
-		// set the extrusion settings
-		var extrusionSettings = {
-				bevelEnabled : false,
-				amount : plots[j].height
-		};
-		// get the building geometry
-		var geom = new THREE.ExtrudeGeometry(plot, extrusionSettings);
-		cityGeom.merge(geom);
-	}
-	/*
-	// Add a ground plane
-	var planeShape = this.generator.buildThreeShape(this.city.poly, new THREE.Shape());
-	// set the extrusion settings
-	var planeExtrusionSettings = {
-	    bevelEnabled : false,
-	    amount : 0
-	};
-	var plane = new THREE.ExtrudeGeometry(planeShape, planeExtrusionSettings);
-	cityGeom.merge(plane);
-	*/
-	// return the city
-	return cityGeom;
 };
 /**
  * Downloads a Wavefront.OBJ file representing this app's current city's

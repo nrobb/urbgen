@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - URBGEN.Block</title>
+		<title>JsDoc Reference - URBGEN.CityElement.City</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -193,8 +193,6 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.html">URBGEN</a></li>
 	
-	<li><a href="../symbols/URBGEN.Block.html">URBGEN.Block</a></li>
-	
 	<li><a href="../symbols/URBGEN.Builder.html">URBGEN.Builder</a></li>
 	
 	<li><a href="../symbols/URBGEN.Builder.HorizontalBuilder.html">URBGEN.Builder.HorizontalBuilder</a></li>
@@ -203,7 +201,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.Builder.VerticalBuilder.html">URBGEN.Builder.VerticalBuilder</a></li>
 	
-	<li><a href="../symbols/URBGEN.City.html">URBGEN.City</a></li>
+	<li><a href="../symbols/URBGEN.CityElement.html">URBGEN.CityElement</a></li>
+	
+	<li><a href="../symbols/URBGEN.CityElement.Block.html">URBGEN.CityElement.Block</a></li>
+	
+	<li><a href="../symbols/URBGEN.CityElement.City.html">URBGEN.CityElement.City</a></li>
+	
+	<li><a href="../symbols/URBGEN.CityElement.Plot.html">URBGEN.CityElement.Plot</a></li>
 	
 	<li><a href="../symbols/URBGEN.Constants.html">URBGEN.Constants</a></li>
 	
@@ -229,8 +233,6 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.Math.Random.html">URBGEN.Math.Random</a></li>
 	
-	<li><a href="../symbols/URBGEN.Plot.html">URBGEN.Plot</a></li>
-	
 	<li><a href="../symbols/URBGEN.Point.html">URBGEN.Point</a></li>
 	
 	<li><a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a></li>
@@ -246,12 +248,14 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class URBGEN.Block
+				Class URBGEN.CityElement.City
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
 			<p class="description">
 				
+				<br />Extends
+					<a href="../symbols/URBGEN.CityElement.html">URBGEN.CityElement</a>.<br />
 				
 			
 				
@@ -263,7 +267,7 @@ ul.inheritsList
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class URBGEN.Block.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class URBGEN.CityElement.City.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -276,9 +280,9 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Block.html#constructor">URBGEN.Block</a></b>(outerPoly, streetWidth)
+								<b><a href="../symbols/URBGEN.CityElement.City.html#constructor">URBGEN.CityElement.City</a></b>(poly)
 							</div>
-							<div class="description">Represents a block.</div>
+							<div class="description">Represents a city.</div>
 						</td>
 					</tr>
 				</tbody>
@@ -289,7 +293,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class URBGEN.Block.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class URBGEN.CityElement.City.">
 					<caption>Field Summary</caption>
 					<thead>
 						<tr>
@@ -303,9 +307,9 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Block.html#innerPoly">innerPoly</a></b>
+								<b><a href="../symbols/URBGEN.CityElement.City.html#blocks">blocks</a></b>
 								</div>
-								<div class="description">This block's inner polygon, exluding space for streets and sidewalks.</div>
+								<div class="description">This city's blocks.</div>
 							</td>
 						</tr>
 					
@@ -313,9 +317,9 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Block.html#outerPoly">outerPoly</a></b>
+								<b><a href="../symbols/URBGEN.CityElement.City.html#geometry">geometry</a></b>
 								</div>
-								<div class="description">This block's outer polygon, including space for streets and sidewalks.</div>
+								<div class="description">This city's geometry.</div>
 							</td>
 						</tr>
 					
@@ -323,19 +327,10 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Block.html#plots">plots</a></b>
+								<b><a href="../symbols/URBGEN.CityElement.City.html#roads">roads</a></b>
 								</div>
-								<div class="description">This block's plots.</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Block.html#streetWidth">streetWidth</a></b>
-								</div>
-								<div class="description">This block's street width.</div>
+								<div class="description">An array of points, each with up to four neighbors, representing this
+city's road network.</div>
 							</td>
 						</tr>
 					
@@ -344,13 +339,17 @@ ul.inheritsList
 				
 				
 				
+				<dl class="inheritsList">
+				<dt>Fields borrowed from class <a href="../symbols/URBGEN.CityElement.html">URBGEN.CityElement</a>: </dt><dd><a href="../symbols/URBGEN.CityElement.html#area">area</a>, <a href="../symbols/URBGEN.CityElement.html#poly">poly</a></dd>
+				</dl>
+				
 			
 
 <!-- ============================== methods summary ======================== -->
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class URBGEN.Block.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class URBGEN.CityElement.City.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -363,9 +362,9 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/URBGEN.Block.html#setInnerPoly">setInnerPoly</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.CityElement.City.html#getPlots">getPlots</a></b>()
 								</div>
-								<div class="description">Sets this block's inner polygon.</div>
+								<div class="description">Returns an array of the plots of this city.</div>
 							</td>
 						</tr>
 					
@@ -373,6 +372,10 @@ ul.inheritsList
 				</table>
 				
 				
+				
+				<dl class="inheritsList">
+				
+				</dl>
 				
 			
 <!-- ============================== events summary ======================== -->
@@ -386,11 +389,11 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>URBGEN.Block</b>(outerPoly, streetWidth)
+						<b>URBGEN.CityElement.City</b>(poly)
 				</div>
 				
 				<div class="description">
-					Represents a block.
+					Represents a city.
 					
 				</div>
 				
@@ -402,17 +405,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>  <b>outerPoly</b>
+								<span class="light fixedFont">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>  <b>poly</b>
 								
 							</dt>
-								<dd>- This block's outer polygon, including any
-    space for streets and sidewalks.</dd>
-						
-							<dt>
-								<span class="light fixedFont">{number}</span>  <b>streetWidth</b>
-								
-							</dt>
-								<dd>- The width of the streets surrounding this block.</dd>
+								<dd>- The footprint of this city.</dd>
 						
 						</dl>
 					
@@ -432,15 +428,15 @@ ul.inheritsList
 					Field Detail
 				</div>
 				
-					<a name="innerPoly"> </a>
+					<a name="blocks"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>
-					<b>innerPoly</b>
+					<span class="light">{<a href="../symbols/URBGEN.CityElement.Block.html">URBGEN.CityElement.Block</a>[]}</span>
+					<b>blocks</b>
 					
 					</div>
 					<div class="description">
-						This block's inner polygon, exluding space for streets and sidewalks.
+						This city's blocks.
 						
 						
 					</div>
@@ -454,15 +450,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="outerPoly"> </a>
+					<a name="geometry"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>
-					<b>outerPoly</b>
+					<span class="light">{<a href="../symbols/URBGEN.Geometry.html">URBGEN.Geometry</a>}</span>
+					<b>geometry</b>
 					
 					</div>
 					<div class="description">
-						This block's outer polygon, including space for streets and sidewalks.
+						This city's geometry.
 						
 						
 					</div>
@@ -476,37 +472,16 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="plots"> </a>
+					<a name="roads"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{<a href="../symbols/URBGEN.Plot.html">URBGEN.Plot</a>[]}</span>
-					<b>plots</b>
+					<span class="light">{<a href="../symbols/URBGEN.Point.html">URBGEN.Point</a>[]}</span>
+					<b>roads</b>
 					
 					</div>
 					<div class="description">
-						This block's plots.
-						
-						
-					</div>
-					
-					
-
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="streetWidth"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>streetWidth</b>
-					
-					</div>
-					<div class="description">
-						This block's street width.
+						An array of points, each with up to four neighbors, representing this
+city's road network.
 						
 						
 					</div>
@@ -528,16 +503,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="setInnerPoly"> </a>
+					<a name="getPlots"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>setInnerPoly</b>()
+					<b>getPlots</b>()
 					
 					</div>
 					<div class="description">
-						Sets this block's inner polygon. This is the polygon that this block's plots
-lie within, excluding any space for streets and sidewalks.
+						Returns an array of the plots of this city.
 						
 						
 					</div>
@@ -548,6 +522,13 @@ lie within, excluding any space for streets and sidewalks.
 						
 						
 						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd>URBGEN.CityElement.Plot[] The plots of this city.</dd>
+							
+							</dl>
 						
 						
 						
@@ -566,7 +547,7 @@ lie within, excluding any space for streets and sidewalks.
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Thu Sep 04 2014 00:38:16 GMT+0100 (BST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Thu Sep 04 2014 10:37:56 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

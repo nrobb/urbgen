@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - URBGEN.Exception.IllegalArgumentException</title>
+		<title>JsDoc Reference - URBGEN.CityElement</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -248,7 +248,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class URBGEN.Exception.IllegalArgumentException
+				Class URBGEN.CityElement
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -265,7 +265,7 @@ ul.inheritsList
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class URBGEN.Exception.IllegalArgumentException.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class URBGEN.CityElement.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -278,9 +278,9 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Exception.IllegalArgumentException.html#constructor">URBGEN.Exception.IllegalArgumentException</a></b>(message)
+								<b><a href="../symbols/URBGEN.CityElement.html#constructor">URBGEN.CityElement</a></b>(poly)
 							</div>
-							<div class="description">Represents an illegal argmument exception.</div>
+							<div class="description">Represents a city element.</div>
 						</td>
 					</tr>
 				</tbody>
@@ -291,7 +291,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class URBGEN.Exception.IllegalArgumentException.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class URBGEN.CityElement.">
 					<caption>Field Summary</caption>
 					<thead>
 						<tr>
@@ -305,9 +305,9 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Exception.IllegalArgumentException.html#message">message</a></b>
+								<b><a href="../symbols/URBGEN.CityElement.html#area">area</a></b>
 								</div>
-								<div class="description">This exception's message.</div>
+								<div class="description">This city element's area.</div>
 							</td>
 						</tr>
 					
@@ -315,9 +315,9 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/URBGEN.Exception.IllegalArgumentException.html#name">name</a></b>
+								<b><a href="../symbols/URBGEN.CityElement.html#poly">poly</a></b>
 								</div>
-								<div class="description">This exception's name.</div>
+								<div class="description">The footprint of this city element.</div>
 							</td>
 						</tr>
 					
@@ -341,11 +341,11 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>URBGEN.Exception.IllegalArgumentException</b>(message)
+						<b>URBGEN.CityElement</b>(poly)
 				</div>
 				
 				<div class="description">
-					Represents an illegal argmument exception.
+					Represents a city element.
 					
 				</div>
 				
@@ -357,10 +357,11 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{string}</span>  <b>message</b>
+								<span class="light fixedFont">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>  <b>poly</b>
 								
 							</dt>
-								<dd>This exceptions's message.</dd>
+								<dd>- The polygon representing this city element's
+    footprint.</dd>
 						
 						</dl>
 					
@@ -380,15 +381,15 @@ ul.inheritsList
 					Field Detail
 				</div>
 				
-					<a name="message"> </a>
+					<a name="area"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{string}</span>
-					<b>message</b>
+					<span class="light">{number}</span>
+					<b>area</b>
 					
 					</div>
 					<div class="description">
-						This exception's message.
+						This city element's area.
 						
 						
 					</div>
@@ -402,15 +403,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="name"> </a>
+					<a name="poly"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{string}</span>
-					<b>name</b>
+					<span class="light">{<a href="../symbols/URBGEN.Poly.html">URBGEN.Poly</a>}</span>
+					<b>poly</b>
 					
 					</div>
 					<div class="description">
-						This exception's name.
+						The footprint of this city element.
 						
 						
 					</div>

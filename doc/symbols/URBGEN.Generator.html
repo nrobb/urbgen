@@ -193,8 +193,6 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.html">URBGEN</a></li>
 	
-	<li><a href="../symbols/URBGEN.Block.html">URBGEN.Block</a></li>
-	
 	<li><a href="../symbols/URBGEN.Builder.html">URBGEN.Builder</a></li>
 	
 	<li><a href="../symbols/URBGEN.Builder.HorizontalBuilder.html">URBGEN.Builder.HorizontalBuilder</a></li>
@@ -203,7 +201,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/URBGEN.Builder.VerticalBuilder.html">URBGEN.Builder.VerticalBuilder</a></li>
 	
-	<li><a href="../symbols/URBGEN.City.html">URBGEN.City</a></li>
+	<li><a href="../symbols/URBGEN.CityElement.html">URBGEN.CityElement</a></li>
+	
+	<li><a href="../symbols/URBGEN.CityElement.Block.html">URBGEN.CityElement.Block</a></li>
+	
+	<li><a href="../symbols/URBGEN.CityElement.City.html">URBGEN.CityElement.City</a></li>
+	
+	<li><a href="../symbols/URBGEN.CityElement.Plot.html">URBGEN.CityElement.Plot</a></li>
 	
 	<li><a href="../symbols/URBGEN.Constants.html">URBGEN.Constants</a></li>
 	
@@ -228,8 +232,6 @@ ul.inheritsList
 	<li><a href="../symbols/URBGEN.Math.html">URBGEN.Math</a></li>
 	
 	<li><a href="../symbols/URBGEN.Math.Random.html">URBGEN.Math.Random</a></li>
-	
-	<li><a href="../symbols/URBGEN.Plot.html">URBGEN.Plot</a></li>
 	
 	<li><a href="../symbols/URBGEN.Point.html">URBGEN.Point</a></li>
 	
@@ -512,15 +514,6 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#buildThreeShape">buildThreeShape</a></b>(poly, shape)
-								</div>
-								<div class="description">Returns a THREE.Shape representing the specified poly.</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#generate">generate</a></b>(cityParams)
 								</div>
 								<div class="description">Generates a city.</div>
@@ -533,6 +526,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#getParams">getParams</a></b>()
 								</div>
 								<div class="description">Returns this generator's current city parameters.</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/URBGEN.Generator.html#getThreeJSGeometry">getThreeJSGeometry</a></b>(poly, shape)
+								</div>
+								<div class="description">Returns a THREE.Shape representing the specified poly.</div>
 							</td>
 						</tr>
 					
@@ -825,7 +827,7 @@ current city.</div>
 					<a name="horizontalBuilder"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{URBGEN.HorizontalBuilder}</span>
+					<span class="light">{<a href="../symbols/URBGEN.Builder.HorizontalBuilder.html">URBGEN.Builder.HorizontalBuilder</a>}</span>
 					<b>horizontalBuilder</b>
 					
 					</div>
@@ -869,7 +871,7 @@ current city.</div>
 					<a name="plotBuilder"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{URBGEN.PlotBuilder}</span>
+					<span class="light">{<a href="../symbols/URBGEN.Builder.PlotBuilder.html">URBGEN.Builder.PlotBuilder</a>}</span>
 					<b>plotBuilder</b>
 					
 					</div>
@@ -1023,7 +1025,7 @@ current city.</div>
 					<a name="verticalBuilder"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{URBGEN.VerticalBuilder}</span>
+					<span class="light">{<a href="../symbols/URBGEN.Builder.VerticalBuilder.html">URBGEN.Builder.VerticalBuilder</a>}</span>
 					<b>verticalBuilder</b>
 					
 					</div>
@@ -1075,11 +1077,87 @@ current city.</div>
 
 					<hr />
 				
-					<a name="buildThreeShape"> </a>
+					<a name="generate"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{URBGEN.City}</span>
+					<b>generate</b>(cityParams)
+					
+					</div>
+					<div class="description">
+						Generates a city.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Object}</span> <b>cityParams</b>
+									
+								</dt>
+								<dd>- The parameters that should be used to generate
+    the city.</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{URBGEN.City}</span> The generated city.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getParams"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Object}</span>
+					<b>getParams</b>()
+					
+					</div>
+					<div class="description">
+						Returns this generator's current city parameters.
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Object}</span> The parameters.</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getThreeJSGeometry"> </a>
 					<div class="fixedFont">
 					
 					<span class="light">{THREE.Shape}</span>
-					<b>buildThreeShape</b>(poly, shape)
+					<b>getThreeJSGeometry</b>(poly, shape)
 					
 					</div>
 					<div class="description">
@@ -1116,82 +1194,6 @@ current city.</div>
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{THREE.Shape}</span> The shape with coordinates set.</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="generate"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{<a href="../symbols/URBGEN.City.html">URBGEN.City</a>}</span>
-					<b>generate</b>(cityParams)
-					
-					</div>
-					<div class="description">
-						Generates a city.
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{Object}</span> <b>cityParams</b>
-									
-								</dt>
-								<dd>- The parameters that should be used to generate
-    the city.</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{<a href="../symbols/URBGEN.City.html">URBGEN.City</a>}</span> The generated city.</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getParams"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{Object}</span>
-					<b>getParams</b>()
-					
-					</div>
-					<div class="description">
-						Returns this generator's current city parameters.
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{Object}</span> The parameters.</dd>
 							
 							</dl>
 						
@@ -1474,7 +1476,7 @@ are undefined, sets those parameters to random values.
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Thu Sep 04 2014 00:38:17 GMT+0100 (BST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Thu Sep 04 2014 10:37:56 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

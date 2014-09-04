@@ -130,40 +130,30 @@
 					<code>generate()</code>
 					method, passing in the parameters object. You can also call the
 					method with no parameter object, which will randomise all the
-					values. Either way, the method returns a city:
+					values. Either way, the method returns a
+					<code>URBGEN.CityElement.City</code>:
 				</p>
 				<code>var city = generator.generate(cityParms)</code>
+				<p>See the <a href="doc/index.html" target="blank">documentation</a>
+				 for a description of a city's structure, including all methods and fields.
+				</p>
 				<h2>Using UrbGen with Three.js</h2>
 				<p>Three.js is a popular library which makes WebGL more simple
-					to use. You can obtain a Three.js geometry containing the bounding
-					box for each plot (this is what is currently displayed in the web
-					app). This process works by obtaining a 2D shape representing each
-					plot's footprint, then extruding this shape, using the plot's
-					height value.</p>
-				<p>To do this, first obtain the plots:</p>
-				<code>var plots = city.getPlots()</code>
-				<p>
-					Then iterate through this array, first obtaining a
-					<code>Three.Shape</code>
-					for the footprint, and using this shape to create a
-					<code>Three.ExtrudeGeometry</code>
-					. It's also a good idea to merge these into one large city geometry
-					(for performance reasons):
+					to use. UrbGen provides a helper method to convert your city
+					into a Three.js geometry.</p>
+				<p>First, make sure you've included the Three.js script in your code
+				 (if you're planning on using Three.js you've probaby already
+				 done this):</p>
+				<code>&lt;script src="path/to/script/three.js"&gt;</code>
+				<p>Once you've generated your city (as above), you need to use the
+				 <code>URBGEN.Generator.getThreeJSGeometry</code>
+				  method. This method takes either a single
+				  <code>URBGEN.CityElement</code> or an array of
+				  <code>URBGEN.CityElement</code>.
+				  Simply pass the elements in and the method returns a geometry:
 				</p>
 				<code>
-					// Create a geometry to store the city<br> var cityGeom = new
-					THREE.Geometry();<br> for(var i = 0; i &lt; plots.length; i++)
-					{<br> &nbsp;&nbsp;// Get the plot<br> &nbsp;&nbsp;var
-					plot = this.generator.buildThreeShape(plots[j].poly, new
-					THREE.Shape());<br> &nbsp;&nbsp;// Set the extrusion settings<br>
-					&nbsp;&nbsp;var extrusionSettings = {<br>
-					&nbsp;&nbsp;&nbsp;&nbsp;bevelEnabled : false,<br>
-					&nbsp;&nbsp;&nbsp;&nbsp;amount : plots[j].height<br>
-					&nbsp;&nbsp;};<br> &nbsp;&nbsp;// Get the building geometry<br>
-					&nbsp;&nbsp;var geom = new THREE.ExtrudeGeometry(plot,
-					extrusionSettings);<br> &nbsp;&nbsp;// Merge the building with
-					the city geometry<br> &nbsp;&nbsp;cityGeom.merge(geom);<br>
-					}
+					var threeGeometry = generator.getThreeJSGeometry([cityElement]);
 				</code>
 				<p>
 					You can now use this geometry to create a

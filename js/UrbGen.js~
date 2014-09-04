@@ -106,6 +106,64 @@ URBGEN.Poly.prototype.makeSimple = function () {
     this.corners[3].neighbors[1] = this.corners[2];
 };
 /**
+ * Represents a plot.
+ * @constructor
+ * @param {URBGEN.Poly} poly - This plot's polygon.
+ */
+URBGEN.Plot = function (poly) {
+    /**
+     * This plot's polygon, that is, the maximum footprint of a building on this
+     * plot.
+     * @type URBGEN.Poly
+     */
+    this.poly = poly;
+    /**
+     * The maximum height of a building on this plot.
+     * @type number
+     */
+    this.height = 0;
+};
+/**
+ * Represents a block.
+ * @constructor
+ * @param {URBGEN.Poly} outerPoly - This block's outer polygon, including any
+ *     space for streets and sidewalks.
+ * @param {number} streetWidth - The width of the streets surrounding this block.
+ */
+URBGEN.Block = function (poly, streetWidth) {
+    /**
+     * This block's street width.
+     * @type number
+     */
+    this.streetWidth = streetWidth;
+    /**
+     * This block's outer polygon, including space for streets and sidewalks.
+     * @type URBGEN.Poly
+     */
+    this.outerPoly = poly;
+    /**
+     * This block's inner polygon, exluding space for streets and sidewalks.
+     * @type URBGEN.Poly
+     */
+    this.innerPoly = undefined;
+    /**
+     * This block's plots.
+     * @type URBGEN.Plot[]
+     */
+    this.plots = [];
+    // Sets this block's inner polygon.
+    this.setInnerPoly(streetWidth);
+};
+/**
+ * Sets this block's inner polygon. This is the polygon that this block's plots
+ * lie within, excluding any space for streets and sidewalks.
+ */
+URBGEN.Block.prototype.setInnerPoly = function () {
+    this.innerPoly = URBGEN.Util
+        .insetPoly(this.outerPoly, this.streetWidth / 2);
+    this.innerPoly.makeSimple();
+};
+/**
  * Represents a 3D geometry.
  * @constructor
  */
@@ -126,88 +184,15 @@ URBGEN.Geometry = function () {
   this.faces = [];
 };
 /**
- * Represents a city element.
- * @constructor
- * @param {URBGEN.Poly} poly - The polygon representing this city element's
- *     footprint.
- */
-URBGEN.CityElement = function (poly) {
-    /**
-     * The footprint of this city element.
-     * @type URBGEN.Poly
-     */
-    this.poly = poly;
-    /**
-     * This city element's area.
-     * @type number
-     */
-     this.area = URBGEN.Util.areaPoly(this.poly);
-};
-/**
- * Represents a plot.
- * @constructor
- * @extends URBGEN.CityElement
- * @param {URBGEN.Poly} poly - This plot's polygon.
- */
-URBGEN.CityElement.Plot = function (poly) {
-    URBGEN.CityElement.call(this, poly);
-    /**
-     * The maximum height of a building on this plot.
-     * @type number
-     */
-    this.height = 0;
-};
-URBGEN.CityElement.Plot.prototype = Object
-    .create(URBGEN.CityElement.prototype);
-URBGEN.CityElement.Plot.prototype.constructor = URBGEN.CityElement.Plot;
-/**
- * Represents a block.
- * @constructor
- * @extends URBGEN.CityElement
- * @param {URBGEN.Poly} poly - This block's outer polygon, including any
- *     space for streets and sidewalks.
- * @param {number} streetWidth - The width of the streets surrounding this block.
- */
-URBGEN.CityElement.Block = function (poly, streetWidth) {
-    URBGEN.CityElement.call(this, poly);
-    /**
-     * This block's street width.
-     * @type number
-     */
-    this.streetWidth = streetWidth;
-    /**
-     * This block's inner polygon, exluding space for streets and sidewalks.
-     * @type URBGEN.Poly
-     */
-    this.innerPoly = undefined;
-    /**
-     * This block's plots.
-     * @type URBGEN.CityElement.Plot[]
-     */
-    this.plots = [];
-    // Sets this block's inner polygon.
-    this.setInnerPoly(streetWidth);
-};
-URBGEN.CityElement.Block.prototype = Object
-    .create(URBGEN.CityElement.prototype);
-URBGEN.CityElement.Block.prototype.constructor = URBGEN.CityElement.Block;
-/**
- * Sets this block's inner polygon. This is the polygon that this block's plots
- * lie within, excluding any space for streets and sidewalks.
- */
-URBGEN.CityElement.Block.prototype.setInnerPoly = function () {
-    this.innerPoly = URBGEN.Util
-        .insetPoly(this.poly, this.streetWidth / 2);
-    this.innerPoly.makeSimple();
-};
-/**
  * Represents a city.
  * @constructor
- * @extends URBGEN.CityElement
- * @param {URBGEN.Poly} poly - The footprint of this city.
  */
-URBGEN.CityElement.City = function (poly) {
-    URBGEN.CityElement.call(this, poly);
+URBGEN.City = function () {
+    /**
+     * A polygon rerepsenting the limits of this city.
+     * @type URBGEN.Poly
+     */
+    this.poly = undefined;
     /**
      * An array of points, each with up to four neighbors, representing this
      * city's road network.
@@ -216,23 +201,25 @@ URBGEN.CityElement.City = function (poly) {
     this.roads = [];
     /**
      * This city's blocks.
-     * @type URBGEN.CityElement.Block[]
+     * @type URBGEN.Block[]
      */
     this.blocks = [];
+    /**
+     * This city's area.
+     * @type number
+     */
+    this.area = undefined;
     /**
      * This city's geometry.
      * @type URBGEN.Geometry
      */
     this.geometry = new URBGEN.Geometry();
 };
-URBGEN.CityElement.City.prototype = Object
-    .create(URBGEN.CityElement.prototype);
-URBGEN.CityElement.City.prototype.constructor = URBGEN.CityElement.City;
 /**
  * Returns an array of the plots of this city.
- * @return URBGEN.CityElement.Plot[] The plots of this city.
+ * @return URBGEN.Plot[] The plots of this city.
  */
-URBGEN.CityElement.City.prototype.getPlots = function () {
+URBGEN.City.prototype.getPlots = function () {
     var plots = [];
     for(var i = 0; i < this.blocks.length; i++) {
         plots = plots.concat(this.blocks[i].plots);
@@ -246,17 +233,17 @@ URBGEN.CityElement.City.prototype.getPlots = function () {
 URBGEN.Generator = function () {
     /**
      * This generator's horizontal builder.
-     * @type URBGEN.Builder.HorizontalBuilder
+     * @type URBGEN.HorizontalBuilder
      */
     this.horizontalBuilder = new URBGEN.Builder.HorizontalBuilder(this);
     /**
      * This generator's vertical builder.
-     * @type URBGEN.Builder.VerticalBuilder
+     * @type URBGEN.VerticalBuilder
      */
     this.verticalBuilder = new URBGEN.Builder.VerticalBuilder(this);
     /**
      * This generator's plot builder.
-     * @type URBGEN.Builder.PlotBuilder
+     * @type URBGEN.PlotBuilder
      */
     this.plotBuilder = new URBGEN.Builder.PlotBuilder(this);
     /**
@@ -414,6 +401,8 @@ URBGEN.Generator.prototype.init = function () {
     this.cityPolys = [];
     // Seed the random number generator
     this.random.seed = this.randomSeed;
+    // Instantiate a new city
+    this.city = new URBGEN.City();
     // Build the initial polygon
     var topLeft = new URBGEN.Point(0, 0, 0);
     var topRight = new URBGEN.Point(this.cityWidth, 0, 0);
@@ -421,12 +410,14 @@ URBGEN.Generator.prototype.init = function () {
     var bottomRight = new URBGEN.Point(this.cityWidth - 1, this.cityDepth,
         0);
     var poly = new URBGEN.Poly(topLeft, topRight, bottomLeft, bottomRight);
-    // Instantiate a new city
-    this.city = new URBGEN.CityElement.City(poly);
     poly.makeSimple();
     this.cityPolys.push(poly);
     // Add the corners to the nodes graph
     this.nodes = [topLeft, topRight, bottomLeft, bottomRight];
+    // Set the city's polygon
+    this.city.poly = poly;
+    // Set the city's area
+    this.city.area = URBGEN.Util.areaPoly(poly);
     // Set the regularity params
     this.regularity1 = this.globalAngle * (URBGEN.Constants.MAX_REGULARITY -
         URBGEN.Constants.MIN_REGULARITY) + URBGEN.Constants.MIN_REGULARITY;
@@ -464,7 +455,7 @@ URBGEN.Generator.prototype.generate = function (cityParams) {
         //TODO this doesn't add every node yet
         this.city.roads.push(this.cityPolys[i].corners[0]);
         var poly = this.cityPolys[i];
-        var block = new URBGEN.CityElement.Block(poly, this.streetWidth);
+        var block = new URBGEN.Block(poly, this.streetWidth);
         this.city.blocks.push(block);
     }
     // Build the plots
@@ -473,7 +464,7 @@ URBGEN.Generator.prototype.generate = function (cityParams) {
         this.plotBuilder.poly = this.city.blocks[j].innerPoly;
         var plotPolys = this.director.execute(this.plotBuilder);
         for(var k = 0; k < plotPolys.length; k++) {
-            var plot = new URBGEN.CityElement.Plot(plotPolys[k]);
+            var plot = new URBGEN.Plot(plotPolys[k]);
             plot.height = this.random.next() * 20 + 20;
             plots.push(plot);
         }
@@ -556,27 +547,13 @@ URBGEN.Generator.prototype.prepare = function (poly) {
  * @param {THREE.Shape} shape - The shape to have its coordinates set.
  * @return {THREE.Shape} The shape with coordinates set.
  */
-URBGEN.Generator.prototype.getThreeJSGeometry = function (cityElement) {
-    if (!(cityElement instanceof Array)) {
-      cityElement = [cityElement];
-    }
-    var geometry = new THREE.Geometry();
-    for (var i = 0; i < cityElement.length; i++) {
-        var shape = new THREE.Shape();
-        var poly = cityElement[i].poly;
-        shape.moveTo(poly.corners[0].x, poly.corners[0].y);
-        shape.lineTo(poly.corners[1].x, poly.corners[1].y);
-        shape.lineTo(poly.corners[3].x, poly.corners[3].y);
-        shape.lineTo(poly.corners[2].x, poly.corners[2].y);
-        shape.lineTo(poly.corners[0].x, poly.corners[0].y);
-        var extrusionSettings = {
-            bevelEnabled: false,
-            amount: cityElement[i].height
-        };
-        var geom = new THREE.ExtrudeGeometry(shape, extrusionSettings);
-        geometry.merge(geom);
-    }
-    return geometry;
+URBGEN.Generator.prototype.buildThreeShape = function (poly, shape) {
+    shape.moveTo(poly.corners[0].x, poly.corners[0].y);
+    shape.lineTo(poly.corners[1].x, poly.corners[1].y);
+    shape.lineTo(poly.corners[3].x, poly.corners[3].y);
+    shape.lineTo(poly.corners[2].x, poly.corners[2].y);
+    shape.lineTo(poly.corners[0].x, poly.corners[0].y);
+    return shape;
 };
 /**
  * Returns a string containing vertex and face data in the Wavefront.OBJ file
@@ -1345,7 +1322,7 @@ URBGEN.Util.insertPoint = function (newPoint, p0, p1) {
     return true;
 };
 /**
- * Returns the two points closest in opposite directions to the
+ * Returns the specified the two points closest in opposite directions to the
  * specified point.
  * @param {URBGEN.Point} point - The point to find neighbors for.
  * @param {URBGEN.Point[]} - The path of potential neighbors.
