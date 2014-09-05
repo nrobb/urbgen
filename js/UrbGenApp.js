@@ -149,12 +149,17 @@ URBGEN_APP.App.prototype.exportParams = function() {
  * @constructor
  */
 URBGEN_APP.View = function() {
-	this.renderer = new THREE.WebGLRenderer({
-		antialias : true,
-		alpha: true,
-		shadowMapEnabled : true,
-		shadowMapSoft : true
-	});
+  // creare a webgl renderer with canvas renderer fallback
+  if (window.WebGLRenderingContext) {
+    this.renderer = new THREE.WebGLRenderer({
+      antialias : true,
+		  alpha: true,
+		  shadowMapEnabled : true,
+	    shadowMapSoft : true
+	  });
+  } else {
+    this.renderer = new THREE.CanvasRenderer({alpha: true});
+  }
 	this.width = window.innerWidth;
 	this.height = window.innerHeight;
 	this.setUpCamera();
@@ -214,15 +219,19 @@ URBGEN_APP.View.prototype.update = function(delta) {
 URBGEN_APP.View.prototype.addMeshToScene = function(geometry) {
 	// Remove the current mesh
 	this.scene.remove(this.cityMesh);
-	// make a mesh from the geometry
-	var lambertMaterial = new THREE.MeshLambertMaterial({
-		color : 0xffffff
-	});
+	// set materials depending on renderer
+	var material;
+	if (this.renderer instanceof THREE.CanvasRenderer) {
+	  material = new THREE.MeshBasicMaterial({color: 0xffffff});
+	} else {
+	  material = new THREE.MeshLambertMaterial({color: 0xffffff});
+	}
 	var wireframeMaterial = new THREE.MeshBasicMaterial({
 		color : 0x000000,
 		wireframe : true
 	});
-	var materials = [ lambertMaterial, wireframeMaterial ];
+	var materials = [ material, wireframeMaterial ];
+	// make the mesh
 	this.cityMesh = THREE.SceneUtils.createMultiMaterialObject(geometry,
 			materials);
 	// Position the mesh
