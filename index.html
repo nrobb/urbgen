@@ -61,21 +61,45 @@
 					onclick="toggleInstructions()" />
 			</div>
 			<div id="instructions">
-				<h1>How to use UrbGen</h1>
-				<p>UrbGen is a JavaScript library for the procedural generation
-					of urban environments. It can be used via this web app or as a
-					standalone library. UrbGen was created by
+				<h1>UrbGen</h1>
+				<p>UrbGen is a JavaScript library for the
+				    <a href="http://en.wikipedia.org/wiki/Procedural_generation"
+				    target="blank">procedural generation</a>
+				    of urban environments, designed primarily for game development.
+					It can be used via this web app or as a library in your own code.
+					UrbGen brings 3 benefits of procedural generation to JavaScript
+					game developers:
+				</p>
+					<ol>
+					<li>
+					    It expediates the process of designing and
+					    modelling urban environments
+					</li>
+					<li>
+					    It allows games to feature 'infinite'
+					    pseudorandom environments (think
+					    <a href="http://en.wikipedia.org/wiki/Minecraft"
+					    target="blank">Minecraft</a>
+					    )
+					</li>
+					<li>
+					    It helps to reduce file sizes by allowing games to
+					    generate environments on the fly
+					</li>
+					</ol>
+				<p>
+					UrbGen was created by
 					<a href="http://nigelrobb.tumblr.com" target="blank">Nigel Robb</a>.
 				</p>
 				<h2>Using the UrbGen web app</h2>
 				<p>Use the control panel to set the parameters for your city.</p>
 				<p>Hit 'update' to generate and display a new city.</p>
-				<p>UrbGen is procedural, not random - the same parameters will
+				<p>UrbGen is procedural, not random - the same settings will
 					always generate the same city.</p>
-				<p>'Random' generates a city with random parameters.</p>
+				<p>'random' randomises the settings.</p>
 				<p>You can download a Wavefront.obj file of the currently
 					displayed model using 'exportOBJ'.</p>
-				<p>You can also download a text file containing the parameters
+				<p>You can also download a text file containing the actual parameters
 					of the currently displayed city by hitting 'exportParams'. This can
 					then be used with the UrbGen library (see below) to generate this
 					city in your code.</p>
@@ -87,24 +111,30 @@
 					Download the <a href="js/UrbGen.js" target="blank">script</a> and
 					include it in your code:
 				</p>
-				<code>&lt;script src="path/to/script/UrbGen.js"&gt;</code>
+				<code>&lt;script src="path/to/UrbGen.js"&gt;</code>
 				<br>
 				<p>Next, instantiate a generator object:</p>
 				<code>var generator = new URBGEN.Generator()</code>
-				<p>Create an object to store the parameters for your city:</p>
+				<p>Create an object to store the settings for your city:</p>
 				<code>
-					var cityParams = {<br> &nbsp;&nbsp;globalAngle: 0.1,<br>
-					&nbsp;&nbsp;blockSize: 30000,<br> &nbsp;&nbsp;cityWidth: 1000,<br>
-					&nbsp;&nbsp;cityDepth: 500,<br> &nbsp;&nbsp;streetWidth: 25,<br>
-					&nbsp;&nbsp;localGrids: 0.4,<br> &nbsp;&nbsp;randomSeed: 0.6,<br>
-					&nbsp;&nbsp;throughRoads: 27<br> }
+					var args = {<br>
+					&nbsp;&nbsp;globalAngle: 0.1, // the overall grid angle<br>
+					&nbsp;&nbsp;blockSize: 30000, // the minimum block size
+					<br> &nbsp;&nbsp;cityWidth: 1000, // the width of the city<br>
+					&nbsp;&nbsp;cityDepth: 500, // the depth of the city
+					<br> &nbsp;&nbsp;streetWidth: 25, // the width of the streets<br>
+					&nbsp;&nbsp;localGrids: 0.4, // the size of regions with a
+					unique grid angle
+					<br> &nbsp;&nbsp;randomSeed: 0.6, // seeds the random number
+					generator<br>
+					&nbsp;&nbsp;throughRoads: 27 // the distance at which street
+					ends snap together<br> }
 				</code>
 				<p>
 					You can use the web app to see how changing these values affects
 					the layout of a city. As mentioned above, you can also use the web
-					app to save a set of values. If you set any of these values to
-					<code>undefined</code>
-					, the value will be randomised.
+					app to save a set of values. Any undefined parameters will be
+					randomised.
 				</p>
 				<p>UrbGen also defines constant maximum and minimum values for
 					each parameter:</p>
@@ -132,23 +162,26 @@
 				<p>
 					You're now ready to generate a city. Simply call the
 					<code>generate()</code>
-					method, passing in the parameters object. You can also call the
-					method with no parameter object, which will randomise all the
+					method, passing in the settings object. You can also call the
+					method with no setttings, which will randomise all the
 					values. Either way, the method returns a
 					<code>URBGEN.CityElement.City</code>:
 				</p>
-				<code>var city = generator.generate(cityParms)</code>
-				<p>See the <a href="doc/index.html" target="blank">documentation</a>
+				<code>var city = generator.generate(args) // returns a specific city</code><br>
+				<code>var city = generator.generate() // returns a random city</code>
+				<p>See the
+				<a href="doc/symbols/URBGEN.CityElement.City.html" target="blank">documentation</a>
 				 for a description of a city's structure, including all methods and fields.
 				</p>
-				<h2>Using UrbGen with Three.js</h2>
-				<p>Three.js is a popular library which makes WebGL more simple
-					to use. UrbGen provides a helper method to convert your city
-					into a Three.js geometry.</p>
-				<p>First, make sure you've included the Three.js script in your code
-				 (if you're planning on using Three.js you've probaby already
+				<h2>Using UrbGen with three.js</h2>
+				<p><a href="http://threejs.org" target="blank">three.js</a> is a popular
+				    library for creating and displaying animated 3D graphics in a
+				    web browser. UrbGen provides a helper method to convert your city
+					into a three.js geometry.</p>
+				<p>First, make sure you've included the three.js script in your code
+				 (if you're planning on using three.js you've probaby already
 				 done this):</p>
-				<code>&lt;script src="path/to/script/three.js"&gt;</code>
+				<code>&lt;script src="path/to/three.js"&gt;</code>
 				<p>Once you've generated your city (as above), you need to use the
 				 <code>URBGEN.Generator.getThreeJSGeometry</code>
 				  method. This method takes either a single
@@ -157,13 +190,20 @@
 				  Simply pass the elements in and the method returns a geometry:
 				</p>
 				<code>
+				    // passing in a single city element<br>
+					var threeGeometry = generator.getThreeJSGeometry(cityElement);
+				</code><br>
+				<code>
+					// passing in an array of city elements<br>
 					var threeGeometry = generator.getThreeJSGeometry([cityElement]);
 				</code>
 				<p>
 					You can now use this geometry to create a
-					<code>Three.Mesh</code>
-					. For more information, see the <a href="doc/index.html"
-						target="blank">documentation</a>.
+					<code>three.Mesh</code>.
+				</p>
+				<p>
+				    For more information on using UrbGen, see the
+				    <a href="doc/index.html" target="blank">full documentation</a>.
 				</p>
 				<p>
 					<button id="hide_button" onclick="toggleInstructions()">Close</button>
