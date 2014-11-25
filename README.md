@@ -5,4 +5,4 @@ UrbGen is a JavaScript library for the procedural generation of urban environmen
 
 For more information, documentation, and developer guidelines, vist [urbgen.com](http://urbgen.com).
 
-**Note** The UrbGen web application uses [dat.gui](https://code.google.com/p/dat-gui), which makes use of HTML5's window.localStorage object. Because of this, it is not possible to run the web application from a local drive in Microsoft Internet Explorer. If you are intending to run the web application from a local drive, please use either Chrome or Firefox.
+**Note** The UrbGen web application uses [dat.gui](https://code.google.com/p/dat-gui), which makes use of HTML5's window.localStorage object. Because of this, it is not possible to run the web application from a local drive in Internet Explorer. If you are intending to run the web application from a local drive, please use either Chrome or Firefox.
