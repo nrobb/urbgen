@@ -499,11 +499,13 @@ URBGEN.Generator.prototype.generate = function (cityParams) {
         var plotPolys = this.director.execute(this.plotBuilder);
         for(var k = 0; k < plotPolys.length; k++) {
             var plot = new URBGEN.CityElement.Plot(plotPolys[k]);
-            plot.height = this.random.next() * 20 + 20;
+            plot.height = this.random.next() * (URBGEN.Constants.MAX_PLOT_HEIGHT
+              - URBGEN.Constants.MIN_PLOT_HEIGHT) + URBGEN.Constants.MIN_PLOT_HEIGHT;
             plots.push(plot);
         }
         this.city.blocks[j].plots = plots;
     }
+    //TODO clean up (remove sharp corners and delete small plots)
     // Build the 3D geometry
     this.buildGeometry();
     //return the city
@@ -951,7 +953,7 @@ URBGEN.Builder.PlotBuilder.prototype.constructor = URBGEN.Builder.PlotBuilder;
  * Sets the inner and outer paths that define this builder's plots.
  */
 URBGEN.Builder.PlotBuilder.prototype.setUp = function () {
-    var innerInset = 10;
+    var innerInset = URBGEN.Constants.INSET;
     var innerPoly = URBGEN.Util.insetPoly(this.poly, innerInset);
     innerPoly.makeSimple();
     // Get the inner edges
@@ -968,7 +970,7 @@ URBGEN.Builder.PlotBuilder.prototype.setUp = function () {
         [this.poly.corners[0], this.poly.corners[2]],
         [this.poly.corners[2], this.poly.corners[3]],
     ];
-    // shorter the outer edges to match the inner edges
+    // shorten the outer edges to match the inner edges
     for(var i = 0; i < innerEdges.length; i++) {
         var angle = URBGEN.Util.getAngle(innerEdges[i][0], innerEdges[i][1]);
         angle = URBGEN.Util.addAngle(angle, 0.5);
@@ -1002,7 +1004,7 @@ URBGEN.Builder.PlotBuilder.prototype.setUp = function () {
     var innerPaths = [];
     var outerPaths = [];
     for(var k = 0; k < outerEdges.length; k++) {
-        var length = 10;
+        var length = URBGEN.Constants.PLOT_EDGE_LENGTH;
         innerPaths.push(URBGEN.Util.divideLine(innerEdges[k][0],
             innerEdges[k][1], length));
         outerPaths.push(URBGEN.Util.divideLine(outerEdges[k][0],
@@ -1324,6 +1326,7 @@ URBGEN.Util.offsetLineSegment = function (p0, p1, distance) {
  * @return {URBGEN.Poly} The offset polygon.
  */
 URBGEN.Util.insetPoly = function (poly, length) {
+    //TODO use an external library for this
     // Get the edges
     var edges = [
         [poly.corners[0], poly.corners[1]],
@@ -1495,9 +1498,25 @@ URBGEN.Math.Random.prototype.next = function () {
  */
 URBGEN.Constants = {};
 /**
+ * @type {Number}
+ */
+URBGEN.Constants.INSET = 20;
+/**
+ * @type {Number}
+ */
+URBGEN.Constants.PLOT_EDGE_LENGTH = 15;
+/**
+ * @type {Number}
+ */
+URBGEN.Constants.MIN_PLOT_HEIGHT = 20;
+/**
+ * @type {Number}
+ */
+URBGEN.Constants.MAX_PLOT_HEIGHT = 50;
+/**
  * @type number
  */
-URBGEN.Constants.MAX_BLOCK_SIZE = 50000;
+URBGEN.Constants.MAX_BLOCK_SIZE = 30000;
 /**
  * @type number
  */
@@ -1569,7 +1588,7 @@ URBGEN.Constants.MIN_GLOBAL_ANGLE = 0;
 /**
  * @type number
  */
-URBGEN.Constants.MIN_EDGE_LENGTH = 80;
+URBGEN.Constants.MIN_EDGE_LENGTH = 60;
 /**
  * @namespace holds exceptions.
  */
