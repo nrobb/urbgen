@@ -5,11 +5,12 @@
 <title>UrbGen - Procedural Generation of Urban Environments</title>
 <link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
 
-<script src="vendor/three.js/three.min.js"></script>
-<script src="vendor/three.js/OrbitControls.js"></script>
-<script src="vendor/three.js/Detector.js"></script>
+<script src="vendor/three/three.min.js"></script>
+<script src="vendor/three/OrbitControls.js"></script>
+<script src="vendor/three/Detector.js"></script>
 <script src="vendor/dat.gui/dat.gui.min.js"></script>
-<script src="vendor/filesaver.js/FileSaver.js"></script>
+<script src="vendor/filesaver/FileSaver.js"></script>
+<script src="vendor/js-clipper/clipper.js"></script>
 
 <script src="js/UrbGen.js"></script>
 <script src="js/UrbGenApp.js"></script>
@@ -47,7 +48,7 @@
 					console.log(e);
 					if (window.localStorage === undefined) {
 						alert("Error: window.localStorage is undefined.\r\n"
-								+ "Sorry, your browser doesn't support local storage. "
+								+ "Sorry, but your browser doesn't support local storage. "
 								+ "Try using the latest version of Chrome or Firefox.");
 					}
 				}
